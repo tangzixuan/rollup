@@ -10,8 +10,9 @@ System.register('myBundle', [], (function (exports) {
 			}
 
 			foo();
+			foo(true);
 
-			var main = exports('default', 42);
+			var main = exports("default", 42);
 
 		})
 	};

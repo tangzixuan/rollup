@@ -8,6 +8,7 @@ export const URL_SOURCEMAP_IS_LIKELY_TO_BE_INCORRECT =
 	'troubleshooting/#warning-sourcemap-is-likely-to-be-incorrect';
 
 // configuration-options
+export const URL_JSX = 'configuration-options/#jsx';
 export const URL_MAXPARALLELFILEOPS = 'configuration-options/#maxparallelfileops';
 export const URL_OUTPUT_AMD_ID = 'configuration-options/#output-amd-id';
 export const URL_OUTPUT_AMD_BASEPATH = 'configuration-options/#output-amd-basepath';
@@ -41,6 +42,7 @@ export const URL_CONFIGURATION_FILES = 'command-line-interface/#configuration-fi
 
 // plugin-development
 export const URL_A_SIMPLE_EXAMPLE = 'plugin-development/#a-simple-example';
+export const URL_GENERATEBUNDLE = 'plugin-development/#generatebundle';
 export const URL_RENDERDYNAMICIMPORT = 'plugin-development/#renderdynamicimport';
 export const URL_THIS_GETMODULEIDS = 'plugin-development/#this-getmoduleids';
 export const URL_THIS_GETMODULEINFO = 'plugin-development/#this-getmoduleinfo';

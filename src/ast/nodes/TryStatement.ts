@@ -3,7 +3,13 @@ import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import type BlockStatement from './BlockStatement';
 import type CatchClause from './CatchClause';
 import type * as NodeType from './NodeType';
-import { INCLUDE_PARAMETERS, type IncludeChildren, StatementBase } from './shared/Node';
+import {
+	doNotDeoptimize,
+	INCLUDE_PARAMETERS,
+	type IncludeChildren,
+	onlyIncludeSelfNoDeoptimize,
+	StatementBase
+} from './shared/Node';
 
 export default class TryStatement extends StatementBase {
 	declare block: BlockStatement;
@@ -16,15 +22,16 @@ export default class TryStatement extends StatementBase {
 
 	hasEffects(context: HasEffectsContext): boolean {
 		return (
-			((this.context.options.treeshake as NormalizedTreeshakingOptions).tryCatchDeoptimization
+			((this.scope.context.options.treeshake as NormalizedTreeshakingOptions).tryCatchDeoptimization
 				? this.block.body.length > 0
 				: this.block.hasEffects(context)) || !!this.finalizer?.hasEffects(context)
 		);
 	}
 
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
-		const tryCatchDeoptimization = (this.context.options.treeshake as NormalizedTreeshakingOptions)
-			?.tryCatchDeoptimization;
+		const tryCatchDeoptimization = (
+			this.scope.context.options.treeshake as NormalizedTreeshakingOptions
+		)?.tryCatchDeoptimization;
 		const { brokenFlow, includedLabels } = context;
 		if (!this.directlyIncluded || !tryCatchDeoptimization) {
 			this.included = true;
@@ -49,3 +56,6 @@ export default class TryStatement extends StatementBase {
 		this.finalizer?.include(context, includeChildrenRecursively);
 	}
 }
+
+TryStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+TryStatement.prototype.applyDeoptimizations = doNotDeoptimize;

@@ -114,6 +114,7 @@ export const useOptions = defineStore('options2', () => {
 		return value != null && interopFormats.has(value);
 	});
 	const externalImports = computed(() => rollupOutputStore.output?.externalImports || []);
+	const isJsxEnabled = computed(() => optionJsx.value.value === true);
 	const isTreeshakeEnabled = computed(() =>
 		[undefined, true].includes(optionTreeshake.value.value as any)
 	);
@@ -121,6 +122,9 @@ export const useOptions = defineStore('options2', () => {
 	const optionContext = getString({
 		defaultValue: 'undefined',
 		name: 'context'
+	});
+	const optionExperimentalLogSideEffects = getBoolean({
+		name: 'experimentalLogSideEffects'
 	});
 	const optionOutputAmdAutoId = getBoolean({
 		available: () => isAmdFormat.value,
@@ -239,10 +243,20 @@ export const useOptions = defineStore('options2', () => {
 		name: 'output.globals',
 		required: () => true
 	});
+	const optionOutputHashCharacters = getSelect({
+		defaultValue: 'base64',
+		name: 'output.hashCharacters',
+		options: () => ['base64', 'base36', 'hex']
+	});
 	const optionOutputHoistTransitiveImports = getBoolean({
 		available: alwaysTrue,
 		defaultValue: true,
 		name: 'output.hoistTransitiveImports'
+	});
+	const optionOutputImportAttributesKey = getSelect({
+		defaultValue: 'assert',
+		name: 'output.importAttributesKey',
+		options: () => ['with', 'assert']
 	});
 	const optionOutputIndent = getBoolean({
 		available: () => ['amd', 'iife', 'umd', 'system'].includes(optionOutputFormat.value.value!),
@@ -284,7 +298,7 @@ export const useOptions = defineStore('options2', () => {
 	});
 	const optionOutputNoConflict = getBoolean({
 		available: () => optionOutputFormat.value.value === 'umd',
-		name: 'output.noConflice'
+		name: 'output.noConflict'
 	});
 	const optionOutputName = getString({
 		available: isIifeFormat,
@@ -310,6 +324,12 @@ export const useOptions = defineStore('options2', () => {
 	const optionOutputPreserveModulesRoot = getString({
 		available: optionOutputPreserveModules.value,
 		name: 'output.preserveModulesRoot'
+	});
+	const optionOutputReexportProtoFromExternal = getBoolean({
+		available: () =>
+			isInteropFormat.value && optionOutputExternalLiveBindings.value.value === false,
+		defaultValue: true,
+		name: 'output.reexportProtoFromExternal'
 	});
 	const optionOutputSanitizeFileName = getBoolean({
 		available: alwaysTrue,
@@ -355,6 +375,39 @@ export const useOptions = defineStore('options2', () => {
 	const optionShimMissingExports = getBoolean({
 		defaultValue: false,
 		name: 'shimMissingExports'
+	});
+	const optionJsx = getSelect({
+		defaultValue: false,
+		name: 'jsx',
+		options: () => [false, true, 'preserve', 'preserve-react', 'react', 'react-jsx']
+	});
+	const optionJsxFactory = getString({
+		available: isJsxEnabled,
+		name: 'jsx.factory'
+	});
+	const optionJsxFragment = getString({
+		available: computed(() => isJsxEnabled.value && optionJsxMode.value.value !== 'automatic'),
+		name: 'jsx.fragment'
+	});
+	const optionJsxImportSource = getString({
+		available: isJsxEnabled,
+		name: 'jsx.importSource'
+	});
+	const optionJsxJsxImportSource = getString({
+		available: computed(() => isJsxEnabled.value && optionJsxMode.value.value === 'automatic'),
+		name: 'jsx.jsxImportSource'
+	});
+	const optionJsxMode = getSelect({
+		available: isJsxEnabled,
+		defaultValue: 'classic',
+		name: 'jsx.mode',
+		options: () => ['classic', 'automatic', 'preserve']
+	});
+	const optionJsxPreset = getSelect({
+		available: isJsxEnabled,
+		defaultValue: null,
+		name: 'jsx.preset',
+		options: () => [null, 'preserve', 'preserve-react', 'react', 'react-jsx']
 	});
 	const optionTreeshake = getSelect({
 		defaultValue: true,
@@ -402,6 +455,14 @@ export const useOptions = defineStore('options2', () => {
 
 	const optionList: OptionType[] = [
 		optionContext,
+		optionExperimentalLogSideEffects,
+		optionJsx,
+		optionJsxMode,
+		optionJsxFactory,
+		optionJsxFragment,
+		optionJsxImportSource,
+		optionJsxJsxImportSource,
+		optionJsxPreset,
 		optionOutputAmdAutoId,
 		optionOutputAmdBasePath,
 		optionOutputAmdDefine,
@@ -428,7 +489,9 @@ export const useOptions = defineStore('options2', () => {
 		optionOutputGeneratedCodeReservedNamesAsProperties,
 		optionOutputGeneratedCodeSymbols,
 		optionOutputGlobals,
+		optionOutputHashCharacters,
 		optionOutputHoistTransitiveImports,
+		optionOutputImportAttributesKey,
 		optionOutputIndent,
 		optionOutputInlineDynamicImports,
 		optionOutputInterop,
@@ -440,6 +503,7 @@ export const useOptions = defineStore('options2', () => {
 		optionOutputPaths,
 		optionOutputPreserveModules,
 		optionOutputPreserveModulesRoot,
+		optionOutputReexportProtoFromExternal,
 		optionOutputSourcemap,
 		optionOutputSourcemapFileNames,
 		optionOutputSanitizeFileName,
@@ -488,7 +552,8 @@ export const useOptions = defineStore('options2', () => {
 				while ((key = path.shift())) {
 					subOptions = subOptions?.[key];
 				}
-				value.value = name === 'treeshake' && typeof subOptions === 'object' ? true : subOptions;
+				value.value =
+					['jsx', 'treeshake'].includes(name) && typeof subOptions === 'object' ? true : subOptions;
 			}
 		}
 	};
@@ -629,7 +694,7 @@ function getOptionsObject(options: Ref<Option[]>): Ref<RollupOptions> {
 				let key: string | undefined;
 				let subOptions: any = object;
 				while ((key = path.shift())) {
-					// Special logic to handle treeshake option
+					// Special logic to handle jsx/treeshake option
 					if (subOptions[key] === true) {
 						subOptions[key] = {};
 					}

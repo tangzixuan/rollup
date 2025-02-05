@@ -2,16 +2,18 @@ import type MagicString from 'magic-string';
 import { NO_SEMICOLON, type RenderOptions } from '../../utils/renderHelpers';
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import type Scope from '../scopes/Scope';
+import type ChildScope from '../scopes/ChildScope';
 import type * as NodeType from './NodeType';
-import type VariableDeclaration from './VariableDeclaration';
+import { hasLoopBodyEffects, includeLoopBody } from './shared/loops';
 import {
+	doNotDeoptimize,
 	type ExpressionNode,
 	type IncludeChildren,
+	onlyIncludeSelfNoDeoptimize,
 	StatementBase,
 	type StatementNode
 } from './shared/Node';
-import { hasLoopBodyEffects, includeLoopBody } from './shared/loops';
+import type VariableDeclaration from './VariableDeclaration';
 
 export default class ForStatement extends StatementBase {
 	declare body: StatementNode;
@@ -20,7 +22,7 @@ export default class ForStatement extends StatementBase {
 	declare type: NodeType.tForStatement;
 	declare update: ExpressionNode | null;
 
-	createScope(parentScope: Scope): void {
+	createScope(parentScope: ChildScope): void {
 		this.scope = new BlockScope(parentScope);
 	}
 
@@ -37,7 +39,9 @@ export default class ForStatement extends StatementBase {
 
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		this.included = true;
-		this.init?.include(context, includeChildrenRecursively, { asSingleStatement: true });
+		this.init?.include(context, includeChildrenRecursively, {
+			asSingleStatement: true
+		});
 		this.test?.include(context, includeChildrenRecursively);
 		this.update?.include(context, includeChildrenRecursively);
 		includeLoopBody(context, this.body, includeChildrenRecursively);
@@ -50,3 +54,6 @@ export default class ForStatement extends StatementBase {
 		this.body.render(code, options);
 	}
 }
+
+ForStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+ForStatement.prototype.applyDeoptimizations = doNotDeoptimize;

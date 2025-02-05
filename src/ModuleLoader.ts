@@ -41,6 +41,7 @@ import {
 import { isAbsolute, isRelative, resolve } from './utils/path';
 import relativeId from './utils/relativeId';
 import { resolveId } from './utils/resolveId';
+import stripBom from './utils/stripBom';
 import transform from './utils/transform';
 
 export interface UnresolvedModule {
@@ -228,7 +229,7 @@ export class ModuleLoader {
 							customOptions,
 							typeof isEntry === 'boolean' ? isEntry : !importer,
 							attributes
-					  ),
+						),
 				importer,
 				source
 			),
@@ -245,17 +246,23 @@ export class ModuleLoader {
 				async entryModule => {
 					addChunkNamesToModule(entryModule, unresolvedModule, false, chunkNamePriority);
 					if (!entryModule.info.isEntry) {
-						this.implicitEntryModules.add(entryModule);
 						const implicitlyLoadedAfterModules = await Promise.all(
 							implicitlyLoadedAfter.map(id =>
 								this.loadEntryModule(id, false, unresolvedModule.importer, entryModule.id)
 							)
 						);
-						for (const module of implicitlyLoadedAfterModules) {
-							entryModule.implicitlyLoadedAfter.add(module);
-						}
-						for (const dependant of entryModule.implicitlyLoadedAfter) {
-							dependant.implicitlyLoadedBefore.add(entryModule);
+						// We need to check again if this is still an entry module as these
+						// changes need to be performed atomically to avoid race conditions
+						// if the same module is re-emitted as an entry module.
+						// The inverse changes happen in "handleExistingModule"
+						if (!entryModule.info.isEntry) {
+							this.implicitEntryModules.add(entryModule);
+							for (const module of implicitlyLoadedAfterModules) {
+								entryModule.implicitlyLoadedAfter.add(module);
+							}
+							for (const dependant of entryModule.implicitlyLoadedAfter) {
+								dependant.implicitlyLoadedBefore.add(entryModule);
+							}
 						}
 					}
 					return entryModule;
@@ -288,8 +295,9 @@ export class ModuleLoader {
 			typeof source === 'string'
 				? { code: source }
 				: source != null && typeof source === 'object' && typeof source.code === 'string'
-				? source
-				: error(logBadLoader(id));
+					? source
+					: error(logBadLoader(id));
+		sourceDescription.code = stripBom(sourceDescription.code);
 		const cachedModule = this.graph.cachedModules.get(id);
 		if (
 			cachedModule &&
@@ -311,10 +319,10 @@ export class ModuleLoader {
 				for (const emittedFile of cachedModule.transformFiles)
 					this.pluginDriver.emitFile(emittedFile);
 			}
-			module.setSource(cachedModule);
+			await module.setSource(cachedModule);
 		} else {
 			module.updateOptions(sourceDescription);
-			module.setSource(
+			await module.setSource(
 				await transform(sourceDescription, module, this.pluginDriver, this.options.onLog)
 			);
 		}
@@ -555,9 +563,7 @@ export class ModuleLoader {
 		return module.dynamicImports.map(async dynamicImport => {
 			const resolvedId = await this.resolveDynamicImport(
 				module,
-				typeof dynamicImport.argument === 'string'
-					? dynamicImport.argument
-					: dynamicImport.argument.esTreeNode!,
+				dynamicImport.argument,
 				module.id,
 				getAttributesFromImportExpression(dynamicImport.node)
 			);
@@ -569,7 +575,6 @@ export class ModuleLoader {
 	}
 
 	private getResolveStaticDependencyPromises(module: Module): ResolveStaticDependencyPromise[] {
-		// eslint-disable-next-line unicorn/prefer-spread
 		return Array.from(
 			module.sourcesWithAttributes,
 			async ([source, attributes]) =>
@@ -615,6 +620,8 @@ export class ModuleLoader {
 				: loadPromise;
 		}
 		if (isEntry) {
+			// This reverts the changes in addEntryWithImplicitDependants and needs to
+			// be performed atomically
 			module.info.isEntry = true;
 			this.implicitEntryModules.delete(module);
 			for (const dependant of module.implicitlyLoadedAfter) {

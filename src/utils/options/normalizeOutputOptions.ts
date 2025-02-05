@@ -69,7 +69,9 @@ export async function normalizeOutputOptions(
 		freeze: config.freeze ?? true,
 		generatedCode,
 		globals: config.globals || {},
+		hashCharacters: config.hashCharacters ?? 'base64',
 		hoistTransitiveImports: config.hoistTransitiveImports ?? true,
+		importAttributesKey: config.importAttributesKey ?? 'assert',
 		indent: getIndent(config, compact),
 		inlineDynamicImports,
 		interop: getInterop(config),
@@ -83,14 +85,16 @@ export async function normalizeOutputOptions(
 		plugins: await normalizePluginOption(config.plugins),
 		preserveModules,
 		preserveModulesRoot: getPreserveModulesRoot(config),
+		reexportProtoFromExternal: config.reexportProtoFromExternal ?? true,
 		sanitizeFileName:
 			typeof config.sanitizeFileName === 'function'
 				? config.sanitizeFileName
 				: config.sanitizeFileName === false
-				? id => id
-				: defaultSanitizeFileName,
+					? id => id
+					: defaultSanitizeFileName,
 		sourcemap: config.sourcemap || false,
 		sourcemapBaseUrl: getSourcemapBaseUrl(config),
+		sourcemapDebugIds: config.sourcemapDebugIds || false,
 		sourcemapExcludeSources: config.sourcemapExcludeSources || false,
 		sourcemapFile: config.sourcemapFile,
 		sourcemapFileNames: getSourcemapFileNames(config, unsetOptions),
@@ -98,14 +102,15 @@ export async function normalizeOutputOptions(
 			typeof config.sourcemapIgnoreList === 'function'
 				? config.sourcemapIgnoreList
 				: config.sourcemapIgnoreList === false
-				? () => false
-				: relativeSourcePath => relativeSourcePath.includes('node_modules'),
+					? () => false
+					: relativeSourcePath => relativeSourcePath.includes('node_modules'),
 		sourcemapPathTransform: config.sourcemapPathTransform as
 			| SourcemapPathTransformOption
 			| undefined,
 		strict: config.strict ?? true,
 		systemNullSetters: config.systemNullSetters ?? true,
-		validate: config.validate || false
+		validate: config.validate || false,
+		virtualDirname: config.virtualDirname || '_virtual'
 	};
 
 	warnUnknownOptions(config, Object.keys(outputOptions), 'output options', inputOptions.onLog);
@@ -272,13 +277,13 @@ const getAmd = (config: OutputOptions): NormalizedOutputOptions['amd'] => {
 				basePath: mergedOption.basePath,
 				define: mergedOption.define,
 				forceJsExtensionForImports: mergedOption.forceJsExtensionForImports
-		  }
+			}
 		: {
 				autoId: false,
 				define: mergedOption.define,
 				forceJsExtensionForImports: mergedOption.forceJsExtensionForImports,
 				id: mergedOption.id
-		  };
+			};
 };
 
 const getAddon = <T extends 'banner' | 'footer' | 'intro' | 'outro'>(
@@ -292,7 +297,6 @@ const getAddon = <T extends 'banner' | 'footer' | 'intro' | 'outro'>(
 	return () => configAddon || '';
 };
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
 const getDir = (
 	config: OutputOptions,
 	file: string | undefined
@@ -371,7 +375,7 @@ const getIndent = (config: OutputOptions, compact: boolean): NormalizedOutputOpt
 		return '';
 	}
 	const configIndent = config.indent;
-	return configIndent === false ? '' : configIndent ?? true;
+	return configIndent === false ? '' : (configIndent ?? true);
 };
 
 const ALLOWED_INTEROP_TYPES: ReadonlySet<string | boolean> = new Set([
@@ -385,14 +389,14 @@ const ALLOWED_INTEROP_TYPES: ReadonlySet<string | boolean> = new Set([
 const getInterop = (config: OutputOptions): NormalizedOutputOptions['interop'] => {
 	const configInterop = config.interop;
 	if (typeof configInterop === 'function') {
-		const interopPerId: { [id: string]: InteropType } = Object.create(null);
+		const interopPerId: Record<string, InteropType> = Object.create(null);
 		let defaultInterop: InteropType | null = null;
 		return id =>
 			id === null
 				? defaultInterop || validateInterop((defaultInterop = configInterop(id)))
 				: id in interopPerId
-				? interopPerId[id]
-				: validateInterop((interopPerId[id] = configInterop(id)));
+					? interopPerId[id]
+					: validateInterop((interopPerId[id] = configInterop(id)));
 	}
 	return configInterop === undefined ? () => 'default' : () => validateInterop(configInterop);
 };
@@ -403,7 +407,7 @@ const validateInterop = (interop: InteropType): InteropType => {
 			logInvalidOption(
 				'output.interop',
 				URL_OUTPUT_INTEROP,
-				// eslint-disable-next-line unicorn/prefer-spread
+
 				`use one of ${Array.from(ALLOWED_INTEROP_TYPES, value => JSON.stringify(value)).join(
 					', '
 				)}`,

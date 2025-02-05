@@ -11,12 +11,13 @@ import type {
 import { ensureArray } from '../ensureArray';
 import { getLogger } from '../logger';
 import { LOGLEVEL_INFO } from '../logging';
-import { URL_OUTPUT_GENERATEDCODE, URL_TREESHAKE } from '../urls';
+import { URL_JSX, URL_OUTPUT_GENERATEDCODE, URL_TREESHAKE } from '../urls';
 import type { CommandConfigObject } from './normalizeInputOptions';
 import {
 	generatedCodePresets,
 	type GenericConfigObject,
 	getOnLog,
+	jsxPresets,
 	normalizePluginOption,
 	objectifyOption,
 	objectifyOptionWithPresets,
@@ -24,7 +25,7 @@ import {
 	warnUnknownOptions
 } from './options';
 
-export const commandAliases: { [key: string]: string } = {
+export const commandAliases: Record<string, string> = {
 	c: 'config',
 	d: 'dir',
 	e: 'external',
@@ -75,10 +76,12 @@ export async function mergeOptions(
 			...Object.keys(commandAliases),
 			'bundleConfigAsCjs',
 			'config',
+			'configImportAttributesKey',
 			'configPlugin',
 			'environment',
 			'failAfterWarnings',
 			'filterLogs',
+			'forceExit',
 			'plugin',
 			'silent',
 			'stdin',
@@ -109,7 +112,7 @@ function getCommandOptions(rawCommandOptions: GenericConfigObject): CommandConfi
 							external.push(id);
 						}
 						return globals;
-				  }, Object.create(null))
+					}, Object.create(null))
 				: undefined
 	};
 }
@@ -133,6 +136,12 @@ function mergeInputOptions(
 		experimentalLogSideEffects: getOption('experimentalLogSideEffects'),
 		external: getExternal(config, overrides),
 		input: getOption('input') || [],
+		jsx: getObjectOption(
+			config,
+			overrides,
+			'jsx',
+			objectifyOptionWithPresets(jsxPresets, 'jsx', URL_JSX, 'false, ')
+		),
 		logLevel: getOption('logLevel'),
 		makeAbsoluteExternalsRelative: getOption('makeAbsoluteExternalsRelative'),
 		maxParallelFileOps: getOption('maxParallelFileOps'),
@@ -171,7 +180,7 @@ const getObjectOption = <T extends object>(
 	overrides: T,
 	name: keyof T,
 	objectifyValue = objectifyOption
-) => {
+): any => {
 	const commandOption = normalizeObjectOptionValue(overrides[name], objectifyValue);
 	const configOption = normalizeObjectOptionValue(config[name], objectifyValue);
 	if (commandOption !== undefined) {
@@ -251,7 +260,9 @@ async function mergeOutputOptions(
 			)
 		),
 		globals: getOption('globals'),
+		hashCharacters: getOption('hashCharacters'),
 		hoistTransitiveImports: getOption('hoistTransitiveImports'),
+		importAttributesKey: getOption('importAttributesKey'),
 		indent: getOption('indent'),
 		inlineDynamicImports: getOption('inlineDynamicImports'),
 		interop: getOption('interop'),
@@ -265,9 +276,11 @@ async function mergeOutputOptions(
 		plugins: await normalizePluginOption(config.plugins),
 		preserveModules: getOption('preserveModules'),
 		preserveModulesRoot: getOption('preserveModulesRoot'),
+		reexportProtoFromExternal: getOption('reexportProtoFromExternal'),
 		sanitizeFileName: getOption('sanitizeFileName'),
 		sourcemap: getOption('sourcemap'),
 		sourcemapBaseUrl: getOption('sourcemapBaseUrl'),
+		sourcemapDebugIds: getOption('sourcemapDebugIds'),
 		sourcemapExcludeSources: getOption('sourcemapExcludeSources'),
 		sourcemapFile: getOption('sourcemapFile'),
 		sourcemapFileNames: getOption('sourcemapFileNames'),
@@ -275,7 +288,8 @@ async function mergeOutputOptions(
 		sourcemapPathTransform: getOption('sourcemapPathTransform'),
 		strict: getOption('strict'),
 		systemNullSetters: getOption('systemNullSetters'),
-		validate: getOption('validate')
+		validate: getOption('validate'),
+		virtualDirname: getOption('virtualDirname')
 	};
 
 	warnUnknownOptions(config, Object.keys(outputOptions), 'output options', log);

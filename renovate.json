@@ -1,32 +1,56 @@
 {
-	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"extends": ["config:recommended"],
-	"dependencyDashboard": true,
-	"configMigration": true,
-	"rangeStrategy": "bump",
-	"packageRules": [
-		{
-			"matchPackageNames": ["node", "npm", "fsevents", "@rollup/plugin-typescript"],
-			"enabled": false
-		},
-		{
-			"matchPackageNames": ["@types/node"],
-			"matchUpdateTypes": ["major", "minor"],
-			"enabled": false
-		},
-		{
-			"matchUpdateTypes": ["minor", "patch", "lockFileMaintenance"],
-			"automergeSchedule": ["after 10am on Friday"],
-			"groupName": "minor/patch updates"
-		}
-	],
-	"automerge": true,
-	"internalChecksFilter": "strict",
-	"lockFileMaintenance": {
-		"enabled": true,
-		"schedule": ["before 4am on Friday"]
-	},
-	"minimumReleaseAge": "3 days",
-	"schedule": ["before 4am on Friday"],
-	"automergeStrategy": "squash"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "dependencyDashboard": true,
+  "configMigration": true,
+  "rangeStrategy": "bump",
+  "prHourlyLimit": 0,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "lockFileMaintenance",
+        "pin"
+      ],
+      "groupName": "minor/patch updates",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "matchPackageNames": [
+        "node",
+        "npm",
+        "fsevents",
+        "core-js",
+        "getrandom"
+      ],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": [
+        "@types/node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    }
+  ],
+  "automerge": false,
+  "internalChecksFilter": "strict",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 4am on Friday"
+    ]
+  },
+  "minimumReleaseAge": "3 days",
+  "schedule": [
+    "before 4am on Friday"
+  ],
+  "automergeStrategy": "squash"
 }

@@ -10,7 +10,7 @@ export const INTEROP_NAMESPACE_DEFAULT_ONLY_VARIABLE = '_interopNamespaceDefault
 export const MERGE_NAMESPACES_VARIABLE = '_mergeNamespaces';
 export const DOCUMENT_CURRENT_SCRIPT = '_documentCurrentScript';
 
-export const defaultInteropHelpersByInteropType: { [T in InteropType]: string | null } = {
+export const defaultInteropHelpersByInteropType: Record<InteropType, string | null> = {
 	auto: INTEROP_DEFAULT_VARIABLE,
 	compat: INTEROP_DEFAULT_COMPAT_VARIABLE,
 	default: null,
@@ -25,7 +25,7 @@ export const isDefaultAProperty = (
 	interopType === 'esModule' ||
 	(externalLiveBindings && (interopType === 'auto' || interopType === 'compat'));
 
-export const namespaceInteropHelpersByInteropType: { [T in InteropType]: string | null } = {
+export const namespaceInteropHelpersByInteropType: Record<InteropType, string | null> = {
 	auto: INTEROP_NAMESPACE_VARIABLE,
 	compat: INTEROP_NAMESPACE_COMPAT_VARIABLE,
 	default: INTEROP_NAMESPACE_DEFAULT_VARIABLE,
@@ -60,18 +60,19 @@ export const getHelpersBlock = (
 	).join('');
 };
 
-const HELPER_GENERATORS: {
-	[variable: string]: (
+const HELPER_GENERATORS: Record<
+	string,
+	(
 		indent: string,
 		snippets: GenerateCodeSnippets,
 		liveBindings: boolean,
 		freeze: boolean,
 		symbols: boolean,
 		usedHelpers: ReadonlySet<string>
-	) => string;
-} = {
+	) => string
+> = {
 	[DOCUMENT_CURRENT_SCRIPT](_t, { _, n }) {
-		return `var${_}${DOCUMENT_CURRENT_SCRIPT}${_}=${_}typeof${_}document${_}!==${_}'undefined'${_}?${_}document.currentScript${_}:${_}null;${n}`;
+		return `var ${DOCUMENT_CURRENT_SCRIPT}${_}=${_}typeof document${_}!==${_}'undefined'${_}?${_}document.currentScript${_}:${_}null;${n}`;
 	},
 	[INTEROP_DEFAULT_COMPAT_VARIABLE](_t, snippets, liveBindings) {
 		const { _, getDirectReturnFunction, n } = snippets;
@@ -127,7 +128,7 @@ const HELPER_GENERATORS: {
 		freeze: boolean,
 		symbols: boolean
 	) {
-		const { getDirectReturnFunction, getObject, n } = snippets;
+		const { getDirectReturnFunction, getObject, n, _ } = snippets;
 		const [left, right] = getDirectReturnFunction(['e'], {
 			functionReturn: true,
 			lineBreakIndent: null,
@@ -139,7 +140,7 @@ const HELPER_GENERATORS: {
 				symbols,
 				getObject(
 					[
-						['__proto__', 'null'],
+						[null, `__proto__:${_}null`],
 						['default', 'e']
 					],
 					{ lineBreakIndent: null }
@@ -246,7 +247,7 @@ const loopOverKeys = (
 		: `Object.keys(e).forEach(${getFunctionIntro(['k'], {
 				isAsync: false,
 				name: null
-		  })}${body})${s}`;
+			})}${body})${s}`;
 
 const loopOverNamespaces = (
 	body: string,
@@ -345,7 +346,7 @@ const getWithToStringTag = (
 	symbols
 		? `Object.defineProperty(${fragment},${_}Symbol.toStringTag,${_}${getToStringTagValue(
 				getObject
-		  )})`
+			)})`
 		: fragment;
 
 export const HELPER_NAMES = Object.keys(HELPER_GENERATORS);

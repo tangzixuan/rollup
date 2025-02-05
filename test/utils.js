@@ -16,12 +16,14 @@ const {
 	unlinkSync,
 	rmSync,
 	writeFileSync,
-	writeSync
+	writeSync,
+	existsSync
 } = require('node:fs');
-const { basename, join } = require('node:path');
+const path = require('node:path');
 const { platform, version } = require('node:process');
 const { Parser } = require('acorn');
 const { importAssertions } = require('acorn-import-assertions');
+const jsx = require('acorn-jsx');
 const fixturify = require('fixturify');
 
 if (!globalThis.defineTest) {
@@ -36,6 +38,29 @@ exports.wait = function wait(ms) {
 	return new Promise(fulfil => {
 		setTimeout(fulfil, ms);
 	});
+};
+
+/**
+ * @param {Promise<unknown>} promise
+ * @param {number} timeoutMs
+ * @param {() => unknown} onTimeout
+ * @return {Promise<unknown>}
+ */
+exports.withTimeout = function withTimeout(promise, timeoutMs, onTimeout) {
+	let timeoutId;
+	return Promise.race([
+		promise.then(() => clearTimeout(timeoutId)),
+		new Promise((resolve, reject) => {
+			timeoutId = setTimeout(() => {
+				try {
+					onTimeout();
+					resolve();
+				} catch (error) {
+					reject(error);
+				}
+			}, timeoutMs);
+		})
+	]);
 };
 
 function normaliseError(error) {
@@ -67,6 +92,9 @@ exports.compareError = function compareError(actual, expected) {
 		expected.frame = deindent(expected.frame);
 	}
 	assert.deepEqual(actual, expected);
+	if (actual.stack) {
+		assert.ok(actual.stack.includes(expected.message));
+	}
 };
 
 /**
@@ -203,7 +231,7 @@ function runSamples(samplesDirectory, runTest, onTeardown) {
 	for (const fileName of readdirSync(samplesDirectory)
 		.filter(name => name[0] !== '.')
 		.sort()) {
-		runTestsInDirectory(join(samplesDirectory, fileName), runTest);
+		runTestsInDirectory(path.join(samplesDirectory, fileName), runTest);
 	}
 }
 
@@ -223,9 +251,9 @@ function runTestsInDirectory(directory, runTest) {
 			recursive: true
 		});
 	} else {
-		describe(basename(directory), () => {
+		describe(path.basename(directory), () => {
 			for (const fileName of fileNames.filter(name => name[0] !== '.').sort()) {
-				runTestsInDirectory(join(directory, fileName), runTest);
+				runTestsInDirectory(path.join(directory, fileName), runTest);
 			}
 		});
 	}
@@ -238,14 +266,14 @@ function getFileNamesAndRemoveOutput(directory) {
 	try {
 		return readdirSync(directory).filter(fileName => {
 			if (fileName === '_actual') {
-				rmSync(join(directory, '_actual'), {
+				rmSync(path.join(directory, '_actual'), {
 					force: true,
 					recursive: true
 				});
 				return false;
 			}
-			if (fileName === '_actual.js') {
-				unlinkSync(join(directory, '_actual.js'));
+			if (fileName.startsWith('_actual.')) {
+				unlinkSync(path.join(directory, fileName));
 				return false;
 			}
 			return true;
@@ -268,7 +296,7 @@ exports.getFileNamesAndRemoveOutput = getFileNamesAndRemoveOutput;
  * @param {(directory: string, config: C) => void} runTest
  */
 function loadConfigAndRunTest(directory, runTest) {
-	const configFile = join(directory, '_config.js');
+	const configFile = path.join(directory, '_config.js');
 	const config = require(configFile);
 	if (!config || !config.description) {
 		throw new Error(`Found invalid config without description: ${configFile}`);
@@ -424,7 +452,10 @@ exports.replaceDirectoryInStringifiedObject = function replaceDirectoryInStringi
 	);
 };
 
-const acornParser = Parser.extend(importAssertions);
+/** @type {boolean} */
+exports.hasEsBuild = existsSync(path.join(__dirname, '../dist/es'));
+
+const acornParser = Parser.extend(importAssertions, jsx());
 
 exports.verifyAstPlugin = {
 	name: 'verify-ast',
@@ -442,31 +473,37 @@ const replaceStringifyValues = (key, value) => {
 		case 'ImportDeclaration':
 		case 'ExportNamedDeclaration':
 		case 'ExportAllDeclaration': {
-			const { attributes } = value;
-			if (attributes) {
-				delete value.attributes;
-				if (attributes.length > 0) {
-					value.assertions = attributes;
-				}
-			}
-			break;
+			const { attributes, ...nonAttributesProperties } = value;
+			return {
+				...nonAttributesProperties,
+				...(attributes?.length > 0 ? { assertions: attributes } : {})
+			};
 		}
 		case 'ImportExpression': {
-			const { options } = value;
-			delete value.options;
-			if (options) {
-				value.arguments = [options];
-			}
+			const { options, ...nonOptionsProperties } = value;
+			return { ...nonOptionsProperties, ...(options ? { arguments: [options] } : {}) };
+		}
+		case 'ClassDeclaration':
+		case 'ClassExpression':
+		case 'PropertyDefinition':
+		case 'MethodDefinition': {
+			const { decorators, ...rest } = value;
+			return rest;
+		}
+		case 'JSXText': {
+			// raw text is encoded differently in acorn
+			const { raw, ...nonRawProperties } = value;
+			return nonRawProperties;
 		}
 	}
 
 	return key.startsWith('_')
 		? undefined
 		: typeof value == 'bigint'
-		? `~BigInt${value.toString()}`
-		: value instanceof RegExp
-		? `~RegExp${JSON.stringify({ flags: value.flags, source: value.source })}`
-		: value;
+			? `~BigInt${value.toString()}`
+			: value instanceof RegExp
+				? `~RegExp${JSON.stringify({ flags: value.flags, source: value.source })}`
+				: value;
 };
 
 const reviveStringifyValues = (_, value) =>
@@ -474,6 +511,6 @@ const reviveStringifyValues = (_, value) =>
 		? value.startsWith('~BigInt')
 			? BigInt(value.slice(7))
 			: value.startsWith('~RegExp')
-			? new RegExp(JSON.parse(value.slice(7)).source, JSON.parse(value.slice(7)).flags)
-			: value
+				? new RegExp(JSON.parse(value.slice(7)).source, JSON.parse(value.slice(7)).flags)
+				: value
 		: value;

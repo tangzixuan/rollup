@@ -1,6 +1,6 @@
-import { resolve } from 'node:path';
-import process from 'node:process';
 import { createFilter } from '@rollup/pluginutils';
+import path from 'node:path';
+import process from 'node:process';
 import { rollupInternal } from '../rollup/rollup';
 import type {
 	ChangeEvent,
@@ -35,7 +35,7 @@ export class Watcher {
 	readonly emitter: RollupWatcher;
 
 	private buildDelay = 0;
-	private buildTimeout: NodeJS.Timer | null = null;
+	private buildTimeout: ReturnType<typeof setTimeout> | null = null;
 	private closed = false;
 	private readonly invalidatedIds = new Map<string, ChangeEvent>();
 	private rerun = false;
@@ -145,6 +145,7 @@ export class Task {
 	private skipWrite: boolean;
 	private watched = new Set<string>();
 	private readonly watcher: Watcher;
+	private readonly watchOptions: WatcherOptions;
 
 	constructor(watcher: Watcher, options: MergedRollupOptions) {
 		this.watcher = watcher;
@@ -153,14 +154,14 @@ export class Task {
 		this.skipWrite = Boolean(options.watch && options.watch.skipWrite);
 		this.outputs = this.options.output;
 		this.outputFiles = this.outputs.map(output => {
-			if (output.file || output.dir) return resolve(output.file || output.dir!);
+			if (output.file || output.dir) return path.resolve(output.file || output.dir!);
 			return undefined as never;
 		});
 
-		const watchOptions: WatcherOptions = this.options.watch || {};
-		this.filter = createFilter(watchOptions.include, watchOptions.exclude);
+		this.watchOptions = this.options.watch || {};
+		this.filter = createFilter(this.watchOptions.include, this.watchOptions.exclude);
 		this.fileWatcher = new FileWatcher(this, {
-			...watchOptions.chokidar,
+			...this.watchOptions.chokidar,
 			disableGlobbing: true,
 			ignoreInitial: true
 		});
@@ -181,6 +182,7 @@ export class Task {
 			}
 		}
 		this.watcher.invalidate({ event: details.event, id });
+		this.watchOptions.onInvalidate?.(id);
 	}
 
 	async run(): Promise<void> {
@@ -207,7 +209,13 @@ export class Task {
 				return;
 			}
 			this.updateWatchedFiles(result);
-			this.skipWrite || (await Promise.all(this.outputs.map(output => result!.write(output))));
+			if (!this.skipWrite) {
+				await Promise.all(this.outputs.map(output => result!.write(output)));
+				if (this.closed) {
+					return;
+				}
+				this.updateWatchedFiles(result!);
+			}
 			await this.watcher.emitter.emit('event', {
 				code: 'BUNDLE_END',
 				duration: Date.now() - start,

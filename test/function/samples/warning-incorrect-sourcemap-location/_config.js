@@ -1,6 +1,6 @@
-const { join } = require('node:path');
-const ID_MAIN = join(__dirname, 'main.js');
-const ID_CONSTANTS = join(__dirname, 'constants.js');
+const path = require('node:path');
+const ID_MAIN = path.join(__dirname, 'main.js');
+const ID_CONSTANTS = path.join(__dirname, 'constants.js');
 
 module.exports = defineTest({
 	description: 'does not fail if a warning has an incorrect location due to missing sourcemaps',
@@ -26,7 +26,8 @@ module.exports = defineTest({
 				file: ID_MAIN,
 				line: 12
 			},
-			message: '"NON_EXISTENT" is not exported by "constants.js", imported by "main.js".',
+			message:
+				'main.js (12:15): "NON_EXISTENT" is not exported by "constants.js", imported by "main.js".',
 			pos: 111,
 			url: 'https://rollupjs.org/troubleshooting/#error-name-is-not-exported-by-module'
 		}

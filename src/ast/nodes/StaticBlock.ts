@@ -6,15 +6,21 @@ import {
 } from '../../utils/renderHelpers';
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import type Scope from '../scopes/Scope';
-import type * as NodeType from './NodeType';
-import { type IncludeChildren, StatementBase, type StatementNode } from './shared/Node';
+import type ChildScope from '../scopes/ChildScope';
+import * as NodeType from './NodeType';
+import {
+	doNotDeoptimize,
+	type IncludeChildren,
+	onlyIncludeSelfNoDeoptimize,
+	StatementBase,
+	type StatementNode
+} from './shared/Node';
 
 export default class StaticBlock extends StatementBase {
 	declare body: readonly StatementNode[];
 	declare type: NodeType.tStaticBlock;
 
-	createScope(parentScope: Scope): void {
+	createScope(parentScope: ChildScope): void {
 		this.scope = new BlockScope(parentScope);
 	}
 
@@ -42,4 +48,11 @@ export default class StaticBlock extends StatementBase {
 			super.render(code, options);
 		}
 	}
+}
+
+StaticBlock.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+StaticBlock.prototype.applyDeoptimizations = doNotDeoptimize;
+
+export function isStaticBlock(statement: StatementNode): statement is StaticBlock {
+	return statement.type === NodeType.StaticBlock;
 }

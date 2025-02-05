@@ -4,22 +4,28 @@ import { logModuleLevelDirective } from '../../utils/logs';
 import type { RenderOptions } from '../../utils/renderHelpers';
 import type { InclusionContext } from '../ExecutionContext';
 import * as NodeType from './NodeType';
-import { type ExpressionNode, StatementBase } from './shared/Node';
+import {
+	doNotDeoptimize,
+	type ExpressionNode,
+	onlyIncludeSelfNoDeoptimize,
+	StatementBase
+} from './shared/Node';
 
 export default class ExpressionStatement extends StatementBase {
 	declare directive?: string;
 	declare expression: ExpressionNode;
 
 	initialise(): void {
+		super.initialise();
 		if (
 			this.directive &&
 			this.directive !== 'use strict' &&
 			this.parent.type === NodeType.Program
 		) {
-			this.context.log(
+			this.scope.context.log(
 				LOGLEVEL_WARN,
 				// This is necessary, because either way (deleting or not) can lead to errors.
-				logModuleLevelDirective(this.directive, this.context.module.id),
+				logModuleLevelDirective(this.directive, this.scope.context.module.id),
 				this.start
 			);
 		}
@@ -42,6 +48,7 @@ export default class ExpressionStatement extends StatementBase {
 
 		return super.shouldBeIncluded(context);
 	}
-
-	protected applyDeoptimizations() {}
 }
+
+ExpressionStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+ExpressionStatement.prototype.applyDeoptimizations = doNotDeoptimize;

@@ -1,5 +1,1429 @@
 # rollup changelog
 
+## 4.34.2
+
+_2025-02-04_
+
+### Bug Fixes
+
+- Fix an issue where not all usages of a function were properly detected (#5827)
+
+### Pull Requests
+
+- [#5827](https://github.com/rollup/rollup/pull/5827): Ensure that functions provided to a constructor are properly deoptimized (@lukastaegert)
+
+## 4.34.1
+
+_2025-02-03_
+
+### Bug Fixes
+
+- Ensure throwing objects includes the entire object (#5825)
+
+### Pull Requests
+
+- [#5825](https://github.com/rollup/rollup/pull/5825): Ensure that all properties of throw statements are included (@lukastaegert)
+
+## 4.34.0
+
+_2025-02-01_
+
+### Features
+
+- Tree-shake unused properties in object literals (re-implements #5420) (#5737)
+
+### Pull Requests
+
+- [#5737](https://github.com/rollup/rollup/pull/5737): Reapply object tree-shaking (@lukastaegert, @TrickyPi)
+
+## 4.33.0
+
+_2025-02-01_
+
+### Features
+
+- Correctly detect literal value of more negated expressions (#5812)
+
+### Bug Fixes
+
+- Use the correct with/assert attribute key in dynamic imports (#5818)
+- Fix an issue where logical expressions were considered to have the wrong value (#5819)
+
+### Pull Requests
+
+- [#5812](https://github.com/rollup/rollup/pull/5812): feat: optimize the literal value of unary expressions (@TrickyPi)
+- [#5816](https://github.com/rollup/rollup/pull/5816): fix(deps): update swc monorepo (major) (@renovate[bot], @lukastaegert)
+- [#5817](https://github.com/rollup/rollup/pull/5817): fix(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5818](https://github.com/rollup/rollup/pull/5818): support for changing the attributes key for dynamic imports (@TrickyPi)
+- [#5819](https://github.com/rollup/rollup/pull/5819): Return UnknownValue if getLiteralValueAtPath is called recursively within logical expressions (@TrickyPi)
+- [#5820](https://github.com/rollup/rollup/pull/5820): return null (@kingma-sbw)
+
+## 4.32.1
+
+_2025-01-28_
+
+### Bug Fixes
+
+- Fix possible crash when optimizing logical expressions (#5804)
+
+### Pull Requests
+
+- [#5804](https://github.com/rollup/rollup/pull/5804): fix: set hasDeoptimizedCache to true as early as possible (@TrickyPi)
+- [#5813](https://github.com/rollup/rollup/pull/5813): Fix typo (@kantuni)
+
+## 4.32.0
+
+_2025-01-24_
+
+### Features
+
+- Add watch.onInvalidate option to trigger actions immediately when a file is changed (#5799)
+
+### Bug Fixes
+
+- Fix incorrect urls in CLI warnings (#5809)
+
+### Pull Requests
+
+- [#5799](https://github.com/rollup/rollup/pull/5799): Feature/watch on invalidate (@drebrez, @lukastaegert)
+- [#5808](https://github.com/rollup/rollup/pull/5808): chore(deps): update dependency vite to v6.0.9 [security] (@renovate[bot])
+- [#5809](https://github.com/rollup/rollup/pull/5809): fix: avoid duplicate rollupjs.org prefix (@GauBen, @lukastaegert)
+- [#5810](https://github.com/rollup/rollup/pull/5810): chore(deps): update dependency @shikijs/vitepress-twoslash to v2 (@renovate[bot])
+- [#5811](https://github.com/rollup/rollup/pull/5811): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.31.0
+
+_2025-01-19_
+
+### Features
+
+- Do not immediately quit when trying to use watch mode from within non-TTY environments (#5803)
+
+### Bug Fixes
+
+- Handle files with more than one UTF-8 BOM header (#5806)
+
+### Pull Requests
+
+- [#5792](https://github.com/rollup/rollup/pull/5792): fix(deps): update rust crate swc_compiler_base to v8 (@renovate[bot])
+- [#5793](https://github.com/rollup/rollup/pull/5793): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5794](https://github.com/rollup/rollup/pull/5794): chore(deps): lock file maintenance (@renovate[bot])
+- [#5801](https://github.com/rollup/rollup/pull/5801): chore(deps): update dependency eslint-config-prettier to v10 (@renovate[bot])
+- [#5802](https://github.com/rollup/rollup/pull/5802): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5803](https://github.com/rollup/rollup/pull/5803): Support watch mode in yarn, gradle and containers (@lukastaegert)
+- [#5806](https://github.com/rollup/rollup/pull/5806): fix: strip all BOMs (@TrickyPi)
+
+## 4.30.1
+
+_2025-01-07_
+
+### Bug Fixes
+
+- Prevent invalid code when simplifying unary expressions in switch cases (#5786)
+
+### Pull Requests
+
+- [#5786](https://github.com/rollup/rollup/pull/5786): fix: consider that literals cannot following switch case. (@TrickyPi)
+
+## 4.30.0
+
+_2025-01-06_
+
+### Features
+
+- Inline values of resolvable unary expressions for improved tree-shaking (#5775)
+
+### Pull Requests
+
+- [#5775](https://github.com/rollup/rollup/pull/5775): feat: enhance the treehshaking for unary expression (@TrickyPi)
+- [#5783](https://github.com/rollup/rollup/pull/5783): Improve CI caching for node_modules (@lukastaegert)
+
+## 4.29.2
+
+_2025-01-05_
+
+### Bug Fixes
+
+- Keep import attributes when using dynamic ESM `import()` expressions from CommonJS (#5781)
+
+### Pull Requests
+
+- [#5772](https://github.com/rollup/rollup/pull/5772): Improve caching on CI (@lukastaegert)
+- [#5773](https://github.com/rollup/rollup/pull/5773): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5780](https://github.com/rollup/rollup/pull/5780): feat: use picocolors instead of colorette (@re-taro)
+- [#5781](https://github.com/rollup/rollup/pull/5781): fix: keep import attributes for cjs format (@TrickyPi)
+
+## 4.29.1
+
+_2024-12-21_
+
+### Bug Fixes
+
+- Fix crash from deoptimized logical expressions (#5771)
+
+### Pull Requests
+
+- [#5769](https://github.com/rollup/rollup/pull/5769): Remove unnecessary lifetimes (@lukastaegert)
+- [#5771](https://github.com/rollup/rollup/pull/5771): fix: do not optimize the literal value if the cache is deoptimized (@TrickyPi)
+
+## 4.29.0
+
+_2024-12-20_
+
+### Features
+
+- Treat objects as truthy and always check second argument to better simplify logical expressions (#5763)
+
+### Pull Requests
+
+- [#5759](https://github.com/rollup/rollup/pull/5759): docs: add utf-8 encoding to JSON file reading (@chouchouji)
+- [#5760](https://github.com/rollup/rollup/pull/5760): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5763](https://github.com/rollup/rollup/pull/5763): fix: introduce UnknownFalsyValue for enhancing if statement tree-shaking (@TrickyPi)
+- [#5766](https://github.com/rollup/rollup/pull/5766): chore(deps): update dependency @rollup/plugin-node-resolve to v16 (@renovate[bot])
+- [#5767](https://github.com/rollup/rollup/pull/5767): fix(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.28.1
+
+_2024-12-06_
+
+### Bug Fixes
+
+- Support running Rollup natively on LoongArch (#5749)
+- Add optional `debugId` to `SourceMap` types (#5751)
+
+### Pull Requests
+
+- [#5749](https://github.com/rollup/rollup/pull/5749): feat: add support for LoongArch (@darkyzhou)
+- [#5751](https://github.com/rollup/rollup/pull/5751): feat: Add `debugId` to `SourceMap` types (@timfish, @lukastaegert)
+- [#5752](https://github.com/rollup/rollup/pull/5752): chore(deps): update dependency mocha to v11 (@renovate[bot])
+- [#5753](https://github.com/rollup/rollup/pull/5753): chore(deps): update dependency vite to v6 (@renovate[bot])
+- [#5754](https://github.com/rollup/rollup/pull/5754): fix(deps): update swc monorepo (major) (@renovate[bot])
+- [#5755](https://github.com/rollup/rollup/pull/5755): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5756](https://github.com/rollup/rollup/pull/5756): Test if saving the Cargo cache can speed up FreeBSD (@lukastaegert)
+
+## 4.28.0
+
+_2024-11-30_
+
+### Features
+
+- Allow to specify how to handle import attributes when transpiling Rollup config files (#5743)
+
+### Pull Requests
+
+- [#5743](https://github.com/rollup/rollup/pull/5743): fix: supports modify the import attributes key in the config file (@TrickyPi, @lukastaegert)
+- [#5747](https://github.com/rollup/rollup/pull/5747): chore(deps): update codecov/codecov-action action to v5 (@renovate[bot])
+- [#5748](https://github.com/rollup/rollup/pull/5748): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.27.4
+
+_2024-11-23_
+
+### Bug Fixes
+
+- Update bundled magic-string to support sourcemap debug ids (#5740)
+
+### Pull Requests
+
+- [#5740](https://github.com/rollup/rollup/pull/5740): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.27.3
+
+_2024-11-18_
+
+### Bug Fixes
+
+- Revert object property tree-shaking for now (#5736)
+
+### Pull Requests
+
+- [#5736](https://github.com/rollup/rollup/pull/5736): Revert object tree-shaking until some issues have been resolved (@lukastaegert)
+
+## 4.27.2
+
+_2024-11-15_
+
+### Bug Fixes
+
+- Ensure unused variables in patterns are always deconflicted if rendered (#5728)
+
+### Pull Requests
+
+- [#5728](https://github.com/rollup/rollup/pull/5728): Fix more variable deconflicting issues (@lukastaegert)
+
+## 4.27.1
+
+_2024-11-15_
+
+### Bug Fixes
+
+- Fix some situations where parameter declarations could put Rollup into an infinite loop (#5727)
+
+### Pull Requests
+
+- [#5727](https://github.com/rollup/rollup/pull/5727): Debug out-of-memory issues with Rollup v4.27.0 (@lukastaegert)
+
+## 4.27.0
+
+_2024-11-15_
+
+### Features
+
+- Tree-shake unused properties in object literals (#5420)
+
+### Bug Fixes
+
+- Change hash length limit to 21 to avoid inconsistent hash length (#5423)
+
+### Pull Requests
+
+- [#5420](https://github.com/rollup/rollup/pull/5420): feat: implement object tree-shaking (@TrickyPi, @lukastaegert)
+- [#5723](https://github.com/rollup/rollup/pull/5723): Reduce max hash size to 21 (@lukastaegert)
+- [#5724](https://github.com/rollup/rollup/pull/5724): fix(deps): update swc monorepo (major) (@renovate[bot])
+- [#5725](https://github.com/rollup/rollup/pull/5725): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.26.0
+
+_2024-11-13_
+
+### Features
+
+- Allow to avoid `await bundle.close()` via explicit resource management in TypeScript (#5721)
+
+### Pull Requests
+
+- [#5721](https://github.com/rollup/rollup/pull/5721): feat: support `using` for `RollupBuild` (@shulaoda)
+
+## 4.25.0
+
+_2024-11-09_
+
+### Features
+
+- Add `output.sourcemapDebugIds` option to add matching debug ids to sourcemaps and code for tools like Sentry or Rollbar (#5712)
+
+### Bug Fixes
+
+- Make it easier to manually reproduce base16 hashes by using a more standard base16 conversion algorithm (#5719)
+
+### Pull Requests
+
+- [#5712](https://github.com/rollup/rollup/pull/5712): feat: Add support for injecting Debug IDs (@timfish)
+- [#5717](https://github.com/rollup/rollup/pull/5717): fix(deps): update swc monorepo (major) (@renovate[bot])
+- [#5718](https://github.com/rollup/rollup/pull/5718): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5719](https://github.com/rollup/rollup/pull/5719): Use a less surprising base-16 encoding (@lukastaegert)
+
+## 4.24.4
+
+_2024-11-04_
+
+### Bug Fixes
+
+- Ensure mutations by handlers in Proxy definitions are always respected when tree-shaking (#5713)
+
+### Pull Requests
+
+- [#5708](https://github.com/rollup/rollup/pull/5708): Update configuration-options document (@sacru2red, @lukastaegert)
+- [#5711](https://github.com/rollup/rollup/pull/5711): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5713](https://github.com/rollup/rollup/pull/5713): fix: Deoptimize the proxied object if its property is reassigned in the handler functions (@TrickyPi)
+
+## 4.24.3
+
+_2024-10-29_
+
+### Bug Fixes
+
+- Slightly reduce memory consumption by specifying fixed array sizes where possible (#5703)
+
+### Pull Requests
+
+- [#5703](https://github.com/rollup/rollup/pull/5703): perf: use pre-allocated arrays for known result sizes (@GalacticHypernova)
+
+## 4.24.2
+
+_2024-10-27_
+
+### Bug Fixes
+
+- Add missing build dependency (#5705)
+
+### Pull Requests
+
+- [#5705](https://github.com/rollup/rollup/pull/5705): Fix "Couldn't find package" error when installing rollup using yarn (@tagattie)
+
+## 4.24.1
+
+_2024-10-27_
+
+### Bug Fixes
+
+- Support running Rollup natively on FreeBSD (#5698)
+
+### Pull Requests
+
+- [#5689](https://github.com/rollup/rollup/pull/5689): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5690](https://github.com/rollup/rollup/pull/5690): chore(deps): update dependency @inquirer/prompts to v7 (@renovate[bot])
+- [#5691](https://github.com/rollup/rollup/pull/5691): chore(deps): update dependency eslint-plugin-unicorn to v56 (@renovate[bot])
+- [#5692](https://github.com/rollup/rollup/pull/5692): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5695](https://github.com/rollup/rollup/pull/5695): fix(deps): update swc monorepo (major) (@renovate[bot])
+- [#5696](https://github.com/rollup/rollup/pull/5696): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5698](https://github.com/rollup/rollup/pull/5698): Add support for FreeBSD (x64 and arm64) (@tagattie, @lukastaegert)
+
+## 4.24.0
+
+_2024-10-02_
+
+### Features
+
+- Support preserving and transpiling JSX syntax (#5668)
+
+### Pull Requests
+
+- [#5668](https://github.com/rollup/rollup/pull/5668): Introduce JSX support (@lukastaegert, @Martin-Idel, @felixhuttmann, @AlexDroll, @tiptr)
+
+## 4.23.0
+
+_2024-10-01_
+
+### Features
+
+- Collect all emitted names and originalFileNames for assets (#5686)
+
+### Pull Requests
+
+- [#5686](https://github.com/rollup/rollup/pull/5686): Add names and originalFileNames to assets (@lukastaegert)
+
+## 4.22.5
+
+_2024-09-27_
+
+### Bug Fixes
+
+- Allow parsing of certain unicode characters again (#5674)
+
+### Pull Requests
+
+- [#5674](https://github.com/rollup/rollup/pull/5674): Fix panic with unicode characters (@sapphi-red, @lukastaegert)
+- [#5675](https://github.com/rollup/rollup/pull/5675): chore(deps): update dependency rollup to v4.22.4 [security] (@renovate[bot])
+- [#5680](https://github.com/rollup/rollup/pull/5680): chore(deps): update dependency @rollup/plugin-commonjs to v28 (@renovate[bot], @lukastaegert)
+- [#5681](https://github.com/rollup/rollup/pull/5681): chore(deps): update dependency @rollup/plugin-replace to v6 (@renovate[bot])
+- [#5682](https://github.com/rollup/rollup/pull/5682): chore(deps): update dependency @rollup/plugin-typescript to v12 (@renovate[bot])
+- [#5684](https://github.com/rollup/rollup/pull/5684): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 2.79.2
+
+_2024-09-26_
+
+### Bug Fixes
+
+- Fix a vulnerability in generated code that affects IIFE, UMD and CJS bundles when run in a browser context (#5671)
+
+### Pull Requests
+
+- [#5671](https://github.com/rollup/rollup/pull/5671): Fix DOM Clobbering CVE (@lukastaegert)
+
+## 3.29.5
+
+_2024-09-21_
+
+### Bug Fixes
+
+- Fix a vulnerability in generated code that affects IIFE, UMD and CJS bundles when run in a browser context (#5671)
+
+### Pull Requests
+
+- [#5671](https://github.com/rollup/rollup/pull/5671): Fix DOM Clobbering CVE (@lukastaegert)
+
+## 4.22.4
+
+_2024-09-21_
+
+### Bug Fixes
+
+- Fix a vulnerability in generated code that affects IIFE, UMD and CJS bundles when run in a browser context (#5671)
+
+### Pull Requests
+
+- [#5670](https://github.com/rollup/rollup/pull/5670): refactor: Use object.prototype to check for reserved properties (@YuHyeonWook)
+- [#5671](https://github.com/rollup/rollup/pull/5671): Fix DOM Clobbering CVE (@lukastaegert)
+
+## 4.22.3
+
+_2024-09-21_
+
+### Bug Fixes
+
+- Ensure that mutations in modules without side effects are observed while properly handling transitive dependencies (#5669)
+
+### Pull Requests
+
+- [#5669](https://github.com/rollup/rollup/pull/5669): Ensure impure dependencies of pure modules are added (@lukastaegert)
+
+## 4.22.2
+
+_2024-09-20_
+
+### Bug Fixes
+
+- Revert fix for side effect free modules until other issues are investigated (#5667)
+
+### Pull Requests
+
+- [#5667](https://github.com/rollup/rollup/pull/5667): Partially revert #5658 and re-apply #5644 (@lukastaegert)
+
+## 4.22.1
+
+_2024-09-20_
+
+### Bug Fixes
+
+- Revert #5644 "stable chunk hashes" while issues are being investigated
+
+### Pull Requests
+
+- [#5663](https://github.com/rollup/rollup/pull/5663): chore(deps): update dependency inquirer to v11 (@renovate[bot], @lukastaegert)
+- [#5664](https://github.com/rollup/rollup/pull/5664): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5665](https://github.com/rollup/rollup/pull/5665): fix: type in CI file (@YuHyeonWook)
+- [#5666](https://github.com/rollup/rollup/pull/5666): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+
+## 4.22.0
+
+_2024-09-19_
+
+### Features
+
+- Add additional known global values to avoid access side effects (#5651)
+
+### Bug Fixes
+
+- Ensure deterministic chunk hash generation despite async renderChunk hook (#5644)
+- Improve side effect detection when using "smallest" treeshaking preset when imports are optimized away (#5658)
+
+### Pull Requests
+
+- [#5644](https://github.com/rollup/rollup/pull/5644): fix: apply final hashes deterministically with stable placeholders set (@mattkubej, @lukastaegert)
+- [#5646](https://github.com/rollup/rollup/pull/5646): chore(deps): update dependency @mermaid-js/mermaid-cli to v11 (@renovate[bot])
+- [#5647](https://github.com/rollup/rollup/pull/5647): chore(deps): update dependency concurrently to v9 (@renovate[bot])
+- [#5648](https://github.com/rollup/rollup/pull/5648): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5651](https://github.com/rollup/rollup/pull/5651): feat: add `AggregateError`, `FinalizationRegistry`, `WeakRef` to knownGlobals (@re-taro)
+- [#5653](https://github.com/rollup/rollup/pull/5653): Fix example selection in REPL (@lukastaegert)
+- [#5657](https://github.com/rollup/rollup/pull/5657): chore(deps): update dependency vite to v5.4.6 [security] (@renovate[bot])
+- [#5658](https://github.com/rollup/rollup/pull/5658): Detect variable reassignments in modules without side effects (@lukastaegert)
+
+## 4.21.3
+
+_2024-09-12_
+
+### Bug Fixes
+
+- Always respect side effects in left-hand side of optional chain (#5642)
+- Update stack trace for augmented errors to not hide relevant information (#5640)
+
+### Pull Requests
+
+- [#5636](https://github.com/rollup/rollup/pull/5636): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5637](https://github.com/rollup/rollup/pull/5637): chore(deps): lock file maintenance (@renovate[bot])
+- [#5640](https://github.com/rollup/rollup/pull/5640): fix: keep the message of stack up-to-date (@TrickyPi)
+- [#5642](https://github.com/rollup/rollup/pull/5642): fix: include left-side effect of optional chaining in the end of hasEffectsAsChainElement (@TrickyPi)
+
+## 4.21.2
+
+_2024-08-30_
+
+### Bug Fixes
+
+- Handle IIFE/UMD namespace definitions conflicting with a builtin property (#5605)
+
+### Pull Requests
+
+- [#5605](https://github.com/rollup/rollup/pull/5605): fix: Wrong namespace property definition (@thirumurugan-git, @lukastaegert)
+- [#5630](https://github.com/rollup/rollup/pull/5630): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5631](https://github.com/rollup/rollup/pull/5631): chore(deps): lock file maintenance (@renovate[bot])
+- [#5632](https://github.com/rollup/rollup/pull/5632): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.21.1
+
+_2024-08-26_
+
+### Bug Fixes
+
+- Ensure `closeWatcher` hook is called when watch mode is aborted via Ctrl+C (#5618)
+- Do not produce invalid code for `import.meta.url` in compact mode (#5624)
+- Do not throw when generating chunk names when preserving modules in Windows (#5625)
+
+### Pull Requests
+
+- [#5591](https://github.com/rollup/rollup/pull/5591): chore(deps): update dependency @types/eslint to v9 (@renovate[bot], @lukastaegert)
+- [#5618](https://github.com/rollup/rollup/pull/5618): preload the WASM file even though the version is undefined. (@TrickyPi)
+- [#5619](https://github.com/rollup/rollup/pull/5619): Call and await closeWatcher hooks on exit signals (@lukastaegert)
+- [#5622](https://github.com/rollup/rollup/pull/5622): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5624](https://github.com/rollup/rollup/pull/5624): fix: add space for DOCUMENT_CURRENT_SCRIPT template (@TrickyPi)
+- [#5625](https://github.com/rollup/rollup/pull/5625): fix: get the right chunk name for preserve modules in Windows (@TrickyPi, @lukastaegert)
+
+## 4.21.0
+
+_2024-08-18_
+
+### Features
+
+- Add option to configure directory for virtual modules when preserving modules (#5602)
+
+### Pull Requests
+
+- [#5602](https://github.com/rollup/rollup/pull/5602): feat: introduce the virtualDirname option to customize the virtual directory name (@TrickyPi)
+- [#5607](https://github.com/rollup/rollup/pull/5607): chore(deps): update typescript-eslint monorepo to v8 (major) (@renovate[bot], @lukastaegert)
+- [#5608](https://github.com/rollup/rollup/pull/5608): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5611](https://github.com/rollup/rollup/pull/5611): chore: fix the `noConflict` option in REPL. (@7086cmd)
+- [#5613](https://github.com/rollup/rollup/pull/5613): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5614](https://github.com/rollup/rollup/pull/5614): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.20.0
+
+_2024-08-03_
+
+### Features
+
+- Allow plugins to specify the original file name when emitting assets (#5596)
+
+### Pull Requests
+
+- [#5596](https://github.com/rollup/rollup/pull/5596): Add originalFIleName property to emitted assets (@lukastaegert)
+- [#5599](https://github.com/rollup/rollup/pull/5599): chore(deps): update dependency eslint-plugin-unicorn to v55 (@renovate[bot], @lukastaegert)
+- [#5600](https://github.com/rollup/rollup/pull/5600): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+
+## 4.19.2
+
+_2024-08-01_
+
+### Bug Fixes
+
+- Avoid "cannot get value of null" error when using optional chaining with namespaces (#5597)
+
+### Pull Requests
+
+- [#5597](https://github.com/rollup/rollup/pull/5597): Fix retrieval of literal values for chained namespaces (@lukastaegert)
+
+## 4.19.1
+
+_2024-07-27_
+
+### Bug Fixes
+
+- Do not remove parantheses when tree-shaking logical expressions (#5584)
+- Do not ignore side effects in calls left of an optional chaining operator (#5589)
+
+### Pull Requests
+
+- [#5584](https://github.com/rollup/rollup/pull/5584): fix: find whitespace from operator position to start (@TrickyPi)
+- [#5587](https://github.com/rollup/rollup/pull/5587): docs: improve command by code-group (@thinkasany, @lukastaegert)
+- [#5589](https://github.com/rollup/rollup/pull/5589): Fix side effect detection in optional chains (@lukastaegert)
+- [#5592](https://github.com/rollup/rollup/pull/5592): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5593](https://github.com/rollup/rollup/pull/5593): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5594](https://github.com/rollup/rollup/pull/5594): chore(deps): lock file maintenance (@renovate[bot])
+- [#5595](https://github.com/rollup/rollup/pull/5595): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.19.0
+
+_2024-07-20_
+
+### Features
+
+- Implement support for decorators (#5562)
+
+### Bug Fixes
+
+- Improve soucemap generation when tree-shaking logical expressions (#5581)
+
+### Pull Requests
+
+- [#5562](https://github.com/rollup/rollup/pull/5562): feat: implementing decorator support (@TrickyPi, @lukastaegert)
+- [#5570](https://github.com/rollup/rollup/pull/5570): refactor(finalisers): condition branch (@Simon-He95, @zhangmo8)
+- [#5572](https://github.com/rollup/rollup/pull/5572): Improve chunk and asset type information in docs (@lukastaegert)
+- [#5573](https://github.com/rollup/rollup/pull/5573): Switch to audit resolver to ignore requirejs vulnerability (@lukastaegert)
+- [#5575](https://github.com/rollup/rollup/pull/5575): chore(deps): update dependency inquirer to v10 (@renovate[bot], @lukastaegert)
+- [#5576](https://github.com/rollup/rollup/pull/5576): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5580](https://github.com/rollup/rollup/pull/5580): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5581](https://github.com/rollup/rollup/pull/5581): When tree-shaking logical expression, make sure to remove all trailing white-space. (@lukastaegert)
+
+## 4.18.1
+
+_2024-07-08_
+
+### Bug Fixes
+
+- Prevent "%" in generated file names to ensure imports resolve (#5535)
+
+### Pull Requests
+
+- [#5524](https://github.com/rollup/rollup/pull/5524): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5525](https://github.com/rollup/rollup/pull/5525): chore(deps): lock file maintenance (@renovate[bot])
+- [#5526](https://github.com/rollup/rollup/pull/5526): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5527](https://github.com/rollup/rollup/pull/5527): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5529](https://github.com/rollup/rollup/pull/5529): Use Spanned trait to simplify logic (@lukastaegert)
+- [#5530](https://github.com/rollup/rollup/pull/5530): Fix typos in ARCHITECTURE.md (@younggglcy)
+- [#5532](https://github.com/rollup/rollup/pull/5532): Use Rust macros for converters where possible (@lukastaegert)
+- [#5535](https://github.com/rollup/rollup/pull/5535): fix: escape `%` if URI malformed (@baseballyama, @lukastaegert)
+- [#5536](https://github.com/rollup/rollup/pull/5536): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5541](https://github.com/rollup/rollup/pull/5541): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5542](https://github.com/rollup/rollup/pull/5542): chore(deps): lock file maintenance (@renovate[bot])
+- [#5543](https://github.com/rollup/rollup/pull/5543): Watch rust files and rebuild during dev (@lukastaegert)
+- [#5544](https://github.com/rollup/rollup/pull/5544): Refactor AST converters (@lukastaegert)
+- [#5545](https://github.com/rollup/rollup/pull/5545): chore(deps): update dependency @rollup/plugin-commonjs to v26 (@renovate[bot])
+- [#5546](https://github.com/rollup/rollup/pull/5546): chore(deps): update dependency nyc to v17 (@renovate[bot])
+- [#5547](https://github.com/rollup/rollup/pull/5547): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5548](https://github.com/rollup/rollup/pull/5548): chore(deps): lock file maintenance (@renovate[bot])
+- [#5549](https://github.com/rollup/rollup/pull/5549): chore(deps): lock file maintenance (@renovate[bot])
+- [#5550](https://github.com/rollup/rollup/pull/5550): chore(deps): update dependency eslint-plugin-unicorn to v54 (@renovate[bot], @lukastaegert)
+- [#5551](https://github.com/rollup/rollup/pull/5551): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5555](https://github.com/rollup/rollup/pull/5555): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5556](https://github.com/rollup/rollup/pull/5556): chore(deps): lock file maintenance (@renovate[bot])
+- [#5558](https://github.com/rollup/rollup/pull/5558): Consider that the body of ClassBody might be of type StaticBlock (@TrickyPi)
+- [#5565](https://github.com/rollup/rollup/pull/5565): refactor(ast): conditional branch (@Simon-He95)
+- [#5566](https://github.com/rollup/rollup/pull/5566): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5567](https://github.com/rollup/rollup/pull/5567): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.18.0
+
+_2024-05-22_
+
+### Features
+
+- Resolve import.meta.filename and .dirname in transpiled plugins (#5520)
+
+### Pull Requests
+
+- [#5504](https://github.com/rollup/rollup/pull/5504): Auto generate node index (@lukastaegert)
+- [#5507](https://github.com/rollup/rollup/pull/5507): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5508](https://github.com/rollup/rollup/pull/5508): chore(deps): lock file maintenance (@renovate[bot])
+- [#5510](https://github.com/rollup/rollup/pull/5510): Split up converter.rs into AST nodes (@lukastaegert)
+- [#5512](https://github.com/rollup/rollup/pull/5512): chore(deps): update dependency builtin-modules to v4 (@renovate[bot], @lukastaegert)
+- [#5514](https://github.com/rollup/rollup/pull/5514): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5518](https://github.com/rollup/rollup/pull/5518): chore(deps): update dependency eslint-plugin-unicorn to v53 (@renovate[bot], @lukastaegert)
+- [#5519](https://github.com/rollup/rollup/pull/5519): chore(deps): lock file maintenance minor/patch updates (@renovate[bot], @lukastaegert)
+- [#5520](https://github.com/rollup/rollup/pull/5520): Resolve import.meta.{filename,dirname} in files imported from config (@BPScott)
+- [#5521](https://github.com/rollup/rollup/pull/5521): docs: correct base32 to base36 in documentation (@highcastlee)
+
+## 4.17.2
+
+_2024-04-30_
+
+### Bug Fixes
+
+- Fix tree-shaking problems when using spread arguments (#5503)
+
+### Pull Requests
+
+- [#5501](https://github.com/rollup/rollup/pull/5501): Slightly improve perf report (@lukastaegert)
+- [#5503](https://github.com/rollup/rollup/pull/5503): fix: rest element should deoptimize parameter values (@liuly0322)
+
+## 4.17.1
+
+_2024-04-29_
+
+### Bug Fixes
+
+- Prevent infinite recursions for certain constructor invocations (#5500)
+
+### Pull Requests
+
+- [#5500](https://github.com/rollup/rollup/pull/5500): fix: parameter variable infinite recursion error (@liuly0322)
+
+## 4.17.0
+
+_2024-04-27_
+
+### Features
+
+- Track function call arguments to optimize functions only called once or with the same literal values (re-release from 4.16.0) (#5483)
+
+### Bug Fixes
+
+- Reduce browser WASM size to a fraction by changing optimization settings (#5494)
+
+### Pull Requests
+
+- [#5483](https://github.com/rollup/rollup/pull/5483): feature(fix): function parameter tracking (@liuly0322)
+- [#5488](https://github.com/rollup/rollup/pull/5488): Report performance in CI (@TrickyPi)
+- [#5489](https://github.com/rollup/rollup/pull/5489): Create FUNDING.json (@BenJam)
+- [#5492](https://github.com/rollup/rollup/pull/5492): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5493](https://github.com/rollup/rollup/pull/5493): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5494](https://github.com/rollup/rollup/pull/5494): Use opt-level=z for browser wasm (@sapphi-red)
+
+## 4.16.4
+
+_2024-04-23_
+
+### Bug Fixes
+
+- Revert function parameter tracking logic introduced in 4.16.0 to work on some remaining issues (#5487)
+
+### Pull Requests
+
+- [#5487](https://github.com/rollup/rollup/pull/5487): Revert function parameter tracking logic for now (@lukastaegert)
+
+## 4.16.3
+
+_2024-04-23_
+
+### Bug Fixes
+
+- Do not optimize IIFEs that have a name and are again referenced inside their definition (#5486)
+
+### Pull Requests
+
+- [#5486](https://github.com/rollup/rollup/pull/5486): fix: only optimize annoymous iife (@liuly0322)
+
+## 4.16.2
+
+_2024-04-22_
+
+### Bug Fixes
+
+- Resolve a situation condition where reassignments of function parameters were not tracked properly (#5482)
+- Make sure that for armv7 packages, only one package is downloaded for the user (musl or gnu) (#5479)
+
+### Pull Requests
+
+- [#5479](https://github.com/rollup/rollup/pull/5479): Add libc field to armv7 packages (@sapphi-red)
+- [#5482](https://github.com/rollup/rollup/pull/5482): fix: function parameter reassigned update (@liuly0322)
+
+## 4.16.1
+
+_2024-04-21_
+
+### Bug Fixes
+
+- Fix crash when rendering logical or conditional expressions (#5481)
+
+### Pull Requests
+
+- [#5481](https://github.com/rollup/rollup/pull/5481): fix: conditional/logical expression should request a new tree-shaking (@liuly0322)
+
+## 4.16.0
+
+_2024-04-21_
+
+### Features
+
+- Track function call arguments to optimize functions only called once or with the same literal values (#5443)
+
+### Pull Requests
+
+- [#5443](https://github.com/rollup/rollup/pull/5443): feat: improve tree-shaking by propagate const parameter (@liuly0322, @lukastaegert)
+
+## 4.15.0
+
+_2024-04-20_
+
+### Features
+
+- Add output.importAttributesKey option to select whether to use "with" or "assert" for import attributes (#5474)
+
+### Pull Requests
+
+- [#5474](https://github.com/rollup/rollup/pull/5474): Add ImportAttributesKey to choose keyword ("with" | "assert") (@doubleaa93, @lukastaegert)
+- [#5475](https://github.com/rollup/rollup/pull/5475): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5477](https://github.com/rollup/rollup/pull/5477): Try to run emulated smoke tests for Linux environments (@lukastaegert)
+
+## 4.14.3
+
+_2024-04-15_
+
+### Bug Fixes
+
+- Support Alpine Linux and other MUSL builds on ARM (#5471)
+
+### Pull Requests
+
+- [#5471](https://github.com/rollup/rollup/pull/5471): Add linux arm musl build (@sapphi-red)
+
+## 4.14.2
+
+_2024-04-12_
+
+### Bug Fixes
+
+- Do not create invalid code when reexporting both a namespace and the default export from that namespace (#5466)
+- Ensure ppc64 platform is properly detected (#5460)
+
+### Pull Requests
+
+- [#5456](https://github.com/rollup/rollup/pull/5456): Add high-level architecture documentation (@lukastaegert)
+- [#5460](https://github.com/rollup/rollup/pull/5460): Fix ppc64le target (@lukastaegert)
+- [#5463](https://github.com/rollup/rollup/pull/5463): chore: tweak the comment about files should not be edited (@TrickyPi)
+- [#5466](https://github.com/rollup/rollup/pull/5466): Ensure reexported namespaces do not prevent creation of default export helpers (@lukastaegert)
+- [#5468](https://github.com/rollup/rollup/pull/5468): chore(deps): update dependency eslint-plugin-unicorn to v52 (@renovate[bot], @lukastaegert)
+- [#5469](https://github.com/rollup/rollup/pull/5469): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5470](https://github.com/rollup/rollup/pull/5470): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.14.1
+
+_2024-04-07_
+
+### Bug Fixes
+
+- Show better error when running on musl Linux where the musl build is not supported (#5454)
+
+### Pull Requests
+
+- [#5451](https://github.com/rollup/rollup/pull/5451): chore: generate string constants from config (@TrickyPi)
+- [#5452](https://github.com/rollup/rollup/pull/5452): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5453](https://github.com/rollup/rollup/pull/5453): chore(deps): lock file maintenance (@renovate[bot])
+- [#5454](https://github.com/rollup/rollup/pull/5454): Improve error message when running on unsupported MUSL Linux (@lukastaegert)
+- [#5455](https://github.com/rollup/rollup/pull/5455): Remove inlining logic in AST (de-)serializer (@lukastaegert)
+
+## 4.14.0
+
+_2024-04-03_
+
+### Features
+
+- Display error causes in Rollup CLI (#5422)
+- Add basic support for explicit resource management via "using" and "await using" (#5423)
+
+### Pull Requests
+
+- [#5422](https://github.com/rollup/rollup/pull/5422): feat: show all cause in Error (@devohda, @lukastaegert)
+- [#5444](https://github.com/rollup/rollup/pull/5444): feat: support explicit-resource-management (@TrickyPi)
+- [#5445](https://github.com/rollup/rollup/pull/5445): docs: add `@shikiji/vitepress-twoslash` (@sapphi-red)
+- [#5447](https://github.com/rollup/rollup/pull/5447): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5448](https://github.com/rollup/rollup/pull/5448): chore(deps): lock file maintenance (@renovate[bot])
+
+## 4.13.2
+
+_2024-03-28_
+
+### Bug Fixes
+
+- Ensure accessing module info is cached after the build phase for improved performance (#5438)
+- Support powerpc64le CPUs (#5350)
+
+### Pull Requests
+
+- [#5350](https://github.com/rollup/rollup/pull/5350): Add support for ppc64le (@pavolloffay, @lukastaegert)
+- [#5438](https://github.com/rollup/rollup/pull/5438): Cache module info getters before output generation (@bluwy, @lukastaegert)
+
+## 4.13.1
+
+_2024-03-27_
+
+### Bug Fixes
+
+- Add new linux-s390x-gnu native binary package (#5346)
+
+### Pull Requests
+
+- [#5346](https://github.com/rollup/rollup/pull/5346): Add support for linux s390x gnu (@edlerd)
+- [#5430](https://github.com/rollup/rollup/pull/5430): chore(deps): update dependency @vue/eslint-config-typescript to v13 (@renovate[bot], @lukastaegert)
+- [#5431](https://github.com/rollup/rollup/pull/5431): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5432](https://github.com/rollup/rollup/pull/5432): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5436](https://github.com/rollup/rollup/pull/5436): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5437](https://github.com/rollup/rollup/pull/5437): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.13.0
+
+_2024-03-12_
+
+### Features
+
+- Ensure that the location of parse errors and other logs is encoded in the error message as well (#5424)
+
+### Pull Requests
+
+- [#5417](https://github.com/rollup/rollup/pull/5417): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5418](https://github.com/rollup/rollup/pull/5418): chore(deps): lock file maintenance (@renovate[bot])
+- [#5419](https://github.com/rollup/rollup/pull/5419): chore: fix typo (@OnlyWick)
+- [#5424](https://github.com/rollup/rollup/pull/5424): Add locations to logs, warnings and error messages ( @lukastaegert)
+
+## 4.12.1
+
+_2024-03-06_
+
+### Bug Fixes
+
+- Escape special characters in file references (#5404)
+
+### Pull Requests
+
+- [#5398](https://github.com/rollup/rollup/pull/5398): Rename `getRollupEror` to `getRollupError` (@MrRefactoring)
+- [#5399](https://github.com/rollup/rollup/pull/5399): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5404](https://github.com/rollup/rollup/pull/5404): fix: escape ids in `import.meta.ROLLUP_FILE_URL_referenceId` correctly (@sapphi-red)
+- [#5406](https://github.com/rollup/rollup/pull/5406): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5407](https://github.com/rollup/rollup/pull/5407): chore(deps): lock file maintenance (@renovate[bot])
+- [#5411](https://github.com/rollup/rollup/pull/5411): Chunk assignment - Fix comment line breaks and typo (@yoavweiss, @lukastaegert)
+
+## 4.12.0
+
+_2024-02-16_
+
+### Features
+
+- Improve raw bundling performance by 10-15% when not using the cache or plugins that return an AST (#5391)
+
+### Pull Requests
+
+- [#5391](https://github.com/rollup/rollup/pull/5391): Improve performance by directly constructing AST from buffer ( @lukastaegert)
+- [#5393](https://github.com/rollup/rollup/pull/5393): chore(deps): update dependency eslint-plugin-unicorn to v51 ( @renovate[bot])
+- [#5394](https://github.com/rollup/rollup/pull/5394): chore(deps): update typescript-eslint monorepo to v7 (major) ( @renovate[bot])
+- [#5395](https://github.com/rollup/rollup/pull/5395): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.11.0
+
+_2024-02-15_
+
+### Features
+
+- Add `output.reexportProtoFromExternal` option to disable special code for handling `__proto__` reexports (#5380)
+
+### Bug Fixes
+
+- Ensure namespace reexport code can be parsed by cjs-module-lexer (#5380)
+- Throw when trying to reassing `const` variables (#5388)
+
+### Pull Requests
+
+- [#5380](https://github.com/rollup/rollup/pull/5380): fix: separately export `__proto__` for compatibility with CJS Transpiler Re-exports (@TrickyPi)
+- [#5388](https://github.com/rollup/rollup/pull/5388): Add const reassign rule (@TrickyPi)
+
+## 4.10.0
+
+_2024-02-10_
+
+### Features
+
+- Support base-36 and base-16 hashes again via new `output.hashCharacters` option (#5371)
+
+### Bug Fixes
+
+- Do not crash process for panics in native code but throw them as JavaScript errors (#5383)
+
+### Pull Requests
+
+- [#5359](https://github.com/rollup/rollup/pull/5359): chore(deps): update actions/cache action to v4 (@renovate[bot])
+- [#5360](https://github.com/rollup/rollup/pull/5360): chore(deps): update dependency pretty-ms to v9 (@renovate[bot])
+- [#5366](https://github.com/rollup/rollup/pull/5366): chore(deps): update dependency husky to v9 (@renovate[bot])
+- [#5367](https://github.com/rollup/rollup/pull/5367): chore(deps): update peter-evans/create-or-update-comment action to v4 (@renovate[bot])
+- [#5368](https://github.com/rollup/rollup/pull/5368): chore(deps): update peter-evans/find-comment action to v3 ( @renovate[bot])
+- [#5369](https://github.com/rollup/rollup/pull/5369): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5370](https://github.com/rollup/rollup/pull/5370): Fix dependency range for Node types (@lukastaegert)
+- [#5371](https://github.com/rollup/rollup/pull/5371): Implement "output.hashCharacters" option to define character set for file hashes (@lukastaegert)
+- [#5372](https://github.com/rollup/rollup/pull/5372): Roll back vitepress as 1.0.0-rc.40 breaks the development build ( @lukastaegert)
+- [#5382](https://github.com/rollup/rollup/pull/5382): Update documentation (@TrickyPi)
+- [#5383](https://github.com/rollup/rollup/pull/5383): Catch Rust panics and then throw them in JS (@TrickyPi)
+- [#5384](https://github.com/rollup/rollup/pull/5384): chore(deps): update codecov/codecov-action action to v4 ( @renovate[bot])
+- [#5385](https://github.com/rollup/rollup/pull/5385): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5386](https://github.com/rollup/rollup/pull/5386): Resolve all rollup imports to node_modules to avoid type conflict (@TrickyPi)
+
+## 4.9.6
+
+_2024-01-21_
+
+### Bug Fixes
+
+- Detect side effects when an element that was pushed into an array is modified via the array (#5352)
+
+### Pull Requests
+
+- [#5337](https://github.com/rollup/rollup/pull/5337): Generate AST transformers from config (@lukastaegert)
+- [#5340](https://github.com/rollup/rollup/pull/5340): Also type-check d.ts files (@lukastaegert)
+- [#5348](https://github.com/rollup/rollup/pull/5348): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5351](https://github.com/rollup/rollup/pull/5351): chore(deps): update dependency vite to v5.0.12 [security] ( @renovate[bot])
+- [#5352](https://github.com/rollup/rollup/pull/5352): Track mutations of elements pushed into arrays (@lukastaegert)
+
+## 4.9.5
+
+_2024-01-12_
+
+### Bug Fixes
+
+- Fix issue where on Windows, Rollup would not load due to problems with the MSVC executable (#5335)
+
+### Pull Requests
+
+- [#5334](https://github.com/rollup/rollup/pull/5334): Fix typo in commondir.ts (@akiomik)
+- [#5335](https://github.com/rollup/rollup/pull/5335): build: static link msvc runtime on Windows x64 platform ( @Brooooooklyn)
+- [#5338](https://github.com/rollup/rollup/pull/5338): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.9.4
+
+_2024-01-06_
+
+### Bug Fixes
+
+- Use quotes for keys in namespaces that are only numbers but are not valid integers (#5328)
+- Allow to have comments between pure annotations and the annoted node (#5332)
+
+### Pull Requests
+
+- [#5328](https://github.com/rollup/rollup/pull/5328): Correctly handling number key (@LongTengDao)
+- [#5332](https://github.com/rollup/rollup/pull/5332): Handle pure annotations that are separated by a comment ( @lukastaegert)
+
+## 4.9.3
+
+_2024-01-05_
+
+### Bug Fixes
+
+- Support `__proto__` as export/import name (#5313)
+- Use ESTree AST type over custom type in user-facing types (#5323)
+
+### Pull Requests
+
+- [#5313](https://github.com/rollup/rollup/pull/5313): Correctly handling **proto** export as module object key ( @LongTengDao)
+- [#5323](https://github.com/rollup/rollup/pull/5323): fix: Add estree.Program type to rollup.d.ts (@TrickyPi)
+- [#5326](https://github.com/rollup/rollup/pull/5326): docs: fix grammar (@gigabites19)
+- [#5329](https://github.com/rollup/rollup/pull/5329): chore(deps): update dependency @vue/eslint-config-prettier to v9 (@renovate[bot])
+- [#5330](https://github.com/rollup/rollup/pull/5330): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.9.2
+
+_2023-12-30_
+
+### Bug Fixes
+
+- Extend support for arbitrary namespace identifiers in SystemJS (#5321)
+- Do not wrongly flag functions without side effects as side effects if moduleSideEffects is false (#5322)
+
+### Pull Requests
+
+- [#5305](https://github.com/rollup/rollup/pull/5305): Add JSDoc types to internal scripts (@lukastaegert)
+- [#5309](https://github.com/rollup/rollup/pull/5309): chore(deps): update actions/download-artifact action to v4 ( @renovate[bot])
+- [#5311](https://github.com/rollup/rollup/pull/5311): chode: add node badge (@btea)
+- [#5312](https://github.com/rollup/rollup/pull/5312): Remove rollup-plugin-thatworks from devDeps (@TrickyPi)
+- [#5318](https://github.com/rollup/rollup/pull/5318): chore(deps): update dependency eslint-plugin-unicorn to v50 ( @renovate[bot])
+- [#5319](https://github.com/rollup/rollup/pull/5319): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5321](https://github.com/rollup/rollup/pull/5321): Handle arbitrary namespace identifiers in some SystemJS scenarios (@lukastaegert)
+- [#5322](https://github.com/rollup/rollup/pull/5322): Do not handle declarations in modules without side effects as TDZ (@lukastaegert)
+
+## 4.9.1
+
+_2023-12-17_
+
+### Bug Fixes
+
+- Fix an issue where break statements could include the wrong label (#5297)
+
+### Pull Requests
+
+- [#5297](https://github.com/rollup/rollup/pull/5297): fix: use a new includedLabels in the body of the LabeledStatement (@TrickyPi)
+- [#5300](https://github.com/rollup/rollup/pull/5300): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.9.0
+
+_2023-12-13_
+
+### Features
+
+- Fully support arbitrary strings as import and export identifiers (#5298)
+
+### Pull Requests
+
+- [#5296](https://github.com/rollup/rollup/pull/5296): Do not assume setTimeout return type (@kapouer)
+- [#5298](https://github.com/rollup/rollup/pull/5298): Fully support arbitrary module namespace identifiers for all formats (@lukastaegert)
+
+## 4.8.0
+
+_2023-12-11_
+
+### Features
+
+- Improve `experimentalMinChunkSize` to take already loaded modules from dynamic imports into account (#5294)
+
+### Pull Requests
+
+- [#5294](https://github.com/rollup/rollup/pull/5294): Find more merge targets for experimentalMinChunkSize ( @lukastaegert)
+
+## 4.7.0
+
+_2023-12-08_
+
+### Features
+
+- Add build for Linux riscv64 architecture (#5288)
+
+### Bug Fixes
+
+- Improve error message when native Windows build does not start (#5284)
+
+### Pull Requests
+
+- [#5278](https://github.com/rollup/rollup/pull/5278): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5281](https://github.com/rollup/rollup/pull/5281): Add logs and experimentalLogSideEffects to REPL (@lukastaegert)
+- [#5284](https://github.com/rollup/rollup/pull/5284): Add friendly error for missing MSVC redistributable (@sapphi-red)
+- [#5285](https://github.com/rollup/rollup/pull/5285): chore(deps): update dependency vite to v5.0.5 [security] ( @renovate[bot])
+- [#5288](https://github.com/rollup/rollup/pull/5288): Add support for linux riscv64 gnu (@kxxt)
+- [#5290](https://github.com/rollup/rollup/pull/5290): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.6.1
+
+_2023-11-30_
+
+### Bug Fixes
+
+- Resolve a situation where declaring the same `var` several times was considered a conflict (#5276)
+
+### Pull Requests
+
+- [#5275](https://github.com/rollup/rollup/pull/5275): Add TNG as special sponsor (@lukastaegert)
+- [#5276](https://github.com/rollup/rollup/pull/5276): Allow to redeclare parameters multiple times in nested scopes ( @lukastaegert)
+
+## 4.6.0
+
+_2023-11-26_
+
+### Features
+
+- Allow `this.addWatchFile` in all plugin hooks (#5270)
+
+### Bug Fixes
+
+- Show helpful error when native binaries are not installed due to an `npm` issue (#5267)
+- Do not access `this` context in `this.addWatchFile` so it does not need to be bound when passed around (#5270)
+
+### Pull Requests
+
+- [#5267](https://github.com/rollup/rollup/pull/5267): Add friendly error for npm bug (@sapphi-red)
+- [#5270](https://github.com/rollup/rollup/pull/5270): Allow this.addWatchFile in all hooks (@lukastaegert)
+- [#5272](https://github.com/rollup/rollup/pull/5272): Debug deployed graphs (@lukastaegert)
+
+## 4.5.2
+
+_2023-11-24_
+
+### Bug Fixes
+
+- Handle files with UTF-8 BOM when using the commonjs plugin (#5268)
+
+### Pull Requests
+
+- [#5268](https://github.com/rollup/rollup/pull/5268): fix: strip BOM before calling transform hook (@TrickyPi)
+- [#5269](https://github.com/rollup/rollup/pull/5269): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.5.1
+
+_2023-11-21_
+
+### Bug Fixes
+
+- Do not error when a function expression uses the same name for a parameter and its id (#5262)
+
+### Pull Requests
+
+- [#5257](https://github.com/rollup/rollup/pull/5257): Fix graphs in docs, improve REPL colors (@lukastaegert)
+- [#5262](https://github.com/rollup/rollup/pull/5262): Allow function expression parameters to shadow the function id ( @lukastaegert)
+
+## 4.5.0
+
+_2023-11-18_
+
+### Bug Fixes
+
+- Show a proper error when using native Rollup on armv7 musl Linux (#5255)
+
+### Pull Requests
+
+- [#5251](https://github.com/rollup/rollup/pull/5251): doc fix import assertions to attributes in API plugin development page (@lhapaipai)
+- [#5253](https://github.com/rollup/rollup/pull/5253): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5255](https://github.com/rollup/rollup/pull/5255): Error for armv7 musl build (@lukastaegert)
+
+## 4.4.1
+
+_2023-11-14_
+
+### Bug Fixes
+
+- Do not flag duplicate function declarations in function scopes as syntax errors (#5248)
+
+### Pull Requests
+
+- [#5248](https://github.com/rollup/rollup/pull/5248): Allow functions to redeclare vars and functions in function scopes (@lukastaegert)
+
+## 4.4.0
+
+_2023-11-12_
+
+### Features
+
+- Replace SWC linting with faster internal linting to error on duplicate declarations etc. (#5207)
+
+### Bug Fixes
+
+- Show proper error when an entry exports non-existing bindings (#5207)
+
+### Pull Requests
+
+- [#5207](https://github.com/rollup/rollup/pull/5207): perf: run lint while constructing nodes (@sapphi-red)
+
+## 4.3.1
+
+_2023-11-11_
+
+### Bug Fixes
+
+- Fix rename error when handling errors in watch mode (#5240)
+- Prevent warning when using `--forceExit` (#5245)
+
+### Pull Requests
+
+- [#5240](https://github.com/rollup/rollup/pull/5240): fix: allow the name of Rollup Error to be modified (@TrickyPi)
+- [#5243](https://github.com/rollup/rollup/pull/5243): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5245](https://github.com/rollup/rollup/pull/5245): Ensure --forceExit works without warning (@lukastaegert)
+
+## 4.3.0
+
+_2023-11-03_
+
+### Features
+
+- Add `forceExit` CLI flag for situations where the CLI does not exit gracefully (#5195)
+
+### Bug Fixes
+
+- Properly catch errors when removing a temporary config file fails (#5198)
+
+### Pull Requests
+
+- [#5195](https://github.com/rollup/rollup/pull/5195): Add `forceExit` CLI flag (@raphael-theriault-swi)
+- [#5198](https://github.com/rollup/rollup/pull/5198): fix: prevent `ENOENT` error on temp config removal (@jzempel)
+- [#5237](https://github.com/rollup/rollup/pull/5237): chore: remove unused files and deps (@TrickyPi)
+- [#5238](https://github.com/rollup/rollup/pull/5238): chore(deps): update dependency eslint-plugin-unicorn to v49 ( @renovate[bot])
+- [#5239](https://github.com/rollup/rollup/pull/5239): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.2.0
+
+_2023-10-31_
+
+### Features
+
+- Run parsing in multiple threads and introduce `parseAstAsync` helper function (#5202)
+
+### Pull Requests
+
+- [#5202](https://github.com/rollup/rollup/pull/5202): perf: introduce `parseAstAsync` and parallelize parsing AST ( @sapphi-red)
+
+## 4.1.6
+
+_2023-10-31_
+
+### Bug Fixes
+
+- Fix a bug where emtpy block comments in certain positions could freeze Rollup (#5231)
+
+### Pull Requests
+
+- [#5228](https://github.com/rollup/rollup/pull/5228): build: ensure rust toolchain components for linting are installed (@jerome-benoit)
+- [#5231](https://github.com/rollup/rollup/pull/5231): Render emtpy block comments after tree-shaken statements ( @lukastaegert)
+- [#5232](https://github.com/rollup/rollup/pull/5232): Revert specifying rustfmt and clippy in toolchain file as it breaks REPL build (@lukastaegert)
+
+## 4.1.5
+
+_2023-10-28_
+
+### Bug Fixes
+
+- Fix an issue where actual entries that were also implicit entries could remain implicit (#5220)
+
+### Pull Requests
+
+- [#5209](https://github.com/rollup/rollup/pull/5209): Document Vite workaround for browser build (@curran)
+- [#5215](https://github.com/rollup/rollup/pull/5215): chore(deps): update dependency lint-staged to v15 ( @renovate[bot])
+- [#5216](https://github.com/rollup/rollup/pull/5216): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5218](https://github.com/rollup/rollup/pull/5218): Update license plugin (@lukastaegert)
+- [#5219](https://github.com/rollup/rollup/pull/5219): Fix error highlight in REPL (@lukastaegert)
+- [#5220](https://github.com/rollup/rollup/pull/5220): Fix race condition when emitting implicitly dependent entries ( @lukastaegert)
+- [#5224](https://github.com/rollup/rollup/pull/5224): chore(deps): update actions/setup-node action to v4 ( @renovate[bot])
+- [#5225](https://github.com/rollup/rollup/pull/5225): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.1.4
+
+_2023-10-16_
+
+### Bug Fixes
+
+- Reduce sizes @rollup/browser and @rollup/wasm-node WASM artifacts (#5204)
+
+### Pull Requests
+
+- [#5204](https://github.com/rollup/rollup/pull/5204): perf: shrink wasm size by avoid importing browserslist ( @sapphi-red)
+
+## 4.1.3
+
+_2023-10-15_
+
+### Bug Fixes
+
+- Fix WASM build as hash function was not exported (#5203)
+
+### Pull Requests
+
+- [#5203](https://github.com/rollup/rollup/pull/5203): fix: export xxhashBase64Url from wasm (@sapphi-red)
+
+## 4.1.2
+
+_2023-10-15_
+
+_Release did not finish successfully_
+
+## 4.1.1
+
+_2023-10-15_
+
+### Bug Fixes
+
+- Improve Node parsing performance (#5201)
+
+### Pull Requests
+
+- [#5201](https://github.com/rollup/rollup/pull/5201): perf: use mimalloc for bindings_napi (@sapphi-red)
+
+## 4.1.0
+
+_2023-10-14_
+
+### Features
+
+- Reduce memory usage of Rollup builds (#5133)
+
+### Pull Requests
+
+- [#5133](https://github.com/rollup/rollup/pull/5133): perf: reducing ast node memory overhead (@thebanjomatic)
+- [#5177](https://github.com/rollup/rollup/pull/5177): chore: explicitly set rust toolchain channel (@cijiugechu)
+- [#5179](https://github.com/rollup/rollup/pull/5179): Update migration guide for Rollup 4 (@lukastaegert)
+- [#5180](https://github.com/rollup/rollup/pull/5180): Resolve clippy errors (@cijiugechu)
+- [#5183](https://github.com/rollup/rollup/pull/5183): Add clippy to pipeline and fix remaining issues (@lukastaegert)
+- [#5184](https://github.com/rollup/rollup/pull/5184): docs: fix code example for `onLog` (@tjenkinson)
+- [#5186](https://github.com/rollup/rollup/pull/5186): Improve wording for native artifacts in migration guide ( @lukastaegert)
+- [#5190](https://github.com/rollup/rollup/pull/5190): test: add verifyAst type (@TrickyPi)
+- [#5196](https://github.com/rollup/rollup/pull/5196): chore(deps): update dependency rollup to v4 (@renovate[bot])
+- [#5197](https://github.com/rollup/rollup/pull/5197): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+
+## 4.0.2
+
+_2023-10-06_
+
+### Bug Fixes
+
+- Fix annotation detection logic to not fail when a non-ASCII character precedes a double underscore (#5178)
+
+### Pull Requests
+
+- [#5178](https://github.com/rollup/rollup/pull/5178): Handle special characters before double underscores ( @lukastaegert)
+
+## 4.0.1
+
+_2023-10-06_
+
+### Bug Fixes
+
+- Do not panic on trailing semicolons after class methods (#5173)
+- Add artifact for arm64 linux musl target (#5176)
+
+### Pull Requests
+
+- [#5172](https://github.com/rollup/rollup/pull/5172): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5173](https://github.com/rollup/rollup/pull/5173): fix: ignores empty statements in class body that is returned by SWC parser (@TrickyPi)
+- [#5176](https://github.com/rollup/rollup/pull/5176): Fix linux arm musl build (@lukastaegert)
+
 ## 4.0.0
 
 _2023-10-05_
@@ -11,7 +1435,6 @@ _2023-10-05_
 - The minimal required Node version is now 18.0.0 (#5142)
 - The browser build now relies on a WASM artifact that needs to be provided as well (#5073)
 - The NodeJS build now relies on an optional native binary; for unsupported platforms, users can use the `@rollup/wasm-node` package that has the same interface as Rollup but relies on WASM artifacts (#5073)
-- The "with" syntax for import attributes is not yet supported, awaiting support in SWC (#5073)
 - The `INVALID_IMPORT_ASSERTION` error code has been replaced with `INVALID_IMPORT_ATTRIBUTE` (#5073)
 - Rollup will now warn for `@__PURE__` and `@__NO_SIDE_EFFECTS__` annotations in invalid locations (#5165)
 - If an entry module starts with a shebang comment `#!...`, this comment will be prepended to the output for `es` and `cjs` formats (#5163)
@@ -35,12 +1458,12 @@ _2023-10-05_
 
 - For `this.resolve`, the default of the `skipSelf` option is now `true` (#5142)
 - `this.parse` now only supports the `allowReturnOutsideFunction` option for now (#5073)
-- Import assertions now use the [new import attribute AST structure](https://github.com/estree/estree/blob/master/experimental/import-attributes.md) (#5073)
+- Import assertions now use the [new import attribute AST structure](https://github.com/estree/estree/blob/master/experimental/import-attributes.md) ( #5073)
 - "assertions" have been replaced with "attributes" in various places of the plugin interface (#5073)
 - If the import of a module id is handled by the `load` hook of a plugin, `rollup.watch` no longer watches the actual file if the module id corresponds to a real path; if this is intended, then the plugin is responsible for calling `this.addWatchFile` for any dependency files (#5150)
 - The normalized input options provided by `buildStart` and other hooks no longer contain an `onwarn` handler; plugins should use `onLog` instead (#5147)
 - `this.moduleIds` has been removed from the plugin context: Use `this.getModuleIds()` instead (#5143)
-- The `hasModuleSideEffects` flag has been removed from the `ModuleInfo` returned by `thi s.getModuleInfo()`: Use `moduleSideEffects` on the `ModuleInfo` instead (#5143)
+- The `hasModuleSideEffects` flag has been removed from the `ModuleInfo` returned by `this.getModuleInfo()`: Use `moduleSideEffects` on the `ModuleInfo` instead (#5143)
 
 ### Features
 
@@ -54,20 +1477,20 @@ _2023-10-05_
 
 ### Pull Requests
 
-- [#5073](https://github.com/rollup/rollup/pull/5073): [v4.0] Switch parser to SWC and introduce native/WASM code (@lukastaegert)
+- [#5073](https://github.com/rollup/rollup/pull/5073): [v4.0] Switch parser to SWC and introduce native/WASM code ( @lukastaegert)
 - [#5142](https://github.com/rollup/rollup/pull/5142): [v4.0] Set the default of skipSelf to true (@TrickyPi)
 - [#5143](https://github.com/rollup/rollup/pull/5143): [v4.0] Remove deprecated features (@lukastaegert)
 - [#5144](https://github.com/rollup/rollup/pull/5144): [v4.0] Imporve the performance of generating ast and rollup ast nodes (@TrickyPi)
-- [#5147](https://github.com/rollup/rollup/pull/5147): [v4.0] Remove onwarn from normalized input options (@lukastaegert)
+- [#5147](https://github.com/rollup/rollup/pull/5147): [v4.0] Remove onwarn from normalized input options ( @lukastaegert)
 - [#5150](https://github.com/rollup/rollup/pull/5150): [v4.0] feat: Do not watch files anymore if their content is returned by the load hook (@TrickyPi)
-- [#5154](https://github.com/rollup/rollup/pull/5154): [v4.0] Add parse option to allow return outside function (@lukastaegert)
+- [#5154](https://github.com/rollup/rollup/pull/5154): [v4.0] Add parse option to allow return outside function ( @lukastaegert)
 - [#5155](https://github.com/rollup/rollup/pull/5155): [v4.0] feat: implement hashing content in Rust (@TrickyPi)
 - [#5157](https://github.com/rollup/rollup/pull/5157): [v4.0] Handle empty exports (@lukastaegert)
-- [#5160](https://github.com/rollup/rollup/pull/5160): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5160](https://github.com/rollup/rollup/pull/5160): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5163](https://github.com/rollup/rollup/pull/5163): [v4.0] feat: preserve shebang in entry module for CJS and ESM outputs (@TrickyPi)
 - [#5164](https://github.com/rollup/rollup/pull/5164): [v4.0] fix: also strip BOM from code strings in JS (@TrickyPi)
 - [#5165](https://github.com/rollup/rollup/pull/5165): [v4.0] warn for invalid annotations (@lukastaegert)
-- [#5168](https://github.com/rollup/rollup/pull/5168): [v4.0] Ensure we support new import attribute "with" syntax (@lukastaegert)
+- [#5168](https://github.com/rollup/rollup/pull/5168): [v4.0] Ensure we support new import attribute "with" syntax ( @lukastaegert)
 - [#5169](https://github.com/rollup/rollup/pull/5169): [v4.0] Expose parser (@lukastaegert)
 
 ## 3.29.4
@@ -80,7 +1503,7 @@ _2023-09-28_
 
 ### Pull Requests
 
-- [#5158](https://github.com/rollup/rollup/pull/5158): Deoptimize all parameters when losing track of a function (@lukastaegert)
+- [#5158](https://github.com/rollup/rollup/pull/5158): Deoptimize all parameters when losing track of a function ( @lukastaegert)
 
 ## 3.29.3
 
@@ -92,9 +1515,9 @@ _2023-09-24_
 
 ### Pull Requests
 
-- [#5145](https://github.com/rollup/rollup/pull/5145): docs: improve the docs repl appearance in the light mode (@TrickyPi)
+- [#5145](https://github.com/rollup/rollup/pull/5145): docs: improve the docs repl appearance in the light mode ( @TrickyPi)
 - [#5148](https://github.com/rollup/rollup/pull/5148): chore(deps): update dependency @vue/eslint-config-typescript to v12 (@renovate[bot])
-- [#5149](https://github.com/rollup/rollup/pull/5149): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5149](https://github.com/rollup/rollup/pull/5149): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5153](https://github.com/rollup/rollup/pull/5153): Fully deoptimize first level path when deoptimizing nested parameter paths (@lukastaegert)
 
 ## 3.29.2
@@ -109,7 +1532,7 @@ _2023-09-15_
 
 - [#5131](https://github.com/rollup/rollup/pull/5131): fix: exports `TreeshakingPreset` (@moltar)
 - [#5134](https://github.com/rollup/rollup/pull/5134): docs: steps to enable symlinks on windows (@thebanjomatic)
-- [#5137](https://github.com/rollup/rollup/pull/5137): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5137](https://github.com/rollup/rollup/pull/5137): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 
 ## 3.29.1
 
@@ -122,11 +1545,11 @@ _2023-09-10_
 
 ### Pull Requests
 
-- [#5114](https://github.com/rollup/rollup/pull/5114): fix(perf): avoid superfluous timer wrappings in watch mode (@ZhengLiu2825)
+- [#5114](https://github.com/rollup/rollup/pull/5114): fix(perf): avoid superfluous timer wrappings in watch mode ( @ZhengLiu2825)
 - [#5118](https://github.com/rollup/rollup/pull/5118): fix: access document.currentScript at the top level (@TrickyPi)
-- [#5125](https://github.com/rollup/rollup/pull/5125): chore(deps): update actions/checkout action to v4 (@renovate[bot])
-- [#5126](https://github.com/rollup/rollup/pull/5126): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
-- [#5129](https://github.com/rollup/rollup/pull/5129): re-enbale repl-artefacts workflow for rollup-swc branch (@TrickyPi)
+- [#5125](https://github.com/rollup/rollup/pull/5125): chore(deps): update actions/checkout action to v4 ( @renovate[bot])
+- [#5126](https://github.com/rollup/rollup/pull/5126): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5129](https://github.com/rollup/rollup/pull/5129): re-enbale repl-artefacts workflow for rollup-swc branch ( @TrickyPi)
 
 ## 3.29.0
 
@@ -144,10 +1567,10 @@ _2023-09-06_
 ### Pull Requests
 
 - [#5105](https://github.com/rollup/rollup/pull/5105): Added option to name sourcemap files, i.e. a output.sourcemapFileName… (@atti187)
-- [#5108](https://github.com/rollup/rollup/pull/5108): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
-- [#5109](https://github.com/rollup/rollup/pull/5109): Docs: load full path of rollup.browser.js for Rollup V4 (@TrickyPi)
+- [#5108](https://github.com/rollup/rollup/pull/5108): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5109](https://github.com/rollup/rollup/pull/5109): Docs: load full path of rollup.browser.js for Rollup V4 ( @TrickyPi)
 - [#5112](https://github.com/rollup/rollup/pull/5112): feat(types): add generic type for plugin api (@sxzz)
-- [#5115](https://github.com/rollup/rollup/pull/5115): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5115](https://github.com/rollup/rollup/pull/5115): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5123](https://github.com/rollup/rollup/pull/5123): Deoptimize custom event detail (@lukastaegert)
 
 ## 3.28.1
@@ -160,11 +1583,11 @@ _2023-08-22_
 
 ### Pull Requests
 
-- [#5093](https://github.com/rollup/rollup/pull/5093): chore(deps): update dependency eslint-config-prettier to v9 (@renovate[bot])
-- [#5094](https://github.com/rollup/rollup/pull/5094): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5093](https://github.com/rollup/rollup/pull/5093): chore(deps): update dependency eslint-config-prettier to v9 ( @renovate[bot])
+- [#5094](https://github.com/rollup/rollup/pull/5094): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5099](https://github.com/rollup/rollup/pull/5099): Fix resolution of relative external files outside target directory (@lukastaegert)
-- [#5101](https://github.com/rollup/rollup/pull/5101): chore(deps): update dependency lint-staged to v14 (@renovate[bot])
-- [#5102](https://github.com/rollup/rollup/pull/5102): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5101](https://github.com/rollup/rollup/pull/5101): chore(deps): update dependency lint-staged to v14 ( @renovate[bot])
+- [#5102](https://github.com/rollup/rollup/pull/5102): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 
 ## 3.28.0
 
@@ -195,7 +1618,7 @@ _2023-08-04_
 
 ### Pull Requests
 
-- [#5075](https://github.com/rollup/rollup/pull/5075): Revert perf(sourcemap): lazy compute decoded mappings (@thebanjomatic)
+- [#5075](https://github.com/rollup/rollup/pull/5075): Revert perf(sourcemap): lazy compute decoded mappings ( @thebanjomatic)
 
 ## 3.27.1
 
@@ -219,11 +1642,11 @@ _2023-07-28_
 
 ### Pull Requests
 
-- [#5070](https://github.com/rollup/rollup/pull/5070): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5070](https://github.com/rollup/rollup/pull/5070): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5071](https://github.com/rollup/rollup/pull/5071): docs(tutorial): change the .js extension to .mjs (@TrickyPi)
 - [#5072](https://github.com/rollup/rollup/pull/5072): Add known globals (@sapphi-red)
 - [#5078](https://github.com/rollup/rollup/pull/5078): chore(deps): update dependency @vue/eslint-config-prettier to v8 (@renovate[bot])
-- [#5079](https://github.com/rollup/rollup/pull/5079): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5079](https://github.com/rollup/rollup/pull/5079): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 
 ## 3.26.3
 
@@ -235,11 +1658,11 @@ _2023-07-17_
 
 ### Pull Requests
 
-- [#5056](https://github.com/rollup/rollup/pull/5056): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5056](https://github.com/rollup/rollup/pull/5056): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5059](https://github.com/rollup/rollup/pull/5059): chore(config): migrate renovate config (@renovate[bot])
 - [#5064](https://github.com/rollup/rollup/pull/5064): chore(deps): update dependency prettier to v3 (@renovate[bot])
-- [#5065](https://github.com/rollup/rollup/pull/5065): chore(deps): update typescript-eslint monorepo to v6 (major) (@renovate[bot])
-- [#5068](https://github.com/rollup/rollup/pull/5068): fix: don't pass external modules to the manualChunks function (@TrickyPi)
+- [#5065](https://github.com/rollup/rollup/pull/5065): chore(deps): update typescript-eslint monorepo to v6 (major) ( @renovate[bot])
+- [#5068](https://github.com/rollup/rollup/pull/5068): fix: don't pass external modules to the manualChunks function ( @TrickyPi)
 
 ## 3.26.2
 
@@ -278,7 +1701,7 @@ _2023-06-30_
 ### Pull Requests
 
 - [#5035](https://github.com/rollup/rollup/pull/5035): Add ability to filter logs via CLI option or environment variable (@lukastaegert)
-- [#5049](https://github.com/rollup/rollup/pull/5049): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5049](https://github.com/rollup/rollup/pull/5049): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 
 ## 3.25.3
 
@@ -303,11 +1726,11 @@ _2023-06-24_
 
 ### Pull Requests
 
-- [#5038](https://github.com/rollup/rollup/pull/5038): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5038](https://github.com/rollup/rollup/pull/5038): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5040](https://github.com/rollup/rollup/pull/5040): Fix typo in index.md (@vHeemstra)
 - [#5042](https://github.com/rollup/rollup/pull/5042): fix: a plugin error can contains numeric code (@TrickyPi)
 - [#5045](https://github.com/rollup/rollup/pull/5045): Fix `this.error` with `pos` in `transform` hook (@sapphi-red)
-- [#5046](https://github.com/rollup/rollup/pull/5046): chore(deps): update dependency locate-character to v3 (@renovate[bot])
+- [#5046](https://github.com/rollup/rollup/pull/5046): chore(deps): update dependency locate-character to v3 ( @renovate[bot])
 
 ## 3.25.1
 
@@ -330,7 +1753,7 @@ _2023-06-11_
 - Add `this.info` and `this.debug` plugin context logging functions (#5026)
 - Add `onLog` option to read, map and filter logs (#5026)
 - Add `logLevel` option to fully suppress logs by level (#5026)
-- Support function logs in `this.warn`, `this.info` and `this.debug` to avoid heavy computations based on log level (#5026)
+- Support function logs in `this.warn`, `this.info` and `this.debug` to avoid heavy computations based on log level ( #5026)
 - Add `onLog` plugin hook to read, filter and map logs from plugins (#5026)
 
 ### Pull Requests
@@ -343,13 +1766,13 @@ _2023-06-10_
 
 ### Bug Fixes
 
-- Fix an issue where bundles with `@rollup/plugin-commonjs` were missing internal dependencies when code-splitting (#5029)
+- Fix an issue where bundles with `@rollup/plugin-commonjs` were missing internal dependencies when code-splitting ( #5029)
 - Do not use `process.exit(0)` in watch mode to avoid issues in embedded scenarios (#5027)
 
 ### Pull Requests
 
 - [#5027](https://github.com/rollup/rollup/pull/5027): fix turborepo with rollup --watch (@plumber-dhaval)
-- [#5028](https://github.com/rollup/rollup/pull/5028): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5028](https://github.com/rollup/rollup/pull/5028): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5029](https://github.com/rollup/rollup/pull/5029): fix: get right sideEffectModules (@TrickyPi)
 
 ## 3.24.0
@@ -375,9 +1798,9 @@ _2023-06-04_
 ### Pull Requests
 
 - [#5006](https://github.com/rollup/rollup/pull/5006): Better workflow caching (@lukastaegert)
-- [#5012](https://github.com/rollup/rollup/pull/5012): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
-- [#5022](https://github.com/rollup/rollup/pull/5022): fix: add a trailing slash automatically for sourcemapBaseUrl (@TrickyPi)
-- [#5023](https://github.com/rollup/rollup/pull/5023): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5012](https://github.com/rollup/rollup/pull/5012): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
+- [#5022](https://github.com/rollup/rollup/pull/5022): fix: add a trailing slash automatically for sourcemapBaseUrl ( @TrickyPi)
+- [#5023](https://github.com/rollup/rollup/pull/5023): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 
 ## 3.23.0
 
@@ -406,9 +1829,9 @@ _2023-05-21_
 
 ### Pull Requests
 
-- [#5001](https://github.com/rollup/rollup/pull/5001): chore(deps): update dependency @rollup/plugin-commonjs to v25 (@renovate[bot])
-- [#5002](https://github.com/rollup/rollup/pull/5002): chore(deps): update dependency eslint-plugin-unicorn to v47 (@renovate[bot])
-- [#5003](https://github.com/rollup/rollup/pull/5003): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#5001](https://github.com/rollup/rollup/pull/5001): chore(deps): update dependency @rollup/plugin-commonjs to v25 ( @renovate[bot])
+- [#5002](https://github.com/rollup/rollup/pull/5002): chore(deps): update dependency eslint-plugin-unicorn to v47 ( @renovate[bot])
+- [#5003](https://github.com/rollup/rollup/pull/5003): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#5004](https://github.com/rollup/rollup/pull/5004): Do not force quit Rollup or close stdout (@lukastaegert)
 
 ## 3.22.0
@@ -419,7 +1842,7 @@ _2023-05-17_
 
 - Prevent empty non-facade chunks by merging them into other suitable chunks (#4989)
 - Avoid facade chunks in some situations involving reexports (#4989)
-- Improve algorithm for best merge target when using `experimentalMinChunkSize` to take tree-shaking into account (#4989)
+- Improve algorithm for best merge target when using `experimentalMinChunkSize` to take tree-shaking into account ( #4989)
 
 ### Bug Fixes
 
@@ -464,7 +1887,7 @@ _2023-05-09_
 
 ### Pull Requests
 
-- [#4980](https://github.com/rollup/rollup/pull/4980): chore(deps): lock file maintenance minor/patch updates (@renovate[bot])
+- [#4980](https://github.com/rollup/rollup/pull/4980): chore(deps): lock file maintenance minor/patch updates ( @renovate[bot])
 - [#4983](https://github.com/rollup/rollup/pull/4983): Prevent exit before stdout is drained (@lukastaegert)
 
 ## 3.21.5
@@ -491,7 +1914,7 @@ _2023-05-03_
 
 ### Pull Requests
 
-- [#4971](https://github.com/rollup/rollup/pull/4971): Handle shimming missing exports when preserving modules (@lukastaegert)
+- [#4971](https://github.com/rollup/rollup/pull/4971): Handle shimming missing exports when preserving modules ( @lukastaegert)
 - [#4972](https://github.com/rollup/rollup/pull/4972): Configure Renovate (@renovate[bot])
 
 ## 3.21.3
@@ -517,7 +1940,7 @@ _2023-04-30_
 
 ### Pull Requests
 
-- [#4955](https://github.com/rollup/rollup/pull/4955): fix: mark some known globals or their functions as impure (@TrickyPi)
+- [#4955](https://github.com/rollup/rollup/pull/4955): fix: mark some known globals or their functions as impure ( @TrickyPi)
 
 ## 3.21.1
 
@@ -559,7 +1982,7 @@ _2023-04-21_
 
 - [#4943](https://github.com/rollup/rollup/pull/4943): Add a test for reserved keywords used as import/export specifiers (@Andarist)
 - [#4949](https://github.com/rollup/rollup/pull/4949): Deoptimize right side in for-of loops (@lukastaegert)
-- [#4950](https://github.com/rollup/rollup/pull/4950): Support default exported classes that extend other classes (@lukastaegert)
+- [#4950](https://github.com/rollup/rollup/pull/4950): Support default exported classes that extend other classes ( @lukastaegert)
 
 ## 3.20.6
 
@@ -597,7 +2020,7 @@ _2023-04-17_
 
 ### Pull Requests
 
-- [#4937](https://github.com/rollup/rollup/pull/4937): fix: handle conditional breaks in nested switch statement cases (@TrickyPi and @lukastaegert)
+- [#4937](https://github.com/rollup/rollup/pull/4937): fix: handle conditional breaks in nested switch statement cases ( @TrickyPi and @lukastaegert)
 
 ## 3.20.3
 
@@ -613,9 +2036,9 @@ _2023-04-16_
 - [#4925](https://github.com/rollup/rollup/pull/4925): chore: repl style add scoped (@btea)
 - [#4926](https://github.com/rollup/rollup/pull/4926): docs: Update the x_google_ignorelist url (@jecfish)
 - [#4932](https://github.com/rollup/rollup/pull/4932): Allow shouldTransformCachedModule to return null (@bluwy)
-- [#4935](https://github.com/rollup/rollup/pull/4935): Bump peter-evans/create-or-update-comment from 2 to 3 (@dependabot[bot])
-- [#4936](https://github.com/rollup/rollup/pull/4936): Disable puppeteer sandbox to fix Vercel deployment (@lukastaegert)
-- [#4938](https://github.com/rollup/rollup/pull/4938): Improve memory usage for parameter deoptimizations (@lukastaegert)
+- [#4935](https://github.com/rollup/rollup/pull/4935): Bump peter-evans/create-or-update-comment from 2 to 3 ( @dependabot[bot])
+- [#4936](https://github.com/rollup/rollup/pull/4936): Disable puppeteer sandbox to fix Vercel deployment ( @lukastaegert)
+- [#4938](https://github.com/rollup/rollup/pull/4938): Improve memory usage for parameter deoptimizations ( @lukastaegert)
 
 ## 3.20.2
 
@@ -658,7 +2081,7 @@ _2023-03-20_
 
 ### Pull Requests
 
-- [#4912](https://github.com/rollup/rollup/pull/4912): fix: make file name deterministic in parallel emits (fix #4909) (@sun0day)
+- [#4912](https://github.com/rollup/rollup/pull/4912): fix: make file name deterministic in parallel emits (fix #4909) ( @sun0day)
 - [#4913](https://github.com/rollup/rollup/pull/4913): Provide synthetic namespace for dynamic imports when perserving modules (@lukastaegert)
 
 ## 3.19.1
@@ -701,7 +2124,7 @@ _2023-03-01_
 
 - [#4871](https://github.com/rollup/rollup/pull/4871): Add experimental logging for side effects (@lukastaegert)
 - [#4877](https://github.com/rollup/rollup/pull/4877): feat: mark files in a `node_modules` as ignore-listed by default (@bmeurer)
-- [#4880](https://github.com/rollup/rollup/pull/4880): build: use @rollup/plugin-replace to replace chokidar fsevents (@dnalborczyk)
+- [#4880](https://github.com/rollup/rollup/pull/4880): build: use @rollup/plugin-replace to replace chokidar fsevents ( @dnalborczyk)
 - [#4887](https://github.com/rollup/rollup/pull/4887): Refactor (@dnalborczyk)
 
 ## 3.17.3
@@ -777,13 +2200,13 @@ _2023-02-17_
 
 ### Bug Fixes
 
-- Fix an issue where unrelated side effects spilled into other chunks when using the `experimentalMinChunkSize` option (#4851)
+- Fix an issue where unrelated side effects spilled into other chunks when using the `experimentalMinChunkSize` option ( #4851)
 
 ### Pull Requests
 
 - [#4846](https://github.com/rollup/rollup/pull/4846): Update magic-string and adjust types. (@bmeurer)
 - [#4848](https://github.com/rollup/rollup/pull/4848): Introduce `sourcemapIgnoreList` predicate. (@bmeurer)
-- [#4851](https://github.com/rollup/rollup/pull/4851): Fix chunk graph update when merging chunks for minChunkSize (@lukastaegert)
+- [#4851](https://github.com/rollup/rollup/pull/4851): Fix chunk graph update when merging chunks for minChunkSize ( @lukastaegert)
 - [#4852](https://github.com/rollup/rollup/pull/4852): docs: make api params more readable (@cunzaizhuyi)
 - [#4856](https://github.com/rollup/rollup/pull/4856): simplify code in includeStatements (@TrickyPi)
 - [#4859](https://github.com/rollup/rollup/pull/4859): Allow to pass "true" to InputOptions.cache (@danielrentz)
@@ -817,7 +2240,7 @@ _2023-02-05_
 
 ### Pull Requests
 
-- [#4837](https://github.com/rollup/rollup/pull/4837): Add flag to re-enable deep dynamic chunk optimization (@lukastaegert)
+- [#4837](https://github.com/rollup/rollup/pull/4837): Add flag to re-enable deep dynamic chunk optimization ( @lukastaegert)
 - [#4839](https://github.com/rollup/rollup/pull/4839): fix: correct incorrect assertions (@TrickyPi)
 
 ## 3.13.0
@@ -848,7 +2271,7 @@ _2023-02-01_
 - [#4827](https://github.com/rollup/rollup/pull/4827): fix: use the original class name in the class body (@TrickyPi)
 - [#4829](https://github.com/rollup/rollup/pull/4829): Improve and fix cross-chunk-reexport warning (@lukastaegert)
 - [#4830](https://github.com/rollup/rollup/pull/4830): Add Algolia doc search (@lukastaegert)
-- [#4831](https://github.com/rollup/rollup/pull/4831): Add warning not to add assets directly to the bundle (@lukastaegert)
+- [#4831](https://github.com/rollup/rollup/pull/4831): Add warning not to add assets directly to the bundle ( @lukastaegert)
 
 ## 3.12.0
 
@@ -861,7 +2284,7 @@ _2023-01-28_
 ### Pull Requests
 
 - [#4825](https://github.com/rollup/rollup/pull/4825): Add and use anchors for nested options (@lukastaegert)
-- [#4826](https://github.com/rollup/rollup/pull/4826): Use old namespace reexport code pattern for better Node support (@lukastaegert)
+- [#4826](https://github.com/rollup/rollup/pull/4826): Use old namespace reexport code pattern for better Node support ( @lukastaegert)
 
 ## 3.11.0
 
@@ -953,7 +2376,7 @@ _2022-12-28_
 
 - [#4768](https://github.com/rollup/rollup/pull/4768): Fix small typo in 999-big-list-of-options.md (@ericmutta)
 - [#4769](https://github.com/rollup/rollup/pull/4769): docs: add a instruction about how to run one test on your local computer (@TrickyPi)
-- [#4770](https://github.com/rollup/rollup/pull/4770): Add support for arbitrary module namespace identifiers (@lukastaegert)
+- [#4770](https://github.com/rollup/rollup/pull/4770): Add support for arbitrary module namespace identifiers ( @lukastaegert)
 - [#4771](https://github.com/rollup/rollup/pull/4771): Add `version` property to Plugin type (@Septh)
 
 ## 3.8.1
@@ -968,7 +2391,7 @@ _2022-12-23_
 ### Pull Requests
 
 - [#4762](https://github.com/rollup/rollup/pull/4762): Improve AST garbage collection (@bluwy)
-- [#4766](https://github.com/rollup/rollup/pull/4766): Fix handling of namespace reexports when preserving modules (@lukastaegert)
+- [#4766](https://github.com/rollup/rollup/pull/4766): Fix handling of namespace reexports when preserving modules ( @lukastaegert)
 
 ## 3.8.0
 
@@ -1016,7 +2439,7 @@ _2022-12-13_
 
 ### Pull Requests
 
-- [#4742](https://github.com/rollup/rollup/pull/4742): fix: check whether RegExp have the global or sticky flags set (@TrickyPi)
+- [#4742](https://github.com/rollup/rollup/pull/4742): fix: check whether RegExp have the global or sticky flags set ( @TrickyPi)
 
 ## 3.7.3
 
@@ -1052,7 +2475,7 @@ _2022-12-09_
 
 ### Pull Requests
 
-- [#4741](https://github.com/rollup/rollup/pull/4741): fix: provide json hint when importing a no export json file (@TrickyPi)
+- [#4741](https://github.com/rollup/rollup/pull/4741): fix: provide json hint when importing a no export json file ( @TrickyPi)
 
 ## 3.7.0
 
@@ -1076,7 +2499,7 @@ _2022-12-05_
 
 ### Pull Requests
 
-- [#4731](https://github.com/rollup/rollup/pull/4731): feat: add `exports` and `exportedBindings` to `Module` class (@TrickyPi)
+- [#4731](https://github.com/rollup/rollup/pull/4731): feat: add `exports` and `exportedBindings` to `Module` class ( @TrickyPi)
 
 ## 3.5.1
 
@@ -1105,7 +2528,7 @@ _2022-11-27_
 ### Pull Requests
 
 - [#4718](https://github.com/rollup/rollup/pull/4718): Add simple way to manually declare pure functions (@lukastaegert)
-- [#4725](https://github.com/rollup/rollup/pull/4725): Fix isIncluded error when using rollup-plugin-typescript2 (@lukastaegert)
+- [#4725](https://github.com/rollup/rollup/pull/4725): Fix isIncluded error when using rollup-plugin-typescript2 ( @lukastaegert)
 
 ## 3.4.0
 
@@ -1181,7 +2604,7 @@ _2022-10-18_
 
 - [#4679](https://github.com/rollup/rollup/pull/4679): Do not rewrite new.target (@lukastaegert)
 - [#4683](https://github.com/rollup/rollup/pull/4683): Remove typo in resolveId documentation (@ChrispyChris)
-- [#4684](https://github.com/rollup/rollup/pull/4684): Return correct values for unknown namespace members (@lukastaegert)
+- [#4684](https://github.com/rollup/rollup/pull/4684): Return correct values for unknown namespace members ( @lukastaegert)
 
 ## 3.2.2
 
@@ -1307,7 +2730,7 @@ _2022-10-11_
 - When preserving modules, the `[name]` placeholder (as well as the `chunkInfo.name` property when using a function) now includes the relative path of the chunk as well as optionally the file extension if the extension is not one of `.js`, `.jsx`, `.mjs`, `.cjs`, `.ts`, `.tsx`, `.mts`, or `.cts` (#4565)
 - The `[ext]`, `[extName]` and `[assetExtName]` placeholders are no longer supported when preserving modules (#4565)
 - The `perf` option no longer collects timings for the asynchronous part of plugin hooks as the readings were wildly inaccurate and very misleading, and timings are adapted to the new hashing algorithm (#4566)
-- Change the default value of `makeAbsoluteExternalsRelative` to "ifRelativeSource" so that absolute external imports will no longer become relative imports in the output, while relative external imports will still be renormalized (#4567)
+- Change the default value of `makeAbsoluteExternalsRelative` to "ifRelativeSource" so that absolute external imports will no longer become relative imports in the output, while relative external imports will still be renormalized ( #4567)
 - Change the default for `output.generatedCode.reservedNamesAsProps` to no longer quote properties like `default` by default (#4568)
 - Change the default for `preserveEntrySignatures` to "exports-only" so that by default, empty facades for entry chunks are no longer created (#4576)
 - Change the default for `output.interop` to "default" to better align with NodeJS interop (#4611)
@@ -1319,7 +2742,7 @@ _2022-10-11_
 - Plugins that add/change/remove imports or exports in `renderChunk` should make sure to update `ChunkInfo.imports/importedBindings/exports` accordingly (#4543)
 - The order of plugin hooks when generating output has changed (#4543)
 - Chunk information passed to `renderChunk` now contains names with hash placeholders instead of final names, which will be replaced when used in the returned code or `ChunkInfo.imports/importedBindings/exports` (#4543 and #4631)
-- Hooks defined in output plugins will now run after hooks defined in input plugins (used to be the other way around) (#3846)
+- Hooks defined in output plugins will now run after hooks defined in input plugins (used to be the other way around) ( #3846)
 
 ### Features
 
@@ -1355,27 +2778,27 @@ _2022-10-11_
 ### Pull Requests
 
 - [#3846](https://github.com/rollup/rollup/pull/3846): [v3.0] Run output plugins last (@aleclarson)
-- [#4543](https://github.com/rollup/rollup/pull/4543): [v3.0] New hashing algorithm that "fixes (nearly) everything" (@lukastaegert)
+- [#4543](https://github.com/rollup/rollup/pull/4543): [v3.0] New hashing algorithm that "fixes (nearly) everything" ( @lukastaegert)
 - [#4548](https://github.com/rollup/rollup/pull/4548): [v3.0] Deprecate Node 12 (@lukastaegert)
 - [#4552](https://github.com/rollup/rollup/pull/4552): [v3.0] Remove actively deprecated features, show warnings for other deprecated features (@lukastaegert)
-- [#4558](https://github.com/rollup/rollup/pull/4558): [v3.0] Convert build scripts to ESM, update dependencies (@lukastaegert)
-- [#4565](https://github.com/rollup/rollup/pull/4565): [v3.0] Rework file name patterns when preserving modules (@lukastaegert)
+- [#4558](https://github.com/rollup/rollup/pull/4558): [v3.0] Convert build scripts to ESM, update dependencies ( @lukastaegert)
+- [#4565](https://github.com/rollup/rollup/pull/4565): [v3.0] Rework file name patterns when preserving modules ( @lukastaegert)
 - [#4566](https://github.com/rollup/rollup/pull/4566): [v3.0] Restructure timings (@lukastaegert)
-- [#4567](https://github.com/rollup/rollup/pull/4567): [v3.0] Change default for makeAbsoluteExternalsRelative (@lukastaegert)
+- [#4567](https://github.com/rollup/rollup/pull/4567): [v3.0] Change default for makeAbsoluteExternalsRelative ( @lukastaegert)
 - [#4568](https://github.com/rollup/rollup/pull/4568): [v3.0] Change default for output.generatedCode.reservedNamesAsProps (@lukastaegert)
 - [#4574](https://github.com/rollup/rollup/pull/4574): [v3.0] Better esm config file support (@lukastaegert)
-- [#4575](https://github.com/rollup/rollup/pull/4575): [v3.0] Show deprecation warning for maxParallelFileReads (@lukastaegert)
+- [#4575](https://github.com/rollup/rollup/pull/4575): [v3.0] Show deprecation warning for maxParallelFileReads ( @lukastaegert)
 - [#4576](https://github.com/rollup/rollup/pull/4576): [v3.0] Change default for preserveEntrySignatures to exports-only (@lukastaegert)
 - [#4579](https://github.com/rollup/rollup/pull/4579): [v3.0] Refine errors and warnings (@lukastaegert)
 - [#4581](https://github.com/rollup/rollup/pull/4581): [v3.0] Use named export for loadConfigFile (@lukastaegert)
 - [#4592](https://github.com/rollup/rollup/pull/4592): [v3.0] Port doc changes from #4572 and #4583 to 3.0 (@berniegp)
 - [#4593](https://github.com/rollup/rollup/pull/4593): [v3.0] Browser build (@lukastaegert)
-- [#4596](https://github.com/rollup/rollup/pull/4596): [v3.0] Use "node:" prefix for imports of node builtins (@lukastaegert)
+- [#4596](https://github.com/rollup/rollup/pull/4596): [v3.0] Use "node:" prefix for imports of node builtins ( @lukastaegert)
 - [#4605](https://github.com/rollup/rollup/pull/4605): [v3.0] Better sourcemap emission (@lukastaegert)
 - [#4609](https://github.com/rollup/rollup/pull/4609): [v3.0] Custom awaiting watch emitter (@lukastaegert)
 - [#4611](https://github.com/rollup/rollup/pull/4611): [v3.0] Improve interop defaults (@lukastaegert)
-- [#4621](https://github.com/rollup/rollup/pull/4621): [v3.0] Always try to load config files via Node if possible (@lukastaegert)
-- [#4624](https://github.com/rollup/rollup/pull/4624): [v3.0] Remove warning when using implicit default export mode (@lukastaegert)
+- [#4621](https://github.com/rollup/rollup/pull/4621): [v3.0] Always try to load config files via Node if possible ( @lukastaegert)
+- [#4624](https://github.com/rollup/rollup/pull/4624): [v3.0] Remove warning when using implicit default export mode ( @lukastaegert)
 - [#4631](https://github.com/rollup/rollup/pull/4631): [v3.0] Use ASCII characters for hash placeholders (@lukastaegert)
 - [#4644](https://github.com/rollup/rollup/pull/4644): [v3.0] Improve performance of asset emissions (@lukastaegert)
 - [#4646](https://github.com/rollup/rollup/pull/4646): [v3.0] Basic support for import assertions (@lukastaegert)
@@ -1393,9 +2816,9 @@ _2022-09-22_
 
 ### Pull Requests
 
-- [#4639](https://github.com/rollup/rollup/pull/4639): fix: typo docs and contributors link in CONTRIBUTING.md (@takurinton)
+- [#4639](https://github.com/rollup/rollup/pull/4639): fix: typo docs and contributors link in CONTRIBUTING.md ( @takurinton)
 - [#4641](https://github.com/rollup/rollup/pull/4641): Update type definition of resolveId (@ivanjonas)
-- [#4643](https://github.com/rollup/rollup/pull/4643): Improve performance of chunk naming collision check (@lukastaegert)
+- [#4643](https://github.com/rollup/rollup/pull/4643): Improve performance of chunk naming collision check ( @lukastaegert)
 
 ## 2.79.0
 
@@ -1419,7 +2842,7 @@ _2022-08-19_
 
 ### Pull Requests
 
-- [#4613](https://github.com/rollup/rollup/pull/4613): Prevent using arguments for generated variable names (@lukastaegert)
+- [#4613](https://github.com/rollup/rollup/pull/4613): Prevent using arguments for generated variable names ( @lukastaegert)
 
 ## 2.78.0
 
@@ -1433,7 +2856,7 @@ _2022-08-14_
 
 ### Pull Requests
 
-- [#4600](https://github.com/rollup/rollup/pull/4600): Allow using objects as hooks to change execution order (@lukastaegert)
+- [#4600](https://github.com/rollup/rollup/pull/4600): Allow using objects as hooks to change execution order ( @lukastaegert)
 
 ## 2.77.3
 
@@ -1457,7 +2880,7 @@ _2022-07-27_
 
 ### Pull Requests
 
-- [#4589](https://github.com/rollup/rollup/pull/4589): Handle generating non-inlined imports after inlined ones (@lukastaegert)
+- [#4589](https://github.com/rollup/rollup/pull/4589): Handle generating non-inlined imports after inlined ones ( @lukastaegert)
 
 ## 2.77.1
 
@@ -1488,7 +2911,7 @@ _2022-07-15_
 
 ### Pull Requests
 
-- [#4570](https://github.com/rollup/rollup/pull/4570): Introduce maxParallelFileOps to limit parallel writes (@lukastaegert)
+- [#4570](https://github.com/rollup/rollup/pull/4570): Introduce maxParallelFileOps to limit parallel writes ( @lukastaegert)
 - [#4572](https://github.com/rollup/rollup/pull/4572): Document more ways to read package.json in ESM (@berniegp)
 - [#4573](https://github.com/rollup/rollup/pull/4573): Do not include unused return expressions (@lukastaegert)
 
@@ -1508,11 +2931,11 @@ _2022-07-08_
 
 - [#4527](https://github.com/rollup/rollup/pull/4527): Add sourcemapBaseUrl option (@nickgarlis)
 - [#4533](https://github.com/rollup/rollup/pull/4533): Add support for absolute plugin paths (@ygoe)
-- [#4538](https://github.com/rollup/rollup/pull/4538): chore: Included githubactions in the dependabot config (@naveensrinivasan)
+- [#4538](https://github.com/rollup/rollup/pull/4538): chore: Included githubactions in the dependabot config ( @naveensrinivasan)
 - [#4546](https://github.com/rollup/rollup/pull/4546): Adapt Node versions on CI to prepare for v3 (@lukastaegert)
 - [#4556](https://github.com/rollup/rollup/pull/4556): Improve error message for invalid patterns (@DysphoricUnicorn)
 - [#4559](https://github.com/rollup/rollup/pull/4559): Update dependencies (@lukastaegert)
-- [#4560](https://github.com/rollup/rollup/pull/4560): Bump peter-evans/create-or-update-comment from 1 to 2 (@dependabot)
+- [#4560](https://github.com/rollup/rollup/pull/4560): Bump peter-evans/create-or-update-comment from 1 to 2 ( @dependabot)
 - [#4561](https://github.com/rollup/rollup/pull/4561): Bump peter-evans/find-comment from 1 to 2 (@dependabot)
 - [#4562](https://github.com/rollup/rollup/pull/4562): Bump codecov/codecov-action from 1 to 3 (@dependabot)
 
@@ -1538,11 +2961,11 @@ _2022-06-07_
 
 ### Bug Fixes
 
-- Properly deoptimize "this" when using member expressions with getters/setters in for loops and update expressions (#4522)
+- Properly deoptimize "this" when using member expressions with getters/setters in for loops and update expressions ( #4522)
 
 ### Pull Requests
 
-- [#4522](https://github.com/rollup/rollup/pull/4522): Refactor side effect handling for property interactions (@lukastaegert)
+- [#4522](https://github.com/rollup/rollup/pull/4522): Refactor side effect handling for property interactions ( @lukastaegert)
 
 ## 2.75.5
 
@@ -1555,7 +2978,7 @@ _2022-06-01_
 
 ### Pull Requests
 
-- [#4519](https://github.com/rollup/rollup/pull/4519): Try to make logical expression deoptimization more robust (@lukastaegert)
+- [#4519](https://github.com/rollup/rollup/pull/4519): Try to make logical expression deoptimization more robust ( @lukastaegert)
 - [#4520](https://github.com/rollup/rollup/pull/4520): Roll back parameter default tree shaking (@lukastaegert)
 
 ## 2.75.4
@@ -1603,7 +3026,7 @@ _2022-05-27_
 ### Pull Requests
 
 - [#4510](https://github.com/rollup/rollup/pull/4510): Tree-shake parameter defaults (replaces #4498) (@lukastaegert)
-- [#4511](https://github.com/rollup/rollup/pull/4511): Tree-shake side-effect-free string methods on template literals (@lukastaegert)
+- [#4511](https://github.com/rollup/rollup/pull/4511): Tree-shake side-effect-free string methods on template literals ( @lukastaegert)
 
 ## 2.74.1
 
@@ -1650,9 +3073,9 @@ _2022-05-13_
 
 ### Pull Requests
 
-- [#4493](https://github.com/rollup/rollup/pull/4493): Handle getters on functions and improve property deoptimization (@lukastaegert)
+- [#4493](https://github.com/rollup/rollup/pull/4493): Handle getters on functions and improve property deoptimization ( @lukastaegert)
 - [#4494](https://github.com/rollup/rollup/pull/4494): Do not treat string.replace as side effect when used with a literal (@lukastaegert)
-- [#4495](https://github.com/rollup/rollup/pull/4495): Update docs for --configPlugin using typescript (@Jimmydalecleveland)
+- [#4495](https://github.com/rollup/rollup/pull/4495): Update docs for --configPlugin using typescript ( @Jimmydalecleveland)
 
 ## 2.72.1
 
@@ -1664,7 +3087,7 @@ _2022-05-07_
 
 ### Pull Requests
 
-- [#4489](https://github.com/rollup/rollup/pull/4489): Do not deoptimize entire super class when adding a property (@lukastaegert)
+- [#4489](https://github.com/rollup/rollup/pull/4489): Do not deoptimize entire super class when adding a property ( @lukastaegert)
 
 ## 2.72.0
 
@@ -1751,7 +3174,7 @@ _2022-03-07_
 
 ### Features
 
-- Make the `watchChange` and `closeWatcher` hooks asynchronous and make Rollup wait for these hooks before continuing (#4427)
+- Make the `watchChange` and `closeWatcher` hooks asynchronous and make Rollup wait for these hooks before continuing ( #4427)
 
 ### Bug Fixes
 
@@ -1785,7 +3208,7 @@ _2022-03-04_
 
 ### Pull Requests
 
-- [#4334](https://github.com/rollup/rollup/pull/4334): fix(sourcemap): fall back to low-resolution line mapping (@aleclarson and @lukastaegert)
+- [#4334](https://github.com/rollup/rollup/pull/4334): fix(sourcemap): fall back to low-resolution line mapping ( @aleclarson and @lukastaegert)
 
 ## 2.69.0
 
@@ -1804,11 +3227,11 @@ _2022-03-02_
 
 ### Pull Requests
 
-- [#4378](https://github.com/rollup/rollup/pull/4378): Make namespace @@toStringTag "Module" non-enumerable (@dnalborczyk and @lukastaegert)
+- [#4378](https://github.com/rollup/rollup/pull/4378): Make namespace @@toStringTag "Module" non-enumerable ( @dnalborczyk and @lukastaegert)
 - [#4413](https://github.com/rollup/rollup/pull/4413): refactor: some code and type fixes (@dnalborczyk)
 - [#4418](https://github.com/rollup/rollup/pull/4418): chore: bump deps (@dnalborczyk)
-- [#4419](https://github.com/rollup/rollup/pull/4419): Properly handle upper directories as external dependencies (@lukastaegert)
-- [#4421](https://github.com/rollup/rollup/pull/4421): Improve the error prompt and output the error file name (@caoxiemeihao)
+- [#4419](https://github.com/rollup/rollup/pull/4419): Properly handle upper directories as external dependencies ( @lukastaegert)
+- [#4421](https://github.com/rollup/rollup/pull/4421): Improve the error prompt and output the error file name ( @caoxiemeihao)
 - [#4423](https://github.com/rollup/rollup/pull/4423): Update 999-big-list-of-options.md (@leoj3n)
 
 ## 2.68.0
@@ -1822,11 +3245,11 @@ _2022-02-22_
 
 ### Pull Requests
 
-- [#4410](https://github.com/rollup/rollup/pull/4410): refactor: use map for declarations and name suggestions (@dnalborczyk)
+- [#4410](https://github.com/rollup/rollup/pull/4410): refactor: use map for declarations and name suggestions ( @dnalborczyk)
 - [#4411](https://github.com/rollup/rollup/pull/4411): refactor: use map for namespace reexports by name (@dnalborczyk)
 - [#4412](https://github.com/rollup/rollup/pull/4412): refactor: use includes where appropriate (@dnalborczyk)
-- [#4414](https://github.com/rollup/rollup/pull/4414): Add resolved sources to shouldTransformCachedModule (@lukastaegert)
-- [#4416](https://github.com/rollup/rollup/pull/4416): Add Typescript 4.5 nodenext node12 module resolution support (@frank-dspeed)
+- [#4414](https://github.com/rollup/rollup/pull/4414): Add resolved sources to shouldTransformCachedModule ( @lukastaegert)
+- [#4416](https://github.com/rollup/rollup/pull/4416): Add Typescript 4.5 nodenext node12 module resolution support ( @frank-dspeed)
 
 ## 2.67.3
 
@@ -1844,7 +3267,7 @@ _2022-02-18_
 - [#4403](https://github.com/rollup/rollup/pull/4403): fix: remove unnecessary property descriptor spread (@dnalborczyk)
 - [#4404](https://github.com/rollup/rollup/pull/4404): refactor: use map for import descriptions + re-export descriptions (@dnalborczyk)
 - [#4405](https://github.com/rollup/rollup/pull/4405): refactor: module exports to map (@dnalborczyk)
-- [#4406](https://github.com/rollup/rollup/pull/4406): Fix a typo in 'Direct plugin communication' code example (@younesmln)
+- [#4406](https://github.com/rollup/rollup/pull/4406): Fix a typo in 'Direct plugin communication' code example ( @younesmln)
 - [#4407](https://github.com/rollup/rollup/pull/4407): Document how resolveId is cached (@lukastaegert)
 - [#4409](https://github.com/rollup/rollup/pull/4409): Print ids for unfinished moduleParsed and shouldTransformCachedModule hooks (@lukastaegert)
 
@@ -1860,7 +3283,7 @@ _2022-02-10_
 
 - [#4390](https://github.com/rollup/rollup/pull/4390): refactor: add @types/estree explicitly, fix dynamic type imports (@dnalborczyk)
 - [#4391](https://github.com/rollup/rollup/pull/4391): chore: remove acorn-walk ambient type definitions (@dnalborczyk)
-- [#4397](https://github.com/rollup/rollup/pull/4397): Sort manual chunks generated via a function by name (@lukastaegert)
+- [#4397](https://github.com/rollup/rollup/pull/4397): Sort manual chunks generated via a function by name ( @lukastaegert)
 
 ## 2.67.1
 
@@ -1903,9 +3326,9 @@ _2022-02-02_
 - [#4369](https://github.com/rollup/rollup/pull/4369): fix: remove acorn-walk patch (@dnalborczyk)
 - [#4371](https://github.com/rollup/rollup/pull/4371): refactor: use fs.promises in cli/run (@dnalborczyk)
 - [#4372](https://github.com/rollup/rollup/pull/4372): refactor: use fs.promises in module loader (@dnalborczyk)
-- [#4374](https://github.com/rollup/rollup/pull/4374): Ignore queries and hashes in file names when preserving modules (@lukastaegert)
+- [#4374](https://github.com/rollup/rollup/pull/4374): Ignore queries and hashes in file names when preserving modules ( @lukastaegert)
 - [#4375](https://github.com/rollup/rollup/pull/4375): Fix typo in \_config.js (@eltociear)
-- [#4376](https://github.com/rollup/rollup/pull/4376): refactor: fs.promises, move mkdir to writeoutputfile, Part 3 (@dnalborczyk)
+- [#4376](https://github.com/rollup/rollup/pull/4376): refactor: fs.promises, move mkdir to writeoutputfile, Part 3 ( @dnalborczyk)
 - [#4379](https://github.com/rollup/rollup/pull/4379): Deprecate hasModuleSideEffects in favor of moduleSideEffects and ensure it is mutable on ModuleInfo (@lukastaegert)
 
 ## 2.66.1
@@ -1975,10 +3398,10 @@ _2022-01-14_
 
 - [#4326](https://github.com/rollup/rollup/pull/4326): refactor: type fixes (@dnalborczyk)
 - [#4339](https://github.com/rollup/rollup/pull/4339): More watch test stabilization (@lukastaegert)
-- [#4340](https://github.com/rollup/rollup/pull/4340): refactor: performance timers for node.js and browser (@dnalborczyk)
+- [#4340](https://github.com/rollup/rollup/pull/4340): refactor: performance timers for node.js and browser ( @dnalborczyk)
 - [#4341](https://github.com/rollup/rollup/pull/4341): Implement shouldTransformCachedModule hook (@lukastaegert)
 - [#4344](https://github.com/rollup/rollup/pull/4344): Directly restart Rollup when config file change is detected in watch mode (@lukastaegert)
-- [#4347](https://github.com/rollup/rollup/pull/4347): Create a shallow copy when returning meta from resolveId (@lukastaegert)
+- [#4347](https://github.com/rollup/rollup/pull/4347): Create a shallow copy when returning meta from resolveId ( @lukastaegert)
 
 ## 2.63.0
 
@@ -1996,13 +3419,13 @@ _2022-01-04_
 
 ### Pull Requests
 
-- [#4320](https://github.com/rollup/rollup/pull/4320): Detect unfulfilled async hook actions and report error on exit (@kzc)
+- [#4320](https://github.com/rollup/rollup/pull/4320): Detect unfulfilled async hook actions and report error on exit ( @kzc)
 - [#4328](https://github.com/rollup/rollup/pull/4328): Make initial ModuleInfo.meta mutable and maintain object identity (@lukastaegert)
 - [#4318](https://github.com/rollup/rollup/pull/4318): Stabilize watch tests (@lukastaegert)
 - [#4331](https://github.com/rollup/rollup/pull/4331): Improve JS docs example (@lukastaegert)
-- [#4332](https://github.com/rollup/rollup/pull/4332): add support for Array.prototype.findLast,findLastIndex (@dnalborczyk)
+- [#4332](https://github.com/rollup/rollup/pull/4332): add support for Array.prototype.findLast,findLastIndex ( @dnalborczyk)
 - [#4333](https://github.com/rollup/rollup/pull/4333): convert utils.transform to async function (@dnalborczyk)
-- [#4335](https://github.com/rollup/rollup/pull/4335): Do not watch unless --watch is specified explicitly (@lukastaegert)
+- [#4335](https://github.com/rollup/rollup/pull/4335): Do not watch unless --watch is specified explicitly ( @lukastaegert)
 - [#4338](https://github.com/rollup/rollup/pull/4338): Add build delay for plugin event test (@lukastaegert)
 
 ## 2.62.0
@@ -2031,7 +3454,7 @@ _2021-12-24_
 - [#4309](https://github.com/rollup/rollup/pull/4309): Add additional array prototype methods (@dnalborczyk)
 - [#4311](https://github.com/rollup/rollup/pull/4311): Add Deno instructions to docs (@jespertheend)
 - [#4312](https://github.com/rollup/rollup/pull/4312): fsevents integration (@dnalborczyk)
-- [#4313](https://github.com/rollup/rollup/pull/4313): Remove non-existing static functions from known globals (@dnalborczyk)
+- [#4313](https://github.com/rollup/rollup/pull/4313): Remove non-existing static functions from known globals ( @dnalborczyk)
 
 ## 2.61.1
 
@@ -2043,7 +3466,7 @@ _2021-12-11_
 
 ### Pull Requests
 
-- [#4296](https://github.com/rollup/rollup/pull/4296): Make sure this.load waits for modules that are already loading (@lukastaegert)
+- [#4296](https://github.com/rollup/rollup/pull/4296): Make sure this.load waits for modules that are already loading ( @lukastaegert)
 - [#4298](https://github.com/rollup/rollup/pull/4298): use set for reserved words (@dnalborczyk)
 
 ## 2.61.0
@@ -2160,7 +3583,7 @@ _2021-10-01_
 ### Pull Requests
 
 - [#4230](https://github.com/rollup/rollup/pull/4230): Add isEntry flag to resolveId and this.resolve (@lukastaegert)
-- [#4233](https://github.com/rollup/rollup/pull/4233): Remove unused rollup-plugin-typescript ambient module types (@dnalborczyk)
+- [#4233](https://github.com/rollup/rollup/pull/4233): Remove unused rollup-plugin-typescript ambient module types ( @dnalborczyk)
 - [#4235](https://github.com/rollup/rollup/pull/4235): Update dependencies (@lukastaegert)
 
 ## 2.57.0
@@ -2169,7 +3592,7 @@ _2021-09-22_
 
 ### Features
 
-- Add `generatedCode` option to allow Rollup to use es2015 features for smaller output and more efficient helpers (#4215)
+- Add `generatedCode` option to allow Rollup to use es2015 features for smaller output and more efficient helpers ( #4215)
 - Improve AMD and SystemJS parsing performance by wrapping relevant functions in parentheses (#4215)
 - Using `preferConst` will now show a warning with `strictDeprecations: true` (#4215)
 
@@ -2186,8 +3609,8 @@ _2021-09-22_
 
 - [#4212](https://github.com/rollup/rollup/pull/4212): chore: remove unused ambient types (@dnalborczyk)
 - [#4215](https://github.com/rollup/rollup/pull/4215): Use ES2015 features in generated code snippets (@lukastaegert)
-- [#4219](https://github.com/rollup/rollup/pull/4219): chore: bump rollup typescript, remove unused micromatch (@dnalborczyk)
-- [#4220](https://github.com/rollup/rollup/pull/4220): chore: use forceConsistentCasingInFileNames in ts-config (@dnalborczyk)
+- [#4219](https://github.com/rollup/rollup/pull/4219): chore: bump rollup typescript, remove unused micromatch ( @dnalborczyk)
+- [#4220](https://github.com/rollup/rollup/pull/4220): chore: use forceConsistentCasingInFileNames in ts-config ( @dnalborczyk)
 - [#4224](https://github.com/rollup/rollup/pull/4224): prepare for useDefineForClassFields (@dnalborczyk)
 - [#4228](https://github.com/rollup/rollup/pull/4228): fix: prevent UnhandledPromiseRejectionWarning when module resolution/parsing fails (@kherock)
 
@@ -2209,7 +3632,7 @@ _2021-08-10_
 
 ### Bug Fixes
 
-- Check if after simplification, an object pattern would become an expression statement or arrow function return value (#4204)
+- Check if after simplification, an object pattern would become an expression statement or arrow function return value ( #4204)
 
 ### Pull Requests
 
@@ -2225,7 +3648,7 @@ _2021-08-08_
 
 ### Pull Requests
 
-- [#4202](https://github.com/rollup/rollup/pull/4202): Fix incorrect rendering of export declarations in SystemJS (@lukastaegert)
+- [#4202](https://github.com/rollup/rollup/pull/4202): Fix incorrect rendering of export declarations in SystemJS ( @lukastaegert)
 
 ## 2.56.0
 
@@ -2290,7 +3713,7 @@ _2021-07-25_
 
 - [#4186](https://github.com/rollup/rollup/pull/4186): Fix UMD import.meta.url inside web workers (@ceifa)
 - [#4188](https://github.com/rollup/rollup/pull/4188): Fix typo in renderHelpers.ts (@eltociear)
-- [#4189](https://github.com/rollup/rollup/pull/4189): Move long path recursion prevention to MemberExpression (@lukastaegert)
+- [#4189](https://github.com/rollup/rollup/pull/4189): Move long path recursion prevention to MemberExpression ( @lukastaegert)
 - [#4190](https://github.com/rollup/rollup/pull/4190): Stop recommending node-builtins (@curran)
 
 ## 2.53.3
@@ -2401,7 +3824,7 @@ _2021-06-30_
 
 ### Pull Requests
 
-- [#4159](https://github.com/rollup/rollup/pull/4159): Properly handle double reexports from external namespaces (@lukastaegert)
+- [#4159](https://github.com/rollup/rollup/pull/4159): Properly handle double reexports from external namespaces ( @lukastaegert)
 
 ## 2.52.3
 
@@ -2413,7 +3836,7 @@ _2021-06-25_
 
 ### Pull Requests
 
-- [#4149](https://github.com/rollup/rollup/pull/4149): Make sure the initializer of hoisted variables is deoptimized (@lukastaegert)
+- [#4149](https://github.com/rollup/rollup/pull/4149): Make sure the initializer of hoisted variables is deoptimized ( @lukastaegert)
 
 ## 2.52.2
 
@@ -2438,7 +3861,7 @@ _2021-06-17_
 
 ### Pull Requests
 
-- [#4142](https://github.com/rollup/rollup/pull/4142): Make array and object prototype singletons immutable for now (@lukastaegert)
+- [#4142](https://github.com/rollup/rollup/pull/4142): Make array and object prototype singletons immutable for now ( @lukastaegert)
 
 ## 2.52.0
 
@@ -2454,7 +3877,7 @@ _2021-06-16_
 
 - [#3835](https://github.com/rollup/rollup/pull/3835): Add typescript config support (@TheRealSyler)
 - [#4131](https://github.com/rollup/rollup/pull/4131): Add presets to the tree-shaking options (@lukastaegert)
-- [#4139](https://github.com/rollup/rollup/pull/4139): Add option to deoptimize var declarations for tree-shaking (@lukastaegert)
+- [#4139](https://github.com/rollup/rollup/pull/4139): Add option to deoptimize var declarations for tree-shaking ( @lukastaegert)
 - [#4141](https://github.com/rollup/rollup/pull/4141): Update dependencies (@lukastaegert)
 
 ## 2.51.2
@@ -2467,7 +3890,7 @@ _2021-06-11_
 
 ### Pull Requests
 
-- [#4138](https://github.com/rollup/rollup/pull/4138): Include all dependencies from modules with no-treeshake (@lukastaegert)
+- [#4138](https://github.com/rollup/rollup/pull/4138): Include all dependencies from modules with no-treeshake ( @lukastaegert)
 
 ## 2.51.1
 
@@ -2509,7 +3932,7 @@ _2021-06-03_
 
 ### Pull Requests
 
-- [#4119](https://github.com/rollup/rollup/pull/4119): Respect propertyReadSideEffects in spread elements (@lukastaegert)
+- [#4119](https://github.com/rollup/rollup/pull/4119): Respect propertyReadSideEffects in spread elements ( @lukastaegert)
 - [#4120](https://github.com/rollup/rollup/pull/4120): Detect async arrow thenable side effects (@lukastaegert)
 
 ## 2.50.5
@@ -2538,8 +3961,8 @@ _2021-05-29_
 ### Pull Requests
 
 - [#4111](https://github.com/rollup/rollup/pull/4111): Always request a new tree-shaking pass when deoptimizations of a node are first included (@lukastaegert)
-- [#4112](https://github.com/rollup/rollup/pull/4112): Actually set the prototype when using a **proto** property (@lukastaegert)
-- [#4113](https://github.com/rollup/rollup/pull/4113): Track access side effects when using object spread operator (@lukastaegert)
+- [#4112](https://github.com/rollup/rollup/pull/4112): Actually set the prototype when using a **proto** property ( @lukastaegert)
+- [#4113](https://github.com/rollup/rollup/pull/4113): Track access side effects when using object spread operator ( @lukastaegert)
 
 ## 2.50.3
 
@@ -2568,8 +3991,8 @@ _2021-05-27_
 
 ### Pull Requests
 
-- [#4103](https://github.com/rollup/rollup/pull/4103): Do not track side-effect-free array methods as side effects (@lukastaegert)
-- [#4104](https://github.com/rollup/rollup/pull/4104): Fix crash when using inlineDynamicImports with no-treeshake (@lukastaegert)
+- [#4103](https://github.com/rollup/rollup/pull/4103): Do not track side-effect-free array methods as side effects ( @lukastaegert)
+- [#4104](https://github.com/rollup/rollup/pull/4104): Fix crash when using inlineDynamicImports with no-treeshake ( @lukastaegert)
 
 ## 2.50.1
 
@@ -2582,8 +4005,8 @@ _2021-05-26_
 
 ### Pull Requests
 
-- [#4095](https://github.com/rollup/rollup/pull/4095): Correctly associate pure annotations and remove invalid ones (@lukastaegert)
-- [#4099](https://github.com/rollup/rollup/pull/4099): Wrap leading function expression iifes in conditionals (@lukastaegert)
+- [#4095](https://github.com/rollup/rollup/pull/4095): Correctly associate pure annotations and remove invalid ones ( @lukastaegert)
+- [#4099](https://github.com/rollup/rollup/pull/4099): Wrap leading function expression iifes in conditionals ( @lukastaegert)
 
 ## 2.50.0
 
@@ -2685,7 +4108,7 @@ _2021-04-13_
 
 ### Pull Requests
 
-- [#4040](https://github.com/rollup/rollup/pull/4040): Prioritize manual chunk name over dynamic entry id (@lukastaegert)
+- [#4040](https://github.com/rollup/rollup/pull/4040): Prioritize manual chunk name over dynamic entry id ( @lukastaegert)
 
 ## 2.45.1
 
@@ -2717,7 +4140,7 @@ _2021-03-29_
 
 ### Features
 
-- Add a new option `makeAbsoluteExternalsRelative` to opt out of renormalizing absolute external ids to relative ids (#4021)
+- Add a new option `makeAbsoluteExternalsRelative` to opt out of renormalizing absolute external ids to relative ids ( #4021)
 - Extend the `resolveId` plugin hook to allow forcing or preventing renormalization of absolute external ids (#4021)
 - Make the rendered code of individual modules available in the generated bundle (#4028)
 
@@ -2769,7 +4192,7 @@ _2021-03-24_
 
 ### Pull Requests
 
-- [#4010](https://github.com/rollup/rollup/pull/4010): Return hook result inside promise with async timer end (@SuperOleg39)
+- [#4010](https://github.com/rollup/rollup/pull/4010): Return hook result inside promise with async timer end ( @SuperOleg39)
 
 ## 2.42.3
 
@@ -2781,7 +4204,7 @@ _2021-03-22_
 
 ### Pull Requests
 
-- [#4007](https://github.com/rollup/rollup/pull/4007): Tree-shake pure call expressions with optional chaining (@lukastaegert)
+- [#4007](https://github.com/rollup/rollup/pull/4007): Tree-shake pure call expressions with optional chaining ( @lukastaegert)
 
 ## 2.42.2
 
@@ -2910,7 +4333,7 @@ _2021-02-26_
 
 ### Features
 
-- Make sure that entry point variable names take precedence over variable names in dependencies when deconflicting (#3977)
+- Make sure that entry point variable names take precedence over variable names in dependencies when deconflicting ( #3977)
 
 ### Bug Fixes
 
@@ -2919,7 +4342,7 @@ _2021-02-26_
 ### Pull Requests
 
 - [#3972](https://github.com/rollup/rollup/pull/3972): Don't allow `:` in file names (@lukastaegert)
-- [#3976](https://github.com/rollup/rollup/pull/3976): Add soft breaks to guide to improve mobile experience (@lukastaegert)
+- [#3976](https://github.com/rollup/rollup/pull/3976): Add soft breaks to guide to improve mobile experience ( @lukastaegert)
 - [#3977](https://github.com/rollup/rollup/pull/3977): Reverse module deconflicting order (@lukastaegert)
 
 ## 2.39.1
@@ -2951,7 +4374,7 @@ _2021-02-12_
 
 ### Pull Requests
 
-- [#3952](https://github.com/rollup/rollup/pull/3952): implement `validate` output option and `--validate` CLI option (@kzc)
+- [#3952](https://github.com/rollup/rollup/pull/3952): implement `validate` output option and `--validate` CLI option ( @kzc)
 - [#3956](https://github.com/rollup/rollup/pull/3956): Update dependencies, fix fsevents issue (@lukastaegert)
 - [#3957](https://github.com/rollup/rollup/pull/3957): Make sure uninitialised exports turn up via .hasOwnProperty for non-ES formats (@lukastaegert)
 - [#3959](https://github.com/rollup/rollup/pull/3959): Allow overriding individual exports of reexported external namespaces (@lukastaegert)
@@ -2981,7 +4404,7 @@ _2021-02-02_
 
 ### Pull Requests
 
-- [#3947](https://github.com/rollup/rollup/pull/3947): Do not tear apart declarations in loop or if bodies (@lukastaegert)
+- [#3947](https://github.com/rollup/rollup/pull/3947): Do not tear apart declarations in loop or if bodies ( @lukastaegert)
 
 ## 2.38.3
 
@@ -2993,8 +4416,8 @@ _2021-02-01_
 
 ### Pull Requests
 
-- [#3945](https://github.com/rollup/rollup/pull/3945): Upgrade chokidar and fsevents for Apple M1 compatibility (@threepointone)
-- [#3946](https://github.com/rollup/rollup/pull/3946): Make sure default exports snapshot synthetic named exports (@lukastaegert)
+- [#3945](https://github.com/rollup/rollup/pull/3945): Upgrade chokidar and fsevents for Apple M1 compatibility ( @threepointone)
+- [#3946](https://github.com/rollup/rollup/pull/3946): Make sure default exports snapshot synthetic named exports ( @lukastaegert)
 
 ## 2.38.2
 
@@ -3007,7 +4430,7 @@ _2021-01-31_
 
 ### Pull Requests
 
-- [#3943](https://github.com/rollup/rollup/pull/3943): Do not partially tree-shake unused declarations in for loops (@lukastaegert)
+- [#3943](https://github.com/rollup/rollup/pull/3943): Do not partially tree-shake unused declarations in for loops ( @lukastaegert)
 - [#3944](https://github.com/rollup/rollup/pull/3944): Correctly include functions with side effects from side-effect-free modules (@lukastaegert)
 
 ## 2.38.1
@@ -3021,7 +4444,7 @@ _2021-01-28_
 ### Pull Requests
 
 - [#3935](https://github.com/rollup/rollup/pull/3935): fix: remove isolated resolve() for compat with browser distribution (@cmorten and @lukastaegert)
-- [#3936](https://github.com/rollup/rollup/pull/3936): Ensure test after() callback is always executed (@Benjamin-Dobell)
+- [#3936](https://github.com/rollup/rollup/pull/3936): Ensure test after() callback is always executed ( @Benjamin-Dobell)
 - [#3937](https://github.com/rollup/rollup/pull/3937): Modernize references to other software (@ludofischer)
 
 ## 2.38.0
@@ -3063,7 +4486,7 @@ _2021-01-19_
 ### Pull Requests
 
 - [#3840](https://github.com/rollup/rollup/pull/3840): Improve circular dependency execution order (@lukastaegert)
-- [#3894](https://github.com/rollup/rollup/pull/3894): Always respect synthetic namespaces in namespace reexport (@lukastaegert)
+- [#3894](https://github.com/rollup/rollup/pull/3894): Always respect synthetic namespaces in namespace reexport ( @lukastaegert)
 
 ## 2.36.2
 
@@ -3152,7 +4575,7 @@ _2020-12-03_
 - [#3887](https://github.com/rollup/rollup/pull/3887): Run memory leak test on all systems (@lukastaegert)
 - [#3892](https://github.com/rollup/rollup/pull/3892): Add pull_request to windows github actions (@shellscape)
 - [#3893](https://github.com/rollup/rollup/pull/3893): Update dependencies (@lukastaegert)
-- [#3896](https://github.com/rollup/rollup/pull/3896): Replace deprecated folder package export with pattern export (@lukastaegert)
+- [#3896](https://github.com/rollup/rollup/pull/3896): Replace deprecated folder package export with pattern export ( @lukastaegert)
 
 ## 2.34.0
 
@@ -3182,7 +4605,7 @@ _2020-11-18_
 ### Pull Requests
 
 - [#3861](https://github.com/rollup/rollup/pull/3861): Update chat/support links (@shellscape)
-- [#3872](https://github.com/rollup/rollup/pull/3872): Also removeExtensionFromRelativeAmdId in UMD finaliser (@tjenkinson)
+- [#3872](https://github.com/rollup/rollup/pull/3872): Also removeExtensionFromRelativeAmdId in UMD finaliser ( @tjenkinson)
 
 ## 2.33.2
 
@@ -3259,7 +4682,7 @@ _2020-10-15_
 
 ### Pull Requests
 
-- [#3822](https://github.com/rollup/rollup/pull/3822): Add module toStringTag to entries and interop namespaces (@lukastaegert)
+- [#3822](https://github.com/rollup/rollup/pull/3822): Add module toStringTag to entries and interop namespaces ( @lukastaegert)
 
 ## 2.30.0
 
@@ -3299,7 +4722,7 @@ _2020-10-08_
 ### Pull Requests
 
 - [#3807](https://github.com/rollup/rollup/pull/3807): Implement new APIs for inter-plugin communication (@lukastaegert)
-- [#3808](https://github.com/rollup/rollup/pull/3808): Document that the default value of --format is 'es' (@jameshfisher)
+- [#3808](https://github.com/rollup/rollup/pull/3808): Document that the default value of --format is 'es' ( @jameshfisher)
 - [#3812](https://github.com/rollup/rollup/pull/3812): Watch: listen for new files added to a directory (@dmitrage)
 
 ## 2.28.2
@@ -3366,7 +4789,7 @@ _2020-09-16_
 ### Pull Requests
 
 - [#3770](https://github.com/rollup/rollup/pull/3770): Docs: Exception for babel plugin and commonjs plugin (@jsk7)
-- [#3775](https://github.com/rollup/rollup/pull/3775): add ability to specify stdin file extension via --stdin=ext (@kzc)
+- [#3775](https://github.com/rollup/rollup/pull/3775): add ability to specify stdin file extension via --stdin=ext ( @kzc)
 - [#3782](https://github.com/rollup/rollup/pull/3782): Handle hoisted variables in dead branches of nested if statements (@lukastaegert)
 
 ## 2.26.11
@@ -3379,7 +4802,7 @@ _2020-09-08_
 
 ### Pull Requests
 
-- [#3769](https://github.com/rollup/rollup/pull/3769): Handle debugger statements as if-statement branches (@lukastaegert)
+- [#3769](https://github.com/rollup/rollup/pull/3769): Handle debugger statements as if-statement branches ( @lukastaegert)
 
 ## 2.26.10
 
@@ -3392,7 +4815,7 @@ _2020-09-04_
 ### Pull Requests
 
 - [#3757](https://github.com/rollup/rollup/pull/3757): Fix api docs loadconfigfile (@maxwell8888)
-- [#3762](https://github.com/rollup/rollup/pull/3762): Handle line-comments when removing line-breaks to prevent ASI (@lukastaegert)
+- [#3762](https://github.com/rollup/rollup/pull/3762): Handle line-comments when removing line-breaks to prevent ASI ( @lukastaegert)
 
 ## 2.26.9
 
@@ -3405,7 +4828,7 @@ _2020-09-01_
 ### Pull Requests
 
 - [#3754](https://github.com/rollup/rollup/pull/3754): Add RegExp to the include and exclude fields of the WatcherOptions type (@dagda1)
-- [#3756](https://github.com/rollup/rollup/pull/3756): Update FAQ: I think it was meant "external" instead of "other-entry.js" (@madacol)
+- [#3756](https://github.com/rollup/rollup/pull/3756): Update FAQ: I think it was meant "external" instead of " other-entry.js" (@madacol)
 
 ## 2.26.8
 
@@ -3417,7 +4840,7 @@ _2020-08-29_
 
 ### Pull Requests
 
-- [#3753](https://github.com/rollup/rollup/pull/3753): Also pass resolved ids to external if they use the object for (@lukastaegert)
+- [#3753](https://github.com/rollup/rollup/pull/3753): Also pass resolved ids to external if they use the object for ( @lukastaegert)
 
 ## 2.26.7
 
@@ -3483,7 +4906,7 @@ _2020-08-16_
 
 ### Pull Requests
 
-- [#3734](https://github.com/rollup/rollup/pull/3734): Prevent ASI when simplifying a nested logical expression (@lukastaegert)
+- [#3734](https://github.com/rollup/rollup/pull/3734): Prevent ASI when simplifying a nested logical expression ( @lukastaegert)
 
 ## 2.26.2
 
@@ -3577,7 +5000,7 @@ _2020-08-07_
 
 ### Bug Fixes
 
-- Fix an issue where dynamically importing an entry point could return a malformed namespace for CJS and AMD formats (#3709)
+- Fix an issue where dynamically importing an entry point could return a malformed namespace for CJS and AMD formats ( #3709)
 
 ### Pull Requests
 
@@ -3639,7 +5062,7 @@ _2020-07-07_
 
 ### Features
 
-- Allow plugins to disable tree-shaking for individual modules to ensure even empty modules are associated with chunks (#3663)
+- Allow plugins to disable tree-shaking for individual modules to ensure even empty modules are associated with chunks ( #3663)
 
 ### Pull Requests
 
@@ -3681,7 +5104,7 @@ _2020-07-02_
 
 ### Pull Requests
 
-- [#3652](https://github.com/rollup/rollup/pull/3652): Do not tree-shake arguments that contain a spread element (@lukastaegert)
+- [#3652](https://github.com/rollup/rollup/pull/3652): Do not tree-shake arguments that contain a spread element ( @lukastaegert)
 
 ## 2.18.1
 
@@ -3745,7 +5168,7 @@ _2020-06-17_
 
 - [#3634](https://github.com/rollup/rollup/pull/3634): Set browser build in exports (@guybedford)
 - [#3637](https://github.com/rollup/rollup/pull/3637): Do not include the whole namespace when illegally mutating a namespace (@lukastaegert)
-- [#3638](https://github.com/rollup/rollup/pull/3638): Support backslash escaping, retain exact newline escaping (@guybedford)
+- [#3638](https://github.com/rollup/rollup/pull/3638): Support backslash escaping, retain exact newline escaping ( @guybedford)
 - [#3641](https://github.com/rollup/rollup/pull/3641): Fix performance regression when a file is imported by many importers (@lukastaegert)
 
 ## 2.16.1
@@ -3775,7 +5198,7 @@ _2020-06-12_
 
 - [#3626](https://github.com/rollup/rollup/pull/3626): Support numeric separator (@TrySound)
 - [#3628](https://github.com/rollup/rollup/pull/3628): Acorn 7.3.0 upgrade (@guybedford)
-- [#3631](https://github.com/rollup/rollup/pull/3631): Improve discoverability of `manualChunks` for code splitting (@zlamma)
+- [#3631](https://github.com/rollup/rollup/pull/3631): Improve discoverability of `manualChunks` for code splitting ( @zlamma)
 
 ## 2.15.0
 
@@ -3830,7 +5253,7 @@ _2020-06-03_
 
 ### Pull Requests
 
-- [#3606](https://github.com/rollup/rollup/pull/3606): Enable specifying implicit dependencies when emitting chunks (@lukastaegert)
+- [#3606](https://github.com/rollup/rollup/pull/3606): Enable specifying implicit dependencies when emitting chunks ( @lukastaegert)
 
 ## 2.12.1
 
@@ -3850,7 +5273,7 @@ _2020-05-31_
 
 ### Features
 
-- Add an option `--waitForBundleInput` to let the build wait until all entry point files are available before starting (#3577)
+- Add an option `--waitForBundleInput` to let the build wait until all entry point files are available before starting ( #3577)
 
 ### Pull Requests
 
@@ -3894,7 +5317,7 @@ _2020-05-27_
 ### Bug Fixes
 
 - Do not fail when using a `/*#__PURE__*/` annotation inside a class field (#3599)
-- Allow using `--watch` and `--treeshake` together with sub-options such as `--watch.clearScreen` on the command line (#3597)
+- Allow using `--watch` and `--treeshake` together with sub-options such as `--watch.clearScreen` on the command line ( #3597)
 
 ### Pull Requests
 
@@ -3963,7 +5386,7 @@ _2020-05-19_
 
 ### Bug Fixes
 
-- Do not remove side-effects that may influence an included default export declaration when side-effects are disabled (#3572)
+- Do not remove side-effects that may influence an included default export declaration when side-effects are disabled ( #3572)
 
 ### Pull Requests
 
@@ -4044,7 +5467,7 @@ _2020-05-11_
 
 ### Pull Requests
 
-- [#3550](https://github.com/rollup/rollup/pull/3550): Track updates of globals that are exported as default (@lukastaegert)
+- [#3550](https://github.com/rollup/rollup/pull/3550): Track updates of globals that are exported as default ( @lukastaegert)
 
 ## 2.9.0
 
@@ -4100,7 +5523,7 @@ _2020-05-06_
 
 ### Bug Fixes
 
-- Do not execute dynamically imported code before synchronous code in the importing module when generating CommonJS (#3535)
+- Do not execute dynamically imported code before synchronous code in the importing module when generating CommonJS ( #3535)
 
 ### Pull Requests
 
@@ -4152,7 +5575,7 @@ _2020-04-27_
 
 ### Pull Requests
 
-- [#3518](https://github.com/rollup/rollup/pull/3518): use acorn-class-fields and acorn-static-class-features from npm (@nitsky)
+- [#3518](https://github.com/rollup/rollup/pull/3518): use acorn-class-fields and acorn-static-class-features from npm ( @nitsky)
 
 ## 2.7.2
 
@@ -4167,7 +5590,7 @@ _2020-04-22_
 ### Pull Requests
 
 - [#3509](https://github.com/rollup/rollup/pull/3509): Ban emitFile via absolute paths on Windows OS (@SASUKE40)
-- [#3510](https://github.com/rollup/rollup/pull/3510): Do not fail for circular imports between manual chunks (@lukastaegert)
+- [#3510](https://github.com/rollup/rollup/pull/3510): Do not fail for circular imports between manual chunks ( @lukastaegert)
 - [#3511](https://github.com/rollup/rollup/pull/3511): Support "super" in class fields (@lukastaegert)
 
 ## 2.7.1
@@ -4194,7 +5617,7 @@ _2020-04-21_
 
 ### Pull Requests
 
-- [#3498](https://github.com/rollup/rollup/pull/3498): Add option to configure if entry signatures are preserved (@lukastaegert)
+- [#3498](https://github.com/rollup/rollup/pull/3498): Add option to configure if entry signatures are preserved ( @lukastaegert)
 
 ## 2.6.1
 
@@ -4206,7 +5629,7 @@ _2020-04-12_
 
 ### Pull Requests
 
-- [#3493](https://github.com/rollup/rollup/pull/3493): Ensure --watch mode exits correctly when stdin is closed (@jakesgordon)
+- [#3493](https://github.com/rollup/rollup/pull/3493): Ensure --watch mode exits correctly when stdin is closed ( @jakesgordon)
 
 ## 2.6.0
 
@@ -4355,7 +5778,7 @@ _2020-03-18_
 
 ### Pull Requests
 
-- [#3442](https://github.com/rollup/rollup/pull/3442): Add optional `importer` parameter to `this.emitFile` (@lukastaegert)
+- [#3442](https://github.com/rollup/rollup/pull/3442): Add optional `importer` parameter to `this.emitFile` ( @lukastaegert)
 
 ## 2.0.6
 
@@ -4405,8 +5828,8 @@ _2020-03-10_
 
 - [#3377](https://github.com/rollup/rollup/pull/3377): Switch to yargs-parser lib (@jamesgeorge007)
 - [#3426](https://github.com/rollup/rollup/pull/3426): Use strict types with PluginDriver (@NotWoods)
-- [#3431](https://github.com/rollup/rollup/pull/3431): Add missing type declaration for getCombinedSourcemap (@Anidetrix)
-- [#3432](https://github.com/rollup/rollup/pull/3432): Detail how return values from `augmentChunkHash` are used (@jakearchibald)
+- [#3431](https://github.com/rollup/rollup/pull/3431): Add missing type declaration for getCombinedSourcemap ( @Anidetrix)
+- [#3432](https://github.com/rollup/rollup/pull/3432): Detail how return values from `augmentChunkHash` are used ( @jakearchibald)
 
 ## 2.0.2
 
@@ -4446,11 +5869,11 @@ _2020-03-06_
 
   In general, the ESM builds now follow the same naming scheme as the CJS builds but are located in the `rollup/dist/es` subfolder instead of `rollup/dist` (#3391)
 
-- The "watch.chokidar" option no longer accepts a `boolean` value but only an object of parameters that is passed to the bundled Chokidar instance. Chokidar installations by the user will be ignored in favour of the bundled instance (#3331)
+- The "watch.chokidar" option no longer accepts a `boolean` value but only an object of parameters that is passed to the bundled Chokidar instance. Chokidar installations by the user will be ignored in favour of the bundled instance ( #3331)
 - Modules that are completely tree-shaken will no longer be listed as part of any chunks in `generateBundle`
 - The `experimentalOptimizeChunks` and `chunkGroupingSize` options have been removed
 - [acorn](https://github.com/acornjs/acorn) plugins can only be used if they accept a passed-in acorn instance instead of importing it themselves. See https://github.com/acornjs/acorn/pull/870#issuecomment-527339830 for what needs to be done to make plugins compatible that do not support this yet (#3391)
-- Emitted chunks now have the TypeScript type `Uint8Array` instead of `Buffer`. A `Buffer` can still be used, though (#3395)
+- Emitted chunks now have the TypeScript type `Uint8Array` instead of `Buffer`. A `Buffer` can still be used, though ( #3395)
 - The TypeScript types no longer use ESTree types for AST nodes but a very generic type that does not contain information specific to certain node types (#3395)
 - The signature of the `writeBundle` plugin hook has been changed to match `generateBundle`: The bundle object is now passed as second parameter instead of first and the first parameter is the output options (#3361)
 - The following plugin hooks have been removed:
@@ -4478,7 +5901,7 @@ _2020-03-06_
 
 - Rollup now bundles [Chokidar](https://github.com/paulmillr/chokidar) for a better watch experience (#3331)
 - Rollup now bundles [acorn](https://github.com/acornjs/acorn) again, removing its only external dependency (#3391)
-- Do not consider empty imports from side-effect-free modules for chunking and hoist side-effect imports if necessary (#3369)
+- Do not consider empty imports from side-effect-free modules for chunking and hoist side-effect imports if necessary ( #3369)
 - Rollup can now be imported as an ES module in Node via `import {rollup} from 'rollup'`. Note that this relies on Node's experimental [conditional package exports](https://nodejs.org/dist/latest-v13.x/docs/api/esm.html#esm_conditional_exports) feature and is therefore itself experimental (#3391)
 - `systemjs` can be used as format alias for `system` (#3381)
 
@@ -4494,7 +5917,7 @@ _2020-03-06_
 - [#3343](https://github.com/rollup/rollup/pull/3343): Remove experimentalOptimizeChunks (@lukastaegert)
 - [#3346](https://github.com/rollup/rollup/pull/3346): Update minimum required Node version to 10 (@lukastaegert)
 - [#3352](https://github.com/rollup/rollup/pull/3352): Remove active deprecations (@lukastaegert)
-- [#3361](https://github.com/rollup/rollup/pull/3361): Change writeBundle signature to match generateBundle (@lukastaegert)
+- [#3361](https://github.com/rollup/rollup/pull/3361): Change writeBundle signature to match generateBundle ( @lukastaegert)
 - [#3369](https://github.com/rollup/rollup/pull/3369): Avoid empty imports from side-effect-free chunks (@lukastaegert)
 - [#3381](https://github.com/rollup/rollup/pull/3381): Rename esm to es everywhere, add systemjs alias (@lukastaegert)
 - [#3391](https://github.com/rollup/rollup/pull/3391): Bundle acorn, allow importing Rollup as Node ES module, update dependencies (@lukastaegert)
@@ -4517,9 +5940,9 @@ _2020-03-06_
 
 - [#3372](https://github.com/rollup/rollup/pull/3372): Add warning code for missing output.name of IIFE bundle that has export (@rail44)
 - [#3401](https://github.com/rollup/rollup/pull/3401): Missing exports errors now print the importing module (@timiyay)
-- [#3418](https://github.com/rollup/rollup/pull/3418): Structure lifecycle hooks, add links to build time hooks (@lukastaegert)
+- [#3418](https://github.com/rollup/rollup/pull/3418): Structure lifecycle hooks, add links to build time hooks ( @lukastaegert)
 - [#3420](https://github.com/rollup/rollup/pull/3420): Update generated code of getInteropBlock() to work with null prototype objects (@jdalton)
-- [#3421](https://github.com/rollup/rollup/pull/3421): Avoid invalid code when "else" branch is simplified (@lukastaegert)
+- [#3421](https://github.com/rollup/rollup/pull/3421): Avoid invalid code when "else" branch is simplified ( @lukastaegert)
 
 ## 1.32.0
 
@@ -4548,7 +5971,7 @@ _2020-02-14_
 
 - [#3366](https://github.com/rollup/rollup/pull/3366): Correct spelling minifaction to minification (@VictorHom)
 - [#3371](https://github.com/rollup/rollup/pull/3371): Adjust bug template to mention REPL.it (@lukastaegert)
-- [#3388](https://github.com/rollup/rollup/pull/3388): Run transform hooks again in watch mode on files that errored (@lukastaegert)
+- [#3388](https://github.com/rollup/rollup/pull/3388): Run transform hooks again in watch mode on files that errored ( @lukastaegert)
 
 ## 1.31.0
 
@@ -4619,14 +6042,14 @@ _2020-01-08_
 ### Bug Fixes
 
 - Deconflict files that would conflict only on a case-insensitive OS (#3317)
-- Do not fail in certain scenarios where a logical expression inside a sequence expression was being directly included (#3327)
+- Do not fail in certain scenarios where a logical expression inside a sequence expression was being directly included ( #3327)
 
 ### Pull Requests
 
 - [#3089](https://github.com/rollup/rollup/pull/3089): Move top-level await out of experimental (@guybedford)
 - [#3302](https://github.com/rollup/rollup/pull/3302): Adds type definitions for RollupWatcher events (@NotWoods)
 - [#3317](https://github.com/rollup/rollup/pull/3317): Fix module id conflict on a case insensitive OS (@yesmeck)
-- [#3327](https://github.com/rollup/rollup/pull/3327): Handle deoptimizations while a node is being included (@lukastaegert)
+- [#3327](https://github.com/rollup/rollup/pull/3327): Handle deoptimizations while a node is being included ( @lukastaegert)
 
 ## 1.28.0
 
@@ -4713,7 +6136,7 @@ _2019-12-11_
 
 ### Pull Requests
 
-- [#3278](https://github.com/rollup/rollup/pull/3278): Avoid some unnecessary value tracking deoptimizations (@lukastaegert)
+- [#3278](https://github.com/rollup/rollup/pull/3278): Avoid some unnecessary value tracking deoptimizations ( @lukastaegert)
 
 ## 1.27.9
 
@@ -4726,7 +6149,7 @@ _2019-12-07_
 
 ### Pull Requests
 
-- [#3272](https://github.com/rollup/rollup/pull/3272): Support either NO_COLOR or FORCE_COLOR=0 to turn off color (@kikonen)
+- [#3272](https://github.com/rollup/rollup/pull/3272): Support either NO_COLOR or FORCE_COLOR=0 to turn off color ( @kikonen)
 - [#3273](https://github.com/rollup/rollup/pull/3273): Make sure that indirectly reexported modules also become chunk dependencies when preserving modules(@lukastaegert)
 
 ## 1.27.8
@@ -4764,7 +6187,7 @@ _2019-11-30_
 
 ### Pull Requests
 
-- [#3265](https://github.com/rollup/rollup/pull/3265): Use export mode "auto" by default when preserving modules (@lukastaegert)
+- [#3265](https://github.com/rollup/rollup/pull/3265): Use export mode "auto" by default when preserving modules ( @lukastaegert)
 
 ## 1.27.5
 
@@ -4829,7 +6252,7 @@ _2019-11-18_
 
 - [#3237](https://github.com/rollup/rollup/pull/3237): make `acornOptions` optional in `parse()` in docs (@tjenkinson)
 - [#3240](https://github.com/rollup/rollup/pull/3240): Update dependencies and fix vulnerability (@lukastaegert)
-- [#3241](https://github.com/rollup/rollup/pull/3241): Do not truncate after switch-statement with removed case (@lukastaegert)
+- [#3241](https://github.com/rollup/rollup/pull/3241): Do not truncate after switch-statement with removed case ( @lukastaegert)
 
 ## 1.27.0
 
@@ -4872,8 +6295,8 @@ _2019-11-09_
 ### Pull Requests
 
 - [#3216](https://github.com/rollup/rollup/pull/3216): Fix small typo (@kaisermann)
-- [#3217](https://github.com/rollup/rollup/pull/3217): Update dependencies and fix security vulnerability (@lukastaegert)
-- [#3219](https://github.com/rollup/rollup/pull/3219): Also recover from plugin errors during the initial build (@lukastaegert)
+- [#3217](https://github.com/rollup/rollup/pull/3217): Update dependencies and fix security vulnerability ( @lukastaegert)
+- [#3219](https://github.com/rollup/rollup/pull/3219): Also recover from plugin errors during the initial build ( @lukastaegert)
 
 ## 1.26.3
 
@@ -4897,7 +6320,7 @@ _2019-10-31_
 
 ### Pull Requests
 
-- [#3209](https://github.com/rollup/rollup/pull/3209): Also remove export-all declarations when not tree-shaking (@lukastaegert)
+- [#3209](https://github.com/rollup/rollup/pull/3209): Also remove export-all declarations when not tree-shaking ( @lukastaegert)
 
 ## 1.26.1
 
@@ -4921,7 +6344,7 @@ _2019-10-27_
 
 - Only warn when no output is provided for an IIFE bundle but still produce valid code (#3181)
 - Support reexporting namespaces as a binding (#3193)
-- Switch from hash.js to crypto for hashing in the Node build for better performance and support for very large assets (#3194)
+- Switch from hash.js to crypto for hashing in the Node build for better performance and support for very large assets ( #3194)
 
 ### Bug Fixes
 
@@ -4929,7 +6352,7 @@ _2019-10-27_
 
 ### Pull Requests
 
-- [#3181](https://github.com/rollup/rollup/pull/3181): Remove the need to provide an output name for IIFE bundles (@bterrier)
+- [#3181](https://github.com/rollup/rollup/pull/3181): Remove the need to provide an output name for IIFE bundles ( @bterrier)
 - [#3193](https://github.com/rollup/rollup/pull/3193): Add support for "export \* as name from …" (@lukastaegert)
 - [#3194](https://github.com/rollup/rollup/pull/3194): Add support for large assets (> 100 MB) (@SebastianNiemann)
 
@@ -4961,7 +6384,7 @@ _2019-10-20_
 ### Pull Requests
 
 - [#3175](https://github.com/rollup/rollup/pull/3175): Disable errors for duplicate emitted file names (@marijnh)
-- [#3176](https://github.com/rollup/rollup/pull/3176): Add original parser error to rollup error; Update tests (@gribnoysup)
+- [#3176](https://github.com/rollup/rollup/pull/3176): Add original parser error to rollup error; Update tests ( @gribnoysup)
 - [#3178](https://github.com/rollup/rollup/pull/3178): Fix switch case not being included correctly (@lukastaegert)
 - [#3179](https://github.com/rollup/rollup/pull/3179): Update dependencies (@lukastaegert)
 - [#3180](https://github.com/rollup/rollup/pull/3180): Handle conditional breaks in do-while loops with unconditional return (@lukastaegert)
@@ -5020,7 +6443,7 @@ _2019-10-05_
 
 ### Pull Requests
 
-- [#3143](https://github.com/rollup/rollup/pull/3143): Ensure that types packages have star version ranges (@lukastaegert)
+- [#3143](https://github.com/rollup/rollup/pull/3143): Ensure that types packages have star version ranges ( @lukastaegert)
 
 ## 1.23.0
 
@@ -5113,7 +6536,7 @@ _2019-09-08_
 ### Features
 
 - Respect `output.entryFileNames` when preserving modules (#3088)
-- Make accessing unknown globals a side-effect unless this is deactivated via `treeshake.unknownGlobalSideEffects` (#3068)
+- Make accessing unknown globals a side-effect unless this is deactivated via `treeshake.unknownGlobalSideEffects` ( #3068)
 - Respect global objects when checking for pure global functions (#3068)
 - Introduce a `type` to more easily distinguish chunks and assets in the output bundle (#3080)
 
@@ -5143,7 +6566,7 @@ _2019-08-28_
 
 - [#3078](https://github.com/rollup/rollup/pull/3078): Add github actions workflow config for windows (@shellscape)
 - [#3083](https://github.com/rollup/rollup/pull/3083): Properly reflect dependency file names in hash (@lukastaegert)
-- [#3084](https://github.com/rollup/rollup/pull/3084): Fix "default" reexport issues in non ESM/System formats (@lukastaegert)
+- [#3084](https://github.com/rollup/rollup/pull/3084): Fix "default" reexport issues in non ESM/System formats ( @lukastaegert)
 
 ## 1.20.2
 
@@ -5169,7 +6592,7 @@ _2019-08-22_
 ### Pull Requests
 
 - [#3073](https://github.com/rollup/rollup/pull/3073): Fix wrong variable name in import expression (@lukastaegert)
-- [#3074](https://github.com/rollup/rollup/pull/3074): Fixes type definition on watch and Watcher constructor (@MicahZoltu)
+- [#3074](https://github.com/rollup/rollup/pull/3074): Fixes type definition on watch and Watcher constructor ( @MicahZoltu)
 
 ## 1.20.0
 
@@ -5191,11 +6614,11 @@ _2019-08-21_
 - [#2995](https://github.com/rollup/rollup/pull/2995): Add info on installing locally to docs (@mesqueeb)
 - [#3037](https://github.com/rollup/rollup/pull/3037): Refresh pull request labels (@shellscape)
 - [#3048](https://github.com/rollup/rollup/pull/3048): Document ROLLUP_WATCH environment variable (@shellscape)
-- [#3051](https://github.com/rollup/rollup/pull/3051): Avoid changes to the original options (.acorn) object (@LongTengDao)
+- [#3051](https://github.com/rollup/rollup/pull/3051): Avoid changes to the original options (.acorn) object ( @LongTengDao)
 - [#3052](https://github.com/rollup/rollup/pull/3052): Minor refactoring: Remove one try-catch (@KSXGitHub)
 - [#3053](https://github.com/rollup/rollup/pull/3053): Refactor to use async-await in more places (@KSXGitHub)
 - [#3055](https://github.com/rollup/rollup/pull/3055): Provide consistent chunking via a consistent order of entry modules when emitting chunks (@lukastaegert)
-- [#3058](https://github.com/rollup/rollup/pull/3058): Remove acorn-bigint and acorn-dynamic-import from bundle (@LongTengDao)
+- [#3058](https://github.com/rollup/rollup/pull/3058): Remove acorn-bigint and acorn-dynamic-import from bundle ( @LongTengDao)
 - [#3061](https://github.com/rollup/rollup/pull/3061): Update to acorn@7 (@lukastaegert)
 - [#3063](https://github.com/rollup/rollup/pull/3063): Auto-generate license file (@lukastaegert)
 - [#3069](https://github.com/rollup/rollup/pull/3069): Prevent infinite loop when scanning for line-breaks and there are comment-like strings (@lukastaegert)
@@ -5265,7 +6688,7 @@ _2019-08-05_
 ### Pull Requests
 
 - [#2999](https://github.com/rollup/rollup/pull/2999): Unified file emission api (@lukastaegert)
-- [#3020](https://github.com/rollup/rollup/pull/3020): Switch to a code-splitting build and update dependencies (@lukastaegert)
+- [#3020](https://github.com/rollup/rollup/pull/3020): Switch to a code-splitting build and update dependencies ( @lukastaegert)
 - [#3025](https://github.com/rollup/rollup/pull/3025): Use id of last module in chunk as name base for auto-generated chunks (@lukastaegert)
 - [#3026](https://github.com/rollup/rollup/pull/3026): Avoid variable from empty module name be empty (@LongTengDao)
 
@@ -5281,7 +6704,7 @@ _2019-08-01_
 
 - [#2997](https://github.com/rollup/rollup/pull/2997): Integrate coverage into CI setup (@lukastaegert)
 - [#2998](https://github.com/rollup/rollup/pull/2998): Update readme badges (@lukastaegert)
-- [#3010](https://github.com/rollup/rollup/pull/3010): Add option to prevent code for external live bindings (@lukastaegert)
+- [#3010](https://github.com/rollup/rollup/pull/3010): Add option to prevent code for external live bindings ( @lukastaegert)
 
 ## 1.17.0
 
@@ -5308,7 +6731,7 @@ _2019-07-09_
 ### Pull Requests
 
 - [#2985](https://github.com/rollup/rollup/pull/2985): Improve sourcemap types (@jridgewell)
-- [#2986](https://github.com/rollup/rollup/pull/2986): Only overwrite content when resolving import.meta properties (@lukastaegert)
+- [#2986](https://github.com/rollup/rollup/pull/2986): Only overwrite content when resolving import.meta properties ( @lukastaegert)
 
 ## 1.16.6
 
@@ -5320,7 +6743,7 @@ _2019-07-04_
 
 ### Pull Requests
 
-- [#2984](https://github.com/rollup/rollup/pull/2984): Always forward AST nodes for unresolvable dynamic imports (@lukastaegert)
+- [#2984](https://github.com/rollup/rollup/pull/2984): Always forward AST nodes for unresolvable dynamic imports ( @lukastaegert)
 
 ## 1.16.5
 
@@ -5334,7 +6757,7 @@ _2019-07-04_
 ### Pull Requests
 
 - [#2981](https://github.com/rollup/rollup/pull/2981): Do not skip onwarn handler when --silent is used (@lukastaegert)
-- [#2982](https://github.com/rollup/rollup/pull/2982): Make tests run on Node 12, fix watcher cleanup issue (@lukastaegert)
+- [#2982](https://github.com/rollup/rollup/pull/2982): Make tests run on Node 12, fix watcher cleanup issue ( @lukastaegert)
 
 ## 1.16.4
 
@@ -5373,7 +6796,7 @@ _2019-06-22_
 
 ### Pull Requests
 
-- [#2958](https://github.com/rollup/rollup/pull/2958): Make sure errors from dynamic imports can be caught (@lukastaegert)
+- [#2958](https://github.com/rollup/rollup/pull/2958): Make sure errors from dynamic imports can be caught ( @lukastaegert)
 
 ## 1.16.1
 
@@ -5416,7 +6839,7 @@ _2019-06-16_
 ### Pull Requests
 
 - [#2893](https://github.com/rollup/rollup/pull/2893): Improve handling of conflicting namespace exports (@aleclarson)
-- [#2942](https://github.com/rollup/rollup/pull/2942): Get rid of alternate screen and simplify screen clearing (@lukastaegert)
+- [#2942](https://github.com/rollup/rollup/pull/2942): Get rid of alternate screen and simplify screen clearing ( @lukastaegert)
 
 ## 1.15.5
 
@@ -5424,13 +6847,13 @@ _2019-06-14_
 
 ### Bug Fixes
 
-- Do not include any comments for completely tree-shaken files so that `renderedLength === 0` is a reliable check (#2940)
+- Do not include any comments for completely tree-shaken files so that `renderedLength === 0` is a reliable check ( #2940)
 - Do not cause type errors when returning `null` from `resolveId` (#2941)
 
 ### Pull Requests
 
-- [#2940](https://github.com/rollup/rollup/pull/2940): Completely omit files that do not have any included statements (@lukastaegert)
-- [#2941](https://github.com/rollup/rollup/pull/2941): Explicitly allow null as return value for various hooks (@lukastaegert)
+- [#2940](https://github.com/rollup/rollup/pull/2940): Completely omit files that do not have any included statements ( @lukastaegert)
+- [#2941](https://github.com/rollup/rollup/pull/2941): Explicitly allow null as return value for various hooks ( @lukastaegert)
 
 ## 1.15.4
 
@@ -5454,7 +6877,7 @@ _2019-06-13_
 
 ### Pull Requests
 
-- [#2936](https://github.com/rollup/rollup/pull/2936): Fix repeated re-emission of files emitted from a transform hook (@lukastaegert)
+- [#2936](https://github.com/rollup/rollup/pull/2936): Fix repeated re-emission of files emitted from a transform hook ( @lukastaegert)
 
 ## 1.15.2
 
@@ -5478,7 +6901,7 @@ _2019-06-11_
 
 ### Pull Requests
 
-- [#2928](https://github.com/rollup/rollup/pull/2928): Handle reexports from dynamic entries across chunk (@lukastaegert)
+- [#2928](https://github.com/rollup/rollup/pull/2928): Handle reexports from dynamic entries across chunk ( @lukastaegert)
 
 ## 1.15.0
 
@@ -5526,7 +6949,7 @@ _2019-06-09_
 ### Pull Requests
 
 - [#2906](https://github.com/rollup/rollup/pull/2906): Update dependencies (@lukastaegert)
-- [#2907](https://github.com/rollup/rollup/pull/2907): Do not renormalize external ids when using the object form (@lukastaegert)
+- [#2907](https://github.com/rollup/rollup/pull/2907): Do not renormalize external ids when using the object form ( @lukastaegert)
 - [#2908](https://github.com/rollup/rollup/pull/2908): Cache dynamic ids if possible (@lukastaegert)
 - [#2911](https://github.com/rollup/rollup/pull/2911): Fix treeshaken parameters around parentheses (@manucorporat)
 
@@ -5578,7 +7001,7 @@ _2019-06-05_
 ### Pull Requests
 
 - [#2898](https://github.com/rollup/rollup/pull/2898): Properly include try-catch-statements even if they have already been included in some way (@lukastaegert)
-- [#2899](https://github.com/rollup/rollup/pull/2899): Fix unintended early return in await inclusion handling (@lukastaegert)
+- [#2899](https://github.com/rollup/rollup/pull/2899): Fix unintended early return in await inclusion handling ( @lukastaegert)
 
 ## 1.14.0
 
@@ -5604,7 +7027,7 @@ _2019-06-01_
 ### Pull Requests
 
 - [#2888](https://github.com/rollup/rollup/pull/2888): Enable full TypeScript strict mode (@lukastaegert)
-- [#2889](https://github.com/rollup/rollup/pull/2889): Protect all module globals for CJS output from being redefined (@lukastaegert)
+- [#2889](https://github.com/rollup/rollup/pull/2889): Protect all module globals for CJS output from being redefined ( @lukastaegert)
 
 ## 1.13.0
 
@@ -5617,12 +7040,12 @@ _2019-05-31_
 
 ### Bug Fixes
 
-- Avoid conflicts with local variables when using format specific globals to render dynamic imports and file URLs (#2880)
+- Avoid conflicts with local variables when using format specific globals to render dynamic imports and file URLs ( #2880)
 - Do not produce undefined reexports when reexporting from entry points (#2885)
 
 ### Pull Requests
 
-- [#2880](https://github.com/rollup/rollup/pull/2880): Deconflict global variables used inside format-specific code (@lukastaegert)
+- [#2880](https://github.com/rollup/rollup/pull/2880): Deconflict global variables used inside format-specific code ( @lukastaegert)
 - [#2885](https://github.com/rollup/rollup/pull/2885): Do not produce undefined reexports when reexporting from entry points and refactor chunk linking (@lukastaegert)
 
 ## 1.12.5
@@ -5631,7 +7054,7 @@ _2019-05-30_
 
 ### Pull Requests
 
-- [#2884](https://github.com/rollup/rollup/pull/2884): Update pluginutils for new micormatch and reduced bundle size (@lukastaegert)
+- [#2884](https://github.com/rollup/rollup/pull/2884): Update pluginutils for new micormatch and reduced bundle size ( @lukastaegert)
 
 ## 1.12.4
 
@@ -5685,7 +7108,7 @@ _2019-05-16_
 
 ### Pull Requests
 
-- [#2860](https://github.com/rollup/rollup/pull/2860): Update to latest plugins and extend file name sanitation (@lukastaegert)
+- [#2860](https://github.com/rollup/rollup/pull/2860): Update to latest plugins and extend file name sanitation ( @lukastaegert)
 - [#2861](https://github.com/rollup/rollup/pull/2861): Allow transformers to return an empty string (@lukastaegert)
 
 ## 1.12.0
@@ -5696,13 +7119,13 @@ _2019-05-15_
 
 - Add `treeshake.moduleSideEffects` option to allow removing empty imports without a side-effect check (#2844)
 - Extend plugin API to allow marking modules as side-effect-free (#2844)
-- Extend `this.resolve` plugin context function with an option to skip the `resolveId` hook of the calling plugin (#2844)
+- Extend `this.resolve` plugin context function with an option to skip the `resolveId` hook of the calling plugin ( #2844)
 - Add `isEntry` flag to `this.getModuleInfo` plugin context function (#2844)
 - Distribute Rollup as optimized ES2015 code (#2851)
 
 ### Pull Requests
 
-- [#2844](https://github.com/rollup/rollup/pull/2844): Add options and hooks to control module side effects (@lukastaegert)
+- [#2844](https://github.com/rollup/rollup/pull/2844): Add options and hooks to control module side effects ( @lukastaegert)
 - [#2851](https://github.com/rollup/rollup/pull/2851): Switch to ES2015 output (@lukastaegert)
 
 ## 1.11.3
@@ -5727,7 +7150,7 @@ _2019-05-04_
 
 ### Pull Requests
 
-- [#2836](https://github.com/rollup/rollup/pull/2836): Make sure circular `export * from X` does not stack overflow (@Swatinem)
+- [#2836](https://github.com/rollup/rollup/pull/2836): Make sure circular `export * from X` does not stack overflow ( @Swatinem)
 
 ## 1.11.1
 
@@ -5739,7 +7162,7 @@ _2019-05-04_
 
 ### Pull Requests
 
-- [#2835](https://github.com/rollup/rollup/pull/2835): Fix `removedExports` to correctly track the exported item (@Swatinem)
+- [#2835](https://github.com/rollup/rollup/pull/2835): Fix `removedExports` to correctly track the exported item ( @Swatinem)
 
 ## 1.11.0
 
@@ -5759,7 +7182,7 @@ _2019-05-03_
 
 - Do not create invalid code if a dynamic import contains nothing but reexports (#2809)
 - Do not fail if modules that define a manual chunk depend on each other (#2809)
-- Do not fail if a module that defines a manual chunk is the dependency of a module defining a different manual chunk (#2809)
+- Do not fail if a module that defines a manual chunk is the dependency of a module defining a different manual chunk ( #2809)
 - No longer fail for unnamed duplicate entry points but combine them (#2809)
 - Always return `string | null` from `this.resolveId` even if some `resolveId` hooks return objects (#2829)
 - Show proper warnings when `resolveDynamicImport` resolves to a non-external module that does not exist (#2829)
@@ -5854,8 +7277,8 @@ _2019-04-05_
 ### Pull Requests
 
 - [#2789](https://github.com/rollup/rollup/pull/2789): Ship with bigint support built-in (@danielgindi)
-- [#2791](https://github.com/rollup/rollup/pull/2791): Use shared extractAssignedNames from rollup-pluginutils (@lukastaegert)
-- [#2792](https://github.com/rollup/rollup/pull/2792): Test that rollup-plugin-commonjs works with preserveModules (@lukastaegert)
+- [#2791](https://github.com/rollup/rollup/pull/2791): Use shared extractAssignedNames from rollup-pluginutils ( @lukastaegert)
+- [#2792](https://github.com/rollup/rollup/pull/2792): Test that rollup-plugin-commonjs works with preserveModules ( @lukastaegert)
 
 ## 1.8.0
 
@@ -5999,7 +7422,7 @@ _2019-03-04_
 
 ### Pull Requests
 
-- [#2733](https://github.com/rollup/rollup/pull/2733): Do not treat the import target "" as external by default (@LongTengDao)
+- [#2733](https://github.com/rollup/rollup/pull/2733): Do not treat the import target "" as external by default ( @LongTengDao)
 
 ## 1.4.0
 
@@ -6023,8 +7446,8 @@ _2019-03-01_
 
 ### Pull Requests
 
-- [#2730](https://github.com/rollup/rollup/pull/2730): Order types, interfaces, classes, and object members (@lukastaegert)
-- [#2732](https://github.com/rollup/rollup/pull/2732): Take chunk export mode into account when reexporting default (@lukastaegert)
+- [#2730](https://github.com/rollup/rollup/pull/2730): Order types, interfaces, classes, and object members ( @lukastaegert)
+- [#2732](https://github.com/rollup/rollup/pull/2732): Take chunk export mode into account when reexporting default ( @lukastaegert)
 
 ## 1.3.2
 
@@ -6048,7 +7471,7 @@ _2019-02-27_
 
 ### Pull Requests
 
-- [#2727](https://github.com/rollup/rollup/pull/2727): Take chunk export mode into account when reexporting default (@lukastaegert)
+- [#2727](https://github.com/rollup/rollup/pull/2727): Take chunk export mode into account when reexporting default ( @lukastaegert)
 
 ## 1.3.0
 
@@ -6096,7 +7519,7 @@ _2019-02-23_
 
 ### Pull Requests
 
-- [#2714](https://github.com/rollup/rollup/pull/2714): Properly render dynamic imports when imported module is empty (@lukastaegert)
+- [#2714](https://github.com/rollup/rollup/pull/2714): Properly render dynamic imports when imported module is empty ( @lukastaegert)
 
 ## 1.2.2
 
@@ -6149,7 +7572,7 @@ _2019-02-17_
 - [#2689](https://github.com/rollup/rollup/pull/2689): Reimplement variable deconflicting logic (@lukastaegert)
 - [#2691](https://github.com/rollup/rollup/pull/2691): Fix CI issues and update acorn dependency (@lukastaegert)
 - [#2693](https://github.com/rollup/rollup/pull/2693): Fix typo in export-globals test (@MattiasBuelens)
-- [#2695](https://github.com/rollup/rollup/pull/2695): Respect rendered exports when generating chunk hashes (@lukastaegert)
+- [#2695](https://github.com/rollup/rollup/pull/2695): Respect rendered exports when generating chunk hashes ( @lukastaegert)
 - [#2696](https://github.com/rollup/rollup/pull/2696): Correctly render function expression inside simplified expression statements (@lukastaegert)
 - [#2700](https://github.com/rollup/rollup/pull/2700): Add a fix for MaxListenersExceededWarning (@luwes)
 - [#2703](https://github.com/rollup/rollup/pull/2703): Update rollup-pluginutils (@lukastaegert)
@@ -6179,7 +7602,7 @@ _2019-01-19_
 ### Pull Requests
 
 - [#2652](https://github.com/rollup/rollup/pull/2652): Make sure object prototype methods are not considered to be falsy (@lukastaegert)
-- [#2654](https://github.com/rollup/rollup/pull/2654): Use correct signature for `this.setAssetSource` in docs (@everdimension)
+- [#2654](https://github.com/rollup/rollup/pull/2654): Use correct signature for `this.setAssetSource` in docs ( @everdimension)
 - [#2656](https://github.com/rollup/rollup/pull/2656): Swap descriptions for `[extname]` and `[ext]` in docs (@tivac)
 
 ## 1.1.0
@@ -6198,7 +7621,7 @@ _2019-01-09_
 
 ### Pull Requests
 
-- [#2636](https://github.com/rollup/rollup/pull/2636): Improve how acorn is imported, update dependencies (@lukastaegert)
+- [#2636](https://github.com/rollup/rollup/pull/2636): Improve how acorn is imported, update dependencies ( @lukastaegert)
 - [#2642](https://github.com/rollup/rollup/pull/2642): Make this.meta available in options hook, pass input options to buildStart (@lukastaegert)
 - [#2643](https://github.com/rollup/rollup/pull/2643): Implement writeBundle hook (@lukastaegert)
 
@@ -6218,7 +7641,7 @@ _2019-01-05_
 - [#2635](https://github.com/rollup/rollup/pull/2635): Make sure `code` is optional in warning type (@lukastaegert)
 - [#2638](https://github.com/rollup/rollup/pull/2638): Do not fail when generating hashes for tree-shaken dynamic imports (@lukastaegert)
 - [#2640](https://github.com/rollup/rollup/pull/2640): Always treat bigints as unknown (@lukastaegert)
-- [#2641](https://github.com/rollup/rollup/pull/2641): Make sure all CLI options are listed in the summary (@lukastaegert)
+- [#2641](https://github.com/rollup/rollup/pull/2641): Make sure all CLI options are listed in the summary ( @lukastaegert)
 
 ## 1.0.1
 
@@ -6282,7 +7705,7 @@ _2018-12-28_
   - transformChunk
   - ongenerate
   - onwrite
-- Plugin transform dependencies are deprecated in favour of using the `this.addWatchFile` plugin context function (#2409)
+- Plugin transform dependencies are deprecated in favour of using the `this.addWatchFile` plugin context function ( #2409)
 - Accessing `this.watcher` in plugin hooks is deprecated in favour of the `watchChange` plugin hook and the `this.addWatchFile` plugin context function (#2409)
 - Using dynamic import statements will by default create a new chunk unless `inlineDynamicImports` is used (#2293)
 - Rollup now uses acorn@6 which means that acorn plugins must be compatible with this version; acorn is now external for non-browser builds to make plugins work (#2293)
@@ -6298,8 +7721,8 @@ _2018-12-28_
 
 ### Pull Requests
 
-- [#2293](https://github.com/rollup/rollup/pull/2293): Unify code paths for 1.0 relase and update documentation (@guybedford and @lukastaegert)
-- [#2409](https://github.com/rollup/rollup/pull/2409): Remove old deprecated features and add new deprecation warnings (@guybedford)
+- [#2293](https://github.com/rollup/rollup/pull/2293): Unify code paths for 1.0 relase and update documentation ( @guybedford and @lukastaegert)
+- [#2409](https://github.com/rollup/rollup/pull/2409): Remove old deprecated features and add new deprecation warnings ( @guybedford)
 - [#2486](https://github.com/rollup/rollup/pull/2486): Upgrade to acorn 6 (@marijnh)
 - [#2611](https://github.com/rollup/rollup/pull/2611): Fix hook's name in test description (@Andarist)
 - [#2612](https://github.com/rollup/rollup/pull/2612): Fix a self-contradicting comment in the docs (@LongTengDao)
@@ -6334,7 +7757,7 @@ _2018-12-16_
 
 ### Breaking Changes
 
-- `optimizeChunks` is renamed to `experimentalOptimizeChunks` to reflect this feature is not production-ready yet (#2575)
+- `optimizeChunks` is renamed to `experimentalOptimizeChunks` to reflect this feature is not production-ready yet ( #2575)
 
 ### Features
 
@@ -6347,7 +7770,7 @@ _2018-12-16_
 - If an entry facade is created, only the facade chunk is marked as `isEntry` (#2575)
 - Dynamic chunks will only be marked as `isEntry` if they are actually entry chunks as well; thus there is now a 1-to-1 correspondence between modules listed in `input` and chunks marked as `isEntry` (#2575)
 - Chunks no longer contain imports for variables that are tree-shaken in the chunk but used in other chunks (#2584)
-- Chunks will always import re-exported variables directly from the chunk where they are originally exported from (#2584)
+- Chunks will always import re-exported variables directly from the chunk where they are originally exported from ( #2584)
 - Null characters will be pruned from chunk ids to allow for virtually created chunks and make `rollup-plugin-multi-entry` compatible with code-splitting and thus the upcoming 1.0 version (#2590)
 - Simplify the UMD wrapper code as much as possible, especially if there are no exports (#2594)
 - The UMD wrapper will now work in strict mode by checking for `self` before `this` when determining the global variable (#2594)
@@ -6355,7 +7778,7 @@ _2018-12-16_
 ### Bug Fixes
 
 - If a facade is created for a dynamic entry point, this facade will be imported instead of the facaded chunk (#2575)
-- Manual chunks that include multiple entry points will have proper facades created for all entry points if necessary (#2575)
+- Manual chunks that include multiple entry points will have proper facades created for all entry points if necessary ( #2575)
 - If missing exports are shimmed, the shim variable will not be global but created on a per-module basis and is deconflicted with variables having the same name (#2584)
 - Missing export shims work properly in SystemJS (#2584)
 - `preserveModules` now handles dynamic namespace imports (#2584)
@@ -6365,13 +7788,13 @@ _2018-12-16_
 
 ### Pull Requests
 
-- [#2565](https://github.com/rollup/rollup/pull/2565): Provide module graph information on the plugin context (@samccone)
-- [#2575](https://github.com/rollup/rollup/pull/2575): Extend bundle information, tree-shake dynamic imports, fix dynamic import facade creation, support manual chunks with multiple entry points, make `optimizeChunks` experimental (@lukastaegert)
+- [#2565](https://github.com/rollup/rollup/pull/2565): Provide module graph information on the plugin context ( @samccone)
+- [#2575](https://github.com/rollup/rollup/pull/2575): Extend bundle information, tree-shake dynamic imports, fix dynamic import facade creation, support manual chunks with multiple entry points, make `optimizeChunks` experimental ( @lukastaegert)
 - [#2577](https://github.com/rollup/rollup/pull/2577): Update dependencies (@lukastaegert)
 - [#2584](https://github.com/rollup/rollup/pull/2584): Prune tree-shaken chunk imports, fix missing export shimming, support dynamic namespaces when preserving modules, improve chunk execution order (@lukastaegert)
 - [#2587](https://github.com/rollup/rollup/pull/2587): Support exports using destructuring declarations and assignments in SystemJS (@lukastaegert)
 - [#2590](https://github.com/rollup/rollup/pull/2590): Make sure chunk ids do not contain invalid characters to allow for chunks to correspond to virtual modules (@lukastaegert)
-- [#2594](https://github.com/rollup/rollup/pull/2594): Simplify UMD wrapper code and make sure it works in strict mode (@lukastaegert)
+- [#2594](https://github.com/rollup/rollup/pull/2594): Simplify UMD wrapper code and make sure it works in strict mode ( @lukastaegert)
 - [#2596](https://github.com/rollup/rollup/pull/2596): Take both static and dynamic dependencies into account when calculating hashes (@lukastaegert)
 
 ## 0.67.4
@@ -6410,7 +7833,7 @@ _2018-11-17_
 
 ### Pull Requests
 
-- [#2558](https://github.com/rollup/rollup/pull/2558): Prevent crash when not returning sourcemaps from `renderChunk` (@kyle1320)
+- [#2558](https://github.com/rollup/rollup/pull/2558): Prevent crash when not returning sourcemaps from `renderChunk` ( @kyle1320)
 
 ## 0.67.1
 
@@ -6448,13 +7871,13 @@ none
 
 ### Pull Requests
 
-- [#2505](https://github.com/rollup/rollup/pull/2505): Do not resolve external dynamic imports via plugins (@lukastaegert)
+- [#2505](https://github.com/rollup/rollup/pull/2505): Do not resolve external dynamic imports via plugins ( @lukastaegert)
 - [#2507](https://github.com/rollup/rollup/pull/2507): Fix public sourcemap type (@aMarCruz)
 - [#2508](https://github.com/rollup/rollup/pull/2508): Improve execution order of chunks and externals (@lukastaegert)
 - [#2510](https://github.com/rollup/rollup/pull/2510): Do not tree-shake children of unknown nodes to e.g. properly handle do-expressions via acorn plugin (@devsnek)
-- [#2511](https://github.com/rollup/rollup/pull/2511): Create chunks for virtual modules when preserving modules (@lukastaegert)
+- [#2511](https://github.com/rollup/rollup/pull/2511): Create chunks for virtual modules when preserving modules ( @lukastaegert)
 - [#2522](https://github.com/rollup/rollup/pull/2522): Prevent memory leak when using the bundle as cache (@kyle1320)
-- [#2529](https://github.com/rollup/rollup/pull/2529): Fix mis-placed semicolons for certain SystemJS exports (@kyle1320)
+- [#2529](https://github.com/rollup/rollup/pull/2529): Fix mis-placed semicolons for certain SystemJS exports ( @kyle1320)
 - [#2531](https://github.com/rollup/rollup/pull/2531): add `sourcemapExcludeSources` option to exclude the source content from sourcemaps (@kitsonk)
 
 ## 0.66.6
@@ -7671,7 +9094,7 @@ _2017-08-27_
 - Make sure shorthand destructuring assignments don't break ([#528](https://github.com/rollup/rollup/issues/528))
 - Allow 'exports' key ([#542](https://github.com/rollup/rollup/issues/542))
 - Ensure `foo. bar` where `foo` is a namespace import is rewritten correctly ([#566](https://github.com/rollup/rollup/issues/566))
-- Fix an edge case for exported globals (e.g. `export { document }`) ([#562](https://github.com/rollup/rollup/issues/562))
+- Fix an edge case for exported globals ( e.g. `export { document }`) ([#562](https://github.com/rollup/rollup/issues/562))
 
 ## 0.25.4
 
@@ -7918,7 +9341,7 @@ _2017-08-27_
 
 - Internal refactoring ([#99](https://github.com/rollup/rollup/pull/99))
 - Optimisation for statically-analysable namespace imports ([#99](https://github.com/rollup/rollup/pull/99))
-- Windows support (theoretically!) ([#117](https://github.com/rollup/rollup/pull/117) / [#119](https://github.com/rollup/rollup/pull/119))
+- Windows support ( theoretically!) ([#117](https://github.com/rollup/rollup/pull/117) / [#119](https://github.com/rollup/rollup/pull/119))
 
 ## 0.15.0
 
@@ -7991,7 +9414,7 @@ _2017-08-27_
 
 ## 0.10.0
 
-- Better sorting algorithm – sorting happens at the module level, rather than the statement level. This avoids certain edge cases
+- Better sorting algorithm – sorting happens at the module level, rather than the statement level. This avoids certain edge cases
 - IIFEs are ignored for the purposes of distinguishing between 'strong' and 'weak' dependencies
 - Empty `var` declarations for exported bindings are omitted
 
@@ -8062,7 +9485,7 @@ _2017-08-27_
 
 - Named functions can be used as default exports from a bundle
 - Method calls are assumed to mutate the owner (i.e. `foo.bar()` mutates `foo`) ([#13](https://github.com/rollup/rollup/issues/13))
-- `options.indent` can be used to control indentation of resulting bundle. `options.true` (default) means 'auto', `options.false` means empty string. Alternatively specify whitespace e.g. `' '` or `'\t'` ([#5](https://github.com/rollup/rollup/issues/5))
+- `options.indent` can be used to control indentation of resulting bundle. `options.true` (default) means ' auto', `options.false` means empty string. Alternatively specify whitespace e.g. `' '` or `'\t'` ([#5](https://github.com/rollup/rollup/issues/5))
 
 ## 0.7.0
 

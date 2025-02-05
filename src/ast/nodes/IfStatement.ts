@@ -4,14 +4,17 @@ import type { DeoptimizableEntity } from '../DeoptimizableEntity';
 import { type HasEffectsContext, type InclusionContext } from '../ExecutionContext';
 import TrackingScope from '../scopes/TrackingScope';
 import { EMPTY_PATH, SHARED_RECURSION_TRACKER } from '../utils/PathTracker';
+import { tryCastLiteralValueToBoolean } from '../utils/tryCastLiteralValueToBoolean';
 import BlockStatement from './BlockStatement';
 import type Identifier from './Identifier';
 import * as NodeType from './NodeType';
 import { type LiteralValueOrUnknown, UnknownValue } from './shared/Expression';
 import {
+	doNotDeoptimize,
 	type ExpressionNode,
 	type GenericEsTreeNode,
 	type IncludeChildren,
+	onlyIncludeSelfNoDeoptimize,
 	StatementBase,
 	type StatementNode
 } from './shared/Node';
@@ -24,8 +27,8 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 	declare test: ExpressionNode;
 	declare type: NodeType.tIfStatement;
 
-	private declare alternateScope?: TrackingScope;
-	private declare consequentScope: TrackingScope;
+	declare alternateScope?: TrackingScope;
+	declare consequentScope: TrackingScope;
 	private testValue: LiteralValueOrUnknown | typeof unset = unset;
 
 	deoptimizeCache(): void {
@@ -40,12 +43,10 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		if (typeof testValue === 'symbol') {
 			const { brokenFlow } = context;
 			if (this.consequent.hasEffects(context)) return true;
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			const consequentBrokenFlow = context.brokenFlow;
 			context.brokenFlow = brokenFlow;
 			if (this.alternate === null) return false;
 			if (this.alternate.hasEffects(context)) return true;
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			context.brokenFlow = context.brokenFlow && consequentBrokenFlow;
 			return false;
 		}
@@ -66,22 +67,18 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		}
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode): void {
-		this.consequentScope = new TrackingScope(this.scope);
-		this.consequent = new (this.context.getNodeConstructor(esTreeNode.consequent.type))(
-			esTreeNode.consequent,
+	parseNode(esTreeNode: GenericEsTreeNode): this {
+		this.consequent = new (this.scope.context.getNodeConstructor(esTreeNode.consequent.type))(
 			this,
-			this.consequentScope
-		);
+			(this.consequentScope = new TrackingScope(this.scope))
+		).parseNode(esTreeNode.consequent);
 		if (esTreeNode.alternate) {
-			this.alternateScope = new TrackingScope(this.scope);
-			this.alternate = new (this.context.getNodeConstructor(esTreeNode.alternate.type))(
-				esTreeNode.alternate,
+			this.alternate = new (this.scope.context.getNodeConstructor(esTreeNode.alternate.type))(
 				this,
-				this.alternateScope
-			);
+				(this.alternateScope = new TrackingScope(this.scope))
+			).parseNode(esTreeNode.alternate);
 		}
-		super.parseNode(esTreeNode);
+		return super.parseNode(esTreeNode);
 	}
 
 	render(code: MagicString, options: RenderOptions): void {
@@ -92,7 +89,7 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		const testValue = this.getTestValue();
 		const hoistedDeclarations: Identifier[] = [];
 		const includesIfElse = this.test.included;
-		const noTreeshake = !this.context.options.treeshake;
+		const noTreeshake = !this.scope.context.options.treeshake;
 		if (includesIfElse) {
 			this.test.render(code, options);
 		} else {
@@ -126,14 +123,10 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		this.renderHoistedDeclarations(hoistedDeclarations, code, getPropertyAccess);
 	}
 
-	protected applyDeoptimizations() {}
-
 	private getTestValue(): LiteralValueOrUnknown {
 		if (this.testValue === unset) {
-			return (this.testValue = this.test.getLiteralValueAtPath(
-				EMPTY_PATH,
-				SHARED_RECURSION_TRACKER,
-				this
+			return (this.testValue = tryCastLiteralValueToBoolean(
+				this.test.getLiteralValueAtPath(EMPTY_PATH, SHARED_RECURSION_TRACKER, this)
 			));
 		}
 		return this.testValue;
@@ -166,13 +159,11 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		let consequentBrokenFlow = false;
 		if (this.consequent.shouldBeIncluded(context)) {
 			this.consequent.include(context, false, { asSingleStatement: true });
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			consequentBrokenFlow = context.brokenFlow;
 			context.brokenFlow = brokenFlow;
 		}
 		if (this.alternate?.shouldBeIncluded(context)) {
 			this.alternate.include(context, false, { asSingleStatement: true });
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			context.brokenFlow = context.brokenFlow && consequentBrokenFlow;
 		}
 	}
@@ -216,3 +207,6 @@ export default class IfStatement extends StatementBase implements DeoptimizableE
 		return false;
 	}
 }
+
+IfStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+IfStatement.prototype.applyDeoptimizations = doNotDeoptimize;

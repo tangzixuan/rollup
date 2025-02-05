@@ -12,7 +12,11 @@ import { logImportAttributeIsInvalid, logImportOptionsAreInvalid } from './logs'
 const ATTRIBUTE_KEYWORDS = new Set(['assert', 'with']);
 
 export function getAttributesFromImportExpression(node: ImportExpression): Record<string, string> {
-	const { context, options, start } = node;
+	const {
+		scope: { context },
+		options,
+		start
+	} = node;
 	if (!(options instanceof ObjectExpression)) {
 		if (options) {
 			context.module.log(LOGLEVEL_WARN, logImportAttributeIsInvalid(context.module.id), start);
@@ -52,20 +56,22 @@ export function getAttributesFromImportExpression(node: ImportExpression): Recor
 	return EMPTY_OBJECT;
 }
 
-const getPropertyKey = (
-	property: Property | SpreadElement | ImportAttribute
-): LiteralValue | undefined => {
+const getPropertyKey = (property: Property | SpreadElement | ImportAttribute): LiteralValue => {
 	const key = (property as Property | ImportAttribute).key;
 	return (
-		key && !(property as Property).computed && ((key as Identifier).name || (key as Literal).value)
+		key &&
+		!(property as Property).computed &&
+		((key as Identifier).name || (key as Literal<string>).value)
 	);
 };
 
-export function getAttributesFromImportExportDeclaration(attributes: ImportAttribute[]) {
+export function getAttributesFromImportExportDeclaration(
+	attributes: ImportAttribute[]
+): Record<string, string> {
 	return attributes?.length
 		? Object.fromEntries(
 				attributes.map(assertion => [getPropertyKey(assertion), assertion.value.value])
-		  )
+			)
 		: EMPTY_OBJECT;
 }
 

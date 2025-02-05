@@ -12,7 +12,9 @@ Rollup should typically be used from the command line. You can provide an option
 
 Rollup configuration files are optional, but they are powerful and convenient and thus **recommended**. A config file is an ES module that exports a default object with the desired options:
 
-```javascript
+```javascript twoslash
+/** @type {import('rollup').RollupOptions} */
+// ---cut---
 export default {
 	input: 'src/main.js',
 	output: {
@@ -36,10 +38,13 @@ Using the `--configPlugin` option will always force your config file to be trans
 
 Config files support the options listed below. Consult the [big list of options](../configuration-options/index.md) for details on each option:
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 
 // can be an array (for multiple inputs)
+// ---cut-start---
+/** @type {import('rollup').RollupOptions} */
+// ---cut-end---
 export default {
 	// core input options
 	external,
@@ -90,7 +95,9 @@ export default {
 		externalImportAttributes,
 		footer,
 		generatedCode,
+		hashCharacters,
 		hoistTransitiveImports,
+		importAttributesKey,
 		inlineDynamicImports,
 		interop,
 		intro,
@@ -102,6 +109,7 @@ export default {
 		preserveModulesRoot,
 		sourcemap,
 		sourcemapBaseUrl,
+		sourcemapDebugIds,
 		sourcemapExcludeSources,
 		sourcemapFile,
 		sourcemapFileNames,
@@ -138,9 +146,12 @@ export default {
 
 You can export an **array** from your config file to build bundles from several unrelated inputs at once, even in watch mode. To build different bundles with the same input, you supply an array of output options for each input:
 
-```javascript
+```javascript twoslash
 // rollup.config.js (building more than one bundle)
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptions[]} */
+// ---cut-end---
 export default [
 	{
 		input: 'main-a.js',
@@ -195,11 +206,14 @@ rollup --config
 
 You can also export a function that returns any of the above configuration formats. This function will be passed the current command line arguments so that you can dynamically adapt your configuration to respect e.g. [`--silent`](#silent). You can even define your own command line options if you prefix them with `config`:
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 import defaultConfig from './rollup.default.config.js';
 import debugConfig from './rollup.debug.config.js';
 
+// ---cut-start---
+/** @type {import('rollup').RollupOptionsFunction} */
+// ---cut-end---
 export default commandLineArgs => {
 	if (commandLineArgs.configDebug === true) {
 		return debugConfig;
@@ -212,25 +226,30 @@ If you now run `rollup --config --configDebug`, the debug configuration will be 
 
 By default, command line arguments will always override the respective values exported from a config file. If you want to change this behaviour, you can make Rollup ignore command line arguments by deleting them from the `commandLineArgs` object:
 
-```javascript
+```javascript twoslash
 // rollup.config.js
+// ---cut-start---
+/** @type {import('rollup').RollupOptionsFunction} */
+// ---cut-end---
 export default commandLineArgs => {
-  const inputBase = commandLineArgs.input || 'main.js';
+	const inputBase = commandLineArgs.input || 'main.js';
 
-  // this will make Rollup ignore the CLI argument
-  delete commandLineArgs.input;
-  return {
-    input: 'src/entries/' + inputBase,
-    output: { ... }
-  }
-}
+	// this will make Rollup ignore the CLI argument
+	delete commandLineArgs.input;
+	return {
+		input: 'src/entries/' + inputBase,
+		output: {
+			/* ... */
+		}
+	};
+};
 ```
 
 ### Config Intellisense
 
 Since Rollup ships with TypeScript typings, you can leverage your IDE's Intellisense with JSDoc type hints:
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 /**
  * @type {import('rollup').RollupOptions}
@@ -243,7 +262,7 @@ export default config;
 
 Alternatively you can use the `defineConfig` helper, which should provide Intellisense without the need for JSDoc annotations:
 
-```javascript
+```javascript twoslash
 // rollup.config.js
 import { defineConfig } from 'rollup';
 
@@ -260,7 +279,7 @@ Besides `RollupOptions` and the `defineConfig` helper that encapsulates this typ
 
 You can also directly write your config in TypeScript via the [`--configPlugin`](#configplugin-plugin) option. With TypeScript, you can import the `RollupOptions` type directly:
 
-```typescript
+```typescript twoslash
 import type { RollupOptions } from 'rollup';
 
 const config: RollupOptions = {
@@ -297,14 +316,14 @@ Especially when upgrading from an older Rollup version, there are some things yo
 
 With CommonJS files, people often use `__dirname` to access the current directory and resolve relative paths to absolute paths. This is not supported for native ES modules. Instead, we recommend the following approach e.g. to generate an absolute id for an external module:
 
-```js
+```js twoslash
 // rollup.config.js
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath } from 'node:url';
 
 export default {
-  ...,
-  // generates an absolute path for <currentdir>/src/some-file.js
-  external: [fileURLToPath(new URL('src/some-file.js', import.meta.url))]
+	/* ..., */
+	// generates an absolute path for <currentdir>/src/some-file.js
+	external: [fileURLToPath(new URL('src/some-file.js', import.meta.url))]
 };
 ```
 
@@ -312,10 +331,10 @@ export default {
 
 It can be useful to import your package file to e.g. mark your dependencies as "external" automatically. Depending on your Node version, there are different ways of doing that:
 
-- For Node 17.5+, you can use an import assertion
+- For Node 18.20+, you can use an import attribute
 
-  ```js
-  import pkg from './package.json' assert { type: 'json' };
+  ```js twoslash
+  import pkg from './package.json' with { type: 'json' };
 
   export default {
   	// Mark package dependencies as "external". Rest of configuration
@@ -326,7 +345,7 @@ It can be useful to import your package file to e.g. mark your dependencies as "
 
 - For older Node versions, you can use `createRequire`
 
-  ```js
+  ```js twoslash
   import { createRequire } from 'node:module';
   const require = createRequire(import.meta.url);
   const pkg = require('./package.json');
@@ -336,7 +355,7 @@ It can be useful to import your package file to e.g. mark your dependencies as "
 
 - Or just directly read and parse the file from disk
 
-  ```js
+  ```js twoslash
   // rollup.config.mjs
   import { readFileSync } from 'node:fs';
 
@@ -344,7 +363,7 @@ It can be useful to import your package file to e.g. mark your dependencies as "
   // file instead of process.cwd(). For more information:
   // https://nodejs.org/docs/latest-v16.x/api/esm.html#importmetaurl
   const packageJson = JSON.parse(
-  	readFileSync(new URL('./package.json', import.meta.url))
+  	readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
   );
 
   // ...
@@ -390,6 +409,7 @@ Many options have command line equivalents. In those cases, any arguments passed
 --failAfterWarnings         Exit with an error if the build produced warnings
 --filterLogs <filter>       Filter log messages
 --footer <text>             Code to insert at end of bundle (outside wrapper)
+--forceExit                 Force exit the process when done
 --no-freeze                 Do not freeze namespace objects
 --generatedCode <preset>    Which code features to use (es5/es2015)
 --generatedCode.arrowFunctions Use arrow functions in generated code
@@ -397,7 +417,9 @@ Many options have command line equivalents. In those cases, any arguments passed
 --generatedCode.objectShorthand Use shorthand properties in generated code
 --no-generatedCode.reservedNamesAsProps Always quote reserved names as props
 --generatedCode.symbols     Use symbols in generated code
+--hashCharacters <name>     Use the specified character set for file hashes
 --no-hoistTransitiveImports Do not hoist transitive imports into entry chunks
+--importAttributesKey <name> Use the specified keyword for import attributes
 --no-indent                 Don't indent result
 --inlineDynamicImports      Create single bundle when using dynamic imports
 --no-interop                Do not include interop block
@@ -413,10 +435,12 @@ Many options have command line equivalents. In those cases, any arguments passed
 --preserveModules           Preserve module structure
 --preserveModulesRoot       Put preserved modules under this path at root level
 --preserveSymlinks          Do not follow symlinks when resolving files
+--no-reexportProtoFromExternal Ignore `__proto__` in star re-exports
 --no-sanitizeFileName       Do not replace invalid characters in file names
 --shimMissingExports        Create shim variables for missing exports
 --silent                    Don't print warnings
 --sourcemapBaseUrl <url>    Emit absolute sourcemap URLs with given base
+--sourcemapDebugIds         Emit unique debug ids in source and sourcemaps
 --sourcemapExcludeSources   Do not include source code in source maps
 --sourcemapFile <file>      Specify bundle position for source maps
 --sourcemapFileNames <pattern> Name pattern for emitted sourcemaps
@@ -454,6 +478,16 @@ The flags listed below are only available via the command line interface. All ot
 This option will force your configuration to be transpiled to CommonJS.
 
 This allows you to use CommonJS idioms like `__dirname` or `require.resolve` in your configuration even if the configuration itself is written as an ES module.
+
+### `--configImportAttributesKey <with | assert>`
+
+Controls the keyword Rollup uses for import attributes in your config file.
+
+```shell
+rollup --config rollup.config.ts --configPlugin typescript --configImportAttributesKey with
+```
+
+This option only available if the [`--configPlugin`](#configplugin-plugin) or [`--bundleConfigAsCjs`](#bundleconfigascjs) options are used.
 
 ### `--configPlugin <plugin>`
 
@@ -555,6 +589,12 @@ There is also some advanced syntax available for more complex filters.
   ```
 
   will only display logs where the property `log.foo.bar` has the value `"value"`.
+
+### `--forceExit`
+
+Force exit the process when done. In some cases plugins or their dependencies might not cleanup properly and prevent the CLI process from exiting. The root cause can be hard to diagnose and this flag provides an escape hatch until it can be identified and resolved.
+
+Note that this might break certain workflows and won't always work properly.
 
 ### `-h`/`--help`
 

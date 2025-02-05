@@ -12,15 +12,15 @@ import { EMPTY_PATH, type ObjectPath } from '../utils/PathTracker';
 import Identifier from './Identifier';
 import * as NodeType from './NodeType';
 import { UNKNOWN_EXPRESSION } from './shared/Expression';
-import { NodeBase } from './shared/Node';
 import type { ExpressionNode, IncludeChildren } from './shared/Node';
+import { NodeBase, onlyIncludeSelf } from './shared/Node';
 
 export default class UpdateExpression extends NodeBase {
 	declare argument: ExpressionNode;
 	declare operator: '++' | '--';
 	declare prefix: boolean;
 	declare type: NodeType.tUpdateExpression;
-	private declare interaction: NodeInteractionAssigned;
+	declare private interaction: NodeInteractionAssigned;
 
 	hasEffects(context: HasEffectsContext): boolean {
 		if (!this.deoptimized) this.applyDeoptimizations();
@@ -32,12 +32,12 @@ export default class UpdateExpression extends NodeBase {
 	}
 
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
-		if (!this.deoptimized) this.applyDeoptimizations();
-		this.included = true;
+		if (!this.included) this.includeNode(context);
 		this.argument.includeAsAssignmentTarget(context, includeChildrenRecursively, true);
 	}
 
 	initialise() {
+		super.initialise();
 		this.argument.setAssignedValue(UNKNOWN_EXPRESSION);
 	}
 
@@ -81,13 +81,15 @@ export default class UpdateExpression extends NodeBase {
 		}
 	}
 
-	protected applyDeoptimizations(): void {
+	applyDeoptimizations() {
 		this.deoptimized = true;
 		this.argument.deoptimizePath(EMPTY_PATH);
 		if (this.argument instanceof Identifier) {
 			const variable = this.scope.findVariable(this.argument.name);
-			variable.isReassigned = true;
+			variable.markReassigned();
 		}
-		this.context.requestTreeshakingPass();
+		this.scope.context.requestTreeshakingPass();
 	}
 }
+
+UpdateExpression.prototype.includeNode = onlyIncludeSelf;

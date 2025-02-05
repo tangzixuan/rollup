@@ -4,11 +4,11 @@ System.register('bundle', ['./sub/index.js'], (function (exports) {
 	return {
 		setters: [function (module) {
 			bar = module.default;
-			exports('foo', module.foo);
+			exports("foo", module.foo);
 		}],
 		execute: (function () {
 
-			const baz = exports('baz', { bar });
+			const baz = exports("baz", { bar });
 
 		})
 	};

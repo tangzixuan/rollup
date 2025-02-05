@@ -1,0 +1,141 @@
+name: Performance Report
+
+on:
+  pull_request_target:
+    types:
+      - synchronize
+      - opened
+      - reopened
+      - labeled
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-artefacts:
+    if: ${{ github.event.pull_request.head.repo.full_name == 'rollup/rollup' || contains( toJson(github.event.pull_request.labels), 'x⁸ ⚙️ build repl artefacts' ) }}
+    strategy:
+      matrix:
+        settings:
+          - name: current
+            ref: refs/pull/${{ github.event.number }}/merge
+          - name: previous
+            ref: ${{github.event.pull_request.base.ref}}
+    name: Build ${{matrix.settings.name}} artefact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{matrix.settings.ref}}
+      - name: Install Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+      - name: Restore Cargo cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            rust/target/
+          key: x86_64-unknown-linux-gnu-cargo-ubuntu-latest-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: x86_64-unknown-linux-gnu-cargo-ubuntu-latest
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Restore Node dependencies cache
+        id: cache-node-modules
+        uses: actions/cache/restore@v4
+        with:
+          path:  |
+            node_modules
+            ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Node dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm install --ignore-scripts
+      - name: Build artefacts 123
+        run: npm exec -- concurrently -c green,blue 'npm:build:napi -- --release' 'npm:build:cjs' && npm run build:copy-native && npm run build:bootstrap:cjs && npm run build:copy-native
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.settings.name }}
+          path: dist/
+          if-no-files-found: error
+
+  report:
+    needs: build-artefacts
+    permissions:
+      pull-requests: write # for peter-evans/find-comment and peter-evans/create-or-update-comment
+    runs-on: ubuntu-latest
+    name: Report Performance
+    steps:
+      - name: Checkout Commit
+        uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.number }}/merge
+      - name: Install Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu
+      - name: Restore Cargo cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            rust/target/
+          key: x86_64-unknown-linux-gnu-cargo-ubuntu-latest-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: x86_64-unknown-linux-gnu-cargo-ubuntu-latest
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Restore Node dependencies cache
+        id: cache-node-modules
+        uses: actions/cache/restore@v4
+        with:
+          path:  |
+            node_modules
+            ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: _benchmark
+      - name: Change rollup import in internal benchmark
+        run: |
+          echo "export { rollup as previousRollup, VERSION as previousVersion } from '../../_benchmark/previous/rollup.js';" > ./scripts/perf-report/rollup-artefacts.js
+          echo "export { rollup as newRollup } from '../../_benchmark/current/rollup.js';" >> ./scripts/perf-report/rollup-artefacts.js
+      - name: Run internal benchmark
+        run: node --expose-gc scripts/perf-report/index.js
+      - name: Find Performance report
+        uses: peter-evans/find-comment@v3
+        id: findPerformanceReport
+        with:
+          issue-number: ${{ github.event.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Performance report'
+      - name: Create or update Performance report
+        uses: peter-evans/create-or-update-comment@v4
+        id: createOrUpdatePerformanceReport
+        with:
+          comment-id: ${{ steps.findPerformanceReport.outputs.comment-id }}
+          issue-number: ${{ github.event.number }}
+          edit-mode: replace
+          body-path: _benchmark/result.md

@@ -4,18 +4,22 @@ import { doNothing } from '../../../utils/doNothing';
 import type { HasEffectsContext } from '../../ExecutionContext';
 import type { NodeInteractionCalled } from '../../NodeInteractions';
 import {
+	INTERACTION_CALLED,
 	NODE_INTERACTION_UNKNOWN_ACCESS,
 	NODE_INTERACTION_UNKNOWN_ASSIGNMENT
 } from '../../NodeInteractions';
+import { isObjectExpressionNode, isPropertyNode } from '../../utils/identifyNode';
 import type { ObjectPath } from '../../utils/PathTracker';
 import {
+	EMPTY_PATH,
+	SHARED_RECURSION_TRACKER,
 	SymbolToStringTag,
 	UNKNOWN_NON_ACCESSOR_PATH,
 	UNKNOWN_PATH
 } from '../../utils/PathTracker';
 import ArrayExpression from '../ArrayExpression';
 import type { LiteralValueOrUnknown } from './Expression';
-import { ExpressionEntity, UnknownTruthyValue } from './Expression';
+import { ExpressionEntity, UnknownValue } from './Expression';
 
 const ValueProperties = Symbol('Value Properties');
 
@@ -31,25 +35,25 @@ interface GlobalDescription {
 	__proto__: null;
 }
 
-const getTruthyLiteralValue = (): LiteralValueOrUnknown => UnknownTruthyValue;
+const getUnknownValue = (): LiteralValueOrUnknown => UnknownValue;
 const returnFalse = () => false;
 const returnTrue = () => true;
 
 const PURE: ValueDescription = {
 	deoptimizeArgumentsOnCall: doNothing,
-	getLiteralValue: getTruthyLiteralValue,
+	getLiteralValue: getUnknownValue,
 	hasEffectsWhenCalled: returnFalse
 };
 
 const IMPURE: ValueDescription = {
 	deoptimizeArgumentsOnCall: doNothing,
-	getLiteralValue: getTruthyLiteralValue,
+	getLiteralValue: getUnknownValue,
 	hasEffectsWhenCalled: returnTrue
 };
 
 const PURE_WITH_ARRAY: ValueDescription = {
 	deoptimizeArgumentsOnCall: doNothing,
-	getLiteralValue: getTruthyLiteralValue,
+	getLiteralValue: getUnknownValue,
 	hasEffectsWhenCalled({ args }) {
 		return args.length > 1 && !(args[1] instanceof ArrayExpression);
 	}
@@ -57,7 +61,7 @@ const PURE_WITH_ARRAY: ValueDescription = {
 
 const GETTER_ACCESS: ValueDescription = {
 	deoptimizeArgumentsOnCall: doNothing,
-	getLiteralValue: getTruthyLiteralValue,
+	getLiteralValue: getUnknownValue,
 	hasEffectsWhenCalled({ args }, context) {
 		const [_thisArgument, firstArgument] = args;
 		return (
@@ -97,7 +101,7 @@ const MUTATES_ARG_WITHOUT_ACCESSOR: GlobalDescription = {
 		deoptimizeArgumentsOnCall({ args: [, firstArgument] }: NodeInteractionCalled) {
 			firstArgument?.deoptimizePath(UNKNOWN_PATH);
 		},
-		getLiteralValue: getTruthyLiteralValue,
+		getLiteralValue: getUnknownValue,
 		hasEffectsWhenCalled({ args }, context) {
 			return (
 				args.length <= 1 ||
@@ -169,6 +173,7 @@ const knownGlobals: GlobalDescription = {
 		isView: PF,
 		prototype: O
 	},
+	AggregateError: PC_WITH_ARRAY,
 	Atomics: O,
 	BigInt: C,
 	BigInt64Array: C,
@@ -192,6 +197,7 @@ const knownGlobals: GlobalDescription = {
 	escape: PF,
 	eval: O,
 	EvalError: PC,
+	FinalizationRegistry: C,
 	Float32Array: ARRAY_TYPE,
 	Float64Array: ARRAY_TYPE,
 	Function: C,
@@ -296,7 +302,33 @@ const knownGlobals: GlobalDescription = {
 		resolve: O
 	},
 	propertyIsEnumerable: O,
-	Proxy: O,
+	Proxy: {
+		__proto__: null,
+		[ValueProperties]: {
+			deoptimizeArgumentsOnCall: ({ args: [, target, parameter] }) => {
+				if (isObjectExpressionNode(parameter)) {
+					const hasSpreadElement = parameter.properties.some(property => !isPropertyNode(property));
+					if (!hasSpreadElement) {
+						for (const property of parameter.properties) {
+							property.deoptimizeArgumentsOnInteractionAtPath(
+								{
+									args: [null, target],
+									type: INTERACTION_CALLED,
+									withNew: false
+								},
+								EMPTY_PATH,
+								SHARED_RECURSION_TRACKER
+							);
+						}
+						return;
+					}
+				}
+				target.deoptimizePath(UNKNOWN_PATH);
+			},
+			getLiteralValue: getUnknownValue,
+			hasEffectsWhenCalled: returnTrue
+		}
+	},
 	RangeError: PC,
 	ReferenceError: PC,
 	Reflect: O,
@@ -342,6 +374,7 @@ const knownGlobals: GlobalDescription = {
 	URIError: PC,
 	valueOf: O,
 	WeakMap: PC_WITH_ARRAY,
+	WeakRef: C,
 	WeakSet: PC_WITH_ARRAY,
 
 	// Additional globals shared by Node and Browser that are not strictly part of the language
@@ -484,7 +517,7 @@ const knownGlobals: GlobalDescription = {
 			deoptimizeArgumentsOnCall({ args }: NodeInteractionCalled) {
 				args[2]?.deoptimizePath(['detail']);
 			},
-			getLiteralValue: getTruthyLiteralValue,
+			getLiteralValue: getUnknownValue,
 			hasEffectsWhenCalled: returnFalse
 		},
 		prototype: O

@@ -1,18 +1,24 @@
 import type { Bundle as MagicStringBundle } from 'magic-string';
 import type { ChunkDependency, ChunkExports, ImportSpecifier, ReexportSpecifier } from '../Chunk';
-import type { NormalizedOutputOptions } from '../rollup/types';
+import type { ImportAttributesKey, NormalizedOutputOptions } from '../rollup/types';
 import type { GenerateCodeSnippets } from '../utils/generateCodeSnippets';
+import { stringifyIdentifierIfNeeded } from '../utils/identifierHelpers';
 import { getHelpersBlock } from '../utils/interopHelpers';
 import type { FinaliserOptions } from './index';
 
 export default function es(
 	magicString: MagicStringBundle,
 	{ accessedGlobals, indent: t, intro, outro, dependencies, exports, snippets }: FinaliserOptions,
-	{ externalLiveBindings, freeze, generatedCode: { symbols } }: NormalizedOutputOptions
+	{
+		externalLiveBindings,
+		freeze,
+		generatedCode: { symbols },
+		importAttributesKey
+	}: NormalizedOutputOptions
 ): void {
 	const { n } = snippets;
 
-	const importBlock = getImportBlock(dependencies, snippets);
+	const importBlock = getImportBlock(dependencies, importAttributesKey, snippets);
 	if (importBlock.length > 0) intro += importBlock.join(n) + n + n;
 	intro += getHelpersBlock(
 		null,
@@ -34,11 +40,12 @@ export default function es(
 
 function getImportBlock(
 	dependencies: readonly ChunkDependency[],
+	importAttributesKey: ImportAttributesKey,
 	{ _ }: GenerateCodeSnippets
 ): string[] {
 	const importBlock: string[] = [];
 	for (const { importPath, reexports, imports, name, attributes } of dependencies) {
-		const assertion = attributes ? `${_}assert${_}${attributes}` : '';
+		const assertion = attributes ? `${_}${importAttributesKey}${_}${attributes}` : '';
 		const pathWithAssertion = `'${importPath}'${assertion};`;
 		if (!reexports && !imports) {
 			importBlock.push(`import${_}${pathWithAssertion}`);
@@ -68,7 +75,7 @@ function getImportBlock(
 						.map(specifier =>
 							specifier.imported === specifier.local
 								? specifier.imported
-								: `${specifier.imported} as ${specifier.local}`
+								: `${stringifyIdentifierIfNeeded(specifier.imported)} as ${specifier.local}`
 						)
 						.join(`,${_}`)}${_}}${_}from${_}${pathWithAssertion}`
 				);
@@ -100,7 +107,9 @@ function getImportBlock(
 				for (const specifier of namespaceReexports) {
 					importBlock.push(
 						`export${_}{${_}${
-							name === specifier.reexported ? name : `${name} as ${specifier.reexported}`
+							name === specifier.reexported
+								? name
+								: `${name} as ${stringifyIdentifierIfNeeded(specifier.reexported)}`
 						} };`
 					);
 				}
@@ -110,8 +119,10 @@ function getImportBlock(
 					`export${_}{${_}${namedReexports
 						.map(specifier =>
 							specifier.imported === specifier.reexported
-								? specifier.imported
-								: `${specifier.imported} as ${specifier.reexported}`
+								? stringifyIdentifierIfNeeded(specifier.imported)
+								: `${stringifyIdentifierIfNeeded(
+										specifier.imported
+									)} as ${stringifyIdentifierIfNeeded(specifier.reexported)}`
 						)
 						.join(`,${_}`)}${_}}${_}from${_}${pathWithAssertion}`
 				);
@@ -123,16 +134,16 @@ function getImportBlock(
 
 function getExportBlock(exports: ChunkExports, { _, cnst }: GenerateCodeSnippets): string[] {
 	const exportBlock: string[] = [];
-	const exportDeclaration: string[] = [];
+	const exportDeclaration: string[] = new Array(exports.length);
+	let index = 0;
 	for (const specifier of exports) {
 		if (specifier.expression) {
 			exportBlock.push(`${cnst} ${specifier.local}${_}=${_}${specifier.expression};`);
 		}
-		exportDeclaration.push(
+		exportDeclaration[index++] =
 			specifier.exported === specifier.local
 				? specifier.local
-				: `${specifier.local} as ${specifier.exported}`
-		);
+				: `${specifier.local} as ${stringifyIdentifierIfNeeded(specifier.exported)}`;
 	}
 	if (exportDeclaration.length > 0) {
 		exportBlock.push(`export${_}{${_}${exportDeclaration.join(`,${_}`)}${_}};`);

@@ -7,15 +7,14 @@ import type {
 	PluginContext,
 	SerializablePluginCache
 } from '../rollup/types';
-import type { FileEmitter } from './FileEmitter';
-import { createPluginCache, getCacheForUncacheablePlugin, NO_CACHE } from './PluginCache';
 import { BLANK, EMPTY_OBJECT } from './blank';
-import { BuildPhase } from './buildPhase';
-import { getLogHandler } from './logHandler';
+import type { FileEmitter } from './FileEmitter';
 import { LOGLEVEL_DEBUG, LOGLEVEL_INFO, LOGLEVEL_WARN } from './logging';
-import { error, logInvalidRollupPhaseForAddWatchFile, logPluginError } from './logs';
+import { getLogHandler } from './logHandler';
+import { error, logPluginError } from './logs';
 import { normalizeLog } from './options/options';
 import { parseAst } from './parseAst';
+import { createPluginCache, getCacheForUncacheablePlugin, NO_CACHE } from './PluginCache';
 import { ANONYMOUS_OUTPUT_PLUGIN_PREFIX, ANONYMOUS_PLUGIN_PREFIX } from './pluginUtils';
 
 export function getPluginContext(
@@ -54,9 +53,6 @@ export function getPluginContext(
 
 	return {
 		addWatchFile(id) {
-			if (graph.phase >= BuildPhase.GENERATE) {
-				return this.error(logInvalidRollupPhaseForAddWatchFile());
-			}
 			graph.watchFiles[id] = true;
 		},
 		cache: cacheInstance,

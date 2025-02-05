@@ -6,7 +6,7 @@ import type {
 	NormalizedInputOptions,
 	RollupLog
 } from '../rollup/types';
-import type { AnnotationType } from './convert-ast';
+import type { AnnotationType } from './astConverterHelpers';
 import getCodeFrame from './getCodeFrame';
 import { LOGLEVEL_WARN } from './logging';
 import { extname } from './path';
@@ -18,6 +18,7 @@ import {
 	URL_AVOIDING_EVAL,
 	URL_BUNDLE_CONFIG_AS_CJS,
 	URL_CONFIGURATION_FILES,
+	URL_JSX,
 	URL_NAME_IS_NOT_EXPORTED,
 	URL_OUTPUT_DIR,
 	URL_OUTPUT_EXPORTS,
@@ -33,11 +34,17 @@ import {
 } from './urls';
 
 export function error(base: Error | RollupLog): never {
-	if (!(base instanceof Error)) {
-		base = Object.assign(new Error(base.message), base);
-		Object.defineProperty(base, 'name', { value: 'RollupError' });
-	}
-	throw base;
+	throw base instanceof Error ? base : getRollupError(base);
+}
+
+export function getRollupError(base: RollupLog): Error & RollupLog {
+	augmentLogMessage(base);
+	const errorInstance = Object.assign(new Error(base.message), base);
+	Object.defineProperty(errorInstance, 'name', {
+		value: 'RollupError',
+		writable: true
+	});
+	return errorInstance;
 }
 
 export function augmentCodeLocation(
@@ -65,6 +72,33 @@ export function augmentCodeLocation(
 	}
 }
 
+const symbolAugmented = Symbol('augmented');
+
+interface AugmentedRollupLog extends RollupLog {
+	[symbolAugmented]?: boolean;
+}
+
+export function augmentLogMessage(log: AugmentedRollupLog): void {
+	// Make sure to only augment the log message once
+	if (!(log.plugin || log.loc) || log[symbolAugmented]) {
+		return;
+	}
+	log[symbolAugmented] = true;
+	let prefix = '';
+
+	if (log.plugin) {
+		prefix += `[plugin ${log.plugin}] `;
+	}
+	const id = log.id || log.loc?.file;
+	if (id) {
+		const position = log.loc ? ` (${log.loc.line}:${log.loc.column})` : '';
+		prefix += `${relativeId(id)}${position}: `;
+	}
+	const oldMessage = log.message;
+	log.message = prefix + log.message;
+	tweakStackMessage(log, oldMessage);
+}
+
 // Error codes should be sorted alphabetically while errors should be sorted by
 // error code below
 const ADDON_ERROR = 'ADDON_ERROR',
@@ -82,8 +116,11 @@ const ADDON_ERROR = 'ADDON_ERROR',
 	CHUNK_INVALID = 'CHUNK_INVALID',
 	CIRCULAR_DEPENDENCY = 'CIRCULAR_DEPENDENCY',
 	CIRCULAR_REEXPORT = 'CIRCULAR_REEXPORT',
+	CONST_REASSIGN = 'CONST_REASSIGN',
 	CYCLIC_CROSS_CHUNK_REEXPORT = 'CYCLIC_CROSS_CHUNK_REEXPORT',
 	DEPRECATED_FEATURE = 'DEPRECATED_FEATURE',
+	DUPLICATE_ARGUMENT_NAME = 'DUPLICATE_ARGUMENT_NAME',
+	DUPLICATE_EXPORT = 'DUPLICATE_EXPORT',
 	DUPLICATE_IMPORT_OPTIONS = 'DUPLICATE_IMPORT_OPTIONS',
 	DUPLICATE_PLUGIN_NAME = 'DUPLICATE_PLUGIN_NAME',
 	EMPTY_BUNDLE = 'EMPTY_BUNDLE',
@@ -118,6 +155,7 @@ const ADDON_ERROR = 'ADDON_ERROR',
 	MISSING_EXTERNAL_CONFIG = 'MISSING_EXTERNAL_CONFIG',
 	MISSING_GLOBAL_NAME = 'MISSING_GLOBAL_NAME',
 	MISSING_IMPLICIT_DEPENDANT = 'MISSING_IMPLICIT_DEPENDANT',
+	MISSING_JSX_EXPORT = 'MISSING_JSX_EXPORT',
 	MISSING_NAME_OPTION_FOR_IIFE_EXPORT = 'MISSING_NAME_OPTION_FOR_IIFE_EXPORT',
 	MISSING_NODE_BUILTINS = 'MISSING_NODE_BUILTINS',
 	MISSING_OPTION = 'MISSING_OPTION',
@@ -130,6 +168,8 @@ const ADDON_ERROR = 'ADDON_ERROR',
 	OPTIMIZE_CHUNK_STATUS = 'OPTIMIZE_CHUNK_STATUS',
 	PARSE_ERROR = 'PARSE_ERROR',
 	PLUGIN_ERROR = 'PLUGIN_ERROR',
+	REDECLARATION_ERROR = 'REDECLARATION_ERROR',
+	RESERVED_NAMESPACE = 'RESERVED_NAMESPACE',
 	SHIMMED_EXPORT = 'SHIMMED_EXPORT',
 	SOURCEMAP_BROKEN = 'SOURCEMAP_BROKEN',
 	SOURCEMAP_ERROR = 'SOURCEMAP_ERROR',
@@ -309,6 +349,24 @@ export function logDeprecation(
 	};
 }
 
+export function logConstVariableReassignError() {
+	return {
+		code: CONST_REASSIGN,
+		message: 'Cannot reassign a variable declared with `const`'
+	};
+}
+
+export function logDuplicateArgumentNameError(name: string): RollupLog {
+	return {
+		code: DUPLICATE_ARGUMENT_NAME,
+		message: `Duplicate argument name "${name}"`
+	};
+}
+
+export function logDuplicateExportError(name: string): RollupLog {
+	return { code: DUPLICATE_EXPORT, message: `Duplicate export "${name}"` };
+}
+
 export function logDuplicateImportOptions(): RollupLog {
 	return {
 		code: DUPLICATE_IMPORT_OPTIONS,
@@ -458,34 +516,51 @@ export function logCannotAssignModuleToChunk(
 	};
 }
 
+function tweakStackMessage(error: RollupLog, oldMessage: string): RollupLog {
+	if (!error.stack) {
+		return error;
+	}
+	error.stack = error.stack.replace(oldMessage, error.message);
+	return error;
+}
+
 export function logCannotBundleConfigAsEsm(originalError: Error): RollupLog {
-	return {
-		cause: originalError,
-		code: INVALID_CONFIG_MODULE_FORMAT,
-		message: `Rollup transpiled your configuration to an  ES module even though it appears to contain CommonJS elements. To resolve this, you can pass the "--bundleConfigAsCjs" flag to Rollup or change your configuration to only contain valid ESM code.\n\nOriginal error: ${originalError.message}`,
-		stack: originalError.stack,
-		url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
-	};
+	return tweakStackMessage(
+		{
+			cause: originalError,
+			code: INVALID_CONFIG_MODULE_FORMAT,
+			message: `Rollup transpiled your configuration to an  ES module even though it appears to contain CommonJS elements. To resolve this, you can pass the "--bundleConfigAsCjs" flag to Rollup or change your configuration to only contain valid ESM code.\n\nOriginal error: ${originalError.message}`,
+			stack: originalError.stack,
+			url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
+		},
+		originalError.message
+	);
 }
 
 export function logCannotLoadConfigAsCjs(originalError: Error): RollupLog {
-	return {
-		cause: originalError,
-		code: INVALID_CONFIG_MODULE_FORMAT,
-		message: `Node tried to load your configuration file as CommonJS even though it is likely an ES module. To resolve this, change the extension of your configuration to ".mjs", set "type": "module" in your package.json file or pass the "--bundleConfigAsCjs" flag.\n\nOriginal error: ${originalError.message}`,
-		stack: originalError.stack,
-		url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
-	};
+	return tweakStackMessage(
+		{
+			cause: originalError,
+			code: INVALID_CONFIG_MODULE_FORMAT,
+			message: `Node tried to load your configuration file as CommonJS even though it is likely an ES module. To resolve this, change the extension of your configuration to ".mjs", set "type": "module" in your package.json file or pass the "--bundleConfigAsCjs" flag.\n\nOriginal error: ${originalError.message}`,
+			stack: originalError.stack,
+			url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
+		},
+		originalError.message
+	);
 }
 
 export function logCannotLoadConfigAsEsm(originalError: Error): RollupLog {
-	return {
-		cause: originalError,
-		code: INVALID_CONFIG_MODULE_FORMAT,
-		message: `Node tried to load your configuration as an ES module even though it is likely CommonJS. To resolve this, change the extension of your configuration to ".cjs" or pass the "--bundleConfigAsCjs" flag.\n\nOriginal error: ${originalError.message}`,
-		stack: originalError.stack,
-		url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
-	};
+	return tweakStackMessage(
+		{
+			cause: originalError,
+			code: INVALID_CONFIG_MODULE_FORMAT,
+			message: `Node tried to load your configuration as an ES module even though it is likely CommonJS. To resolve this, change the extension of your configuration to ".cjs" or pass the "--bundleConfigAsCjs" flag.\n\nOriginal error: ${originalError.message}`,
+			stack: originalError.stack,
+			url: getRollupUrl(URL_BUNDLE_CONFIG_AS_CJS)
+		},
+		originalError.message
+	);
 }
 
 export function logInvalidExportOptionValue(optionValue: string): RollupLog {
@@ -577,13 +652,6 @@ export function logInvalidFunctionPluginHook(hook: string, plugin: string): Roll
 	};
 }
 
-export function logInvalidRollupPhaseForAddWatchFile(): RollupLog {
-	return {
-		code: INVALID_ROLLUP_PHASE,
-		message: `Cannot call "addWatchFile" after the build has finished.`
-	};
-}
-
 export function logInvalidRollupPhaseForChunkEmission(): RollupLog {
 	return {
 		code: INVALID_ROLLUP_PHASE,
@@ -614,6 +682,16 @@ export function logMissingConfig(): RollupLog {
 		code: MISSING_CONFIG,
 		message: 'Config file must export an options object, or an array of options objects',
 		url: getRollupUrl(URL_CONFIGURATION_FILES)
+	};
+}
+
+export function logMissingEntryExport(binding: string, exporter: string): RollupLog {
+	return {
+		binding,
+		code: MISSING_EXPORT,
+		exporter,
+		message: `Exported variable "${binding}" is not defined in "${relativeId(exporter)}".`,
+		url: getRollupUrl(URL_NAME_IS_NOT_EXPORTED)
 	};
 }
 
@@ -694,6 +772,17 @@ export function logImplicitDependantIsNotIncluded(module: Module): RollupLog {
 	};
 }
 
+export function logMissingJsxExport(name: string, exporter: string, importer: string): RollupLog {
+	return {
+		code: MISSING_JSX_EXPORT,
+		exporter,
+		id: importer,
+		message: `Export "${name}" is not defined in module "${relativeId(exporter)}" even though it is needed in "${relativeId(importer)}" to provide JSX syntax. Please check your "jsx" option.`,
+		names: [name],
+		url: getRollupUrl(URL_JSX)
+	};
+}
+
 export function logMissingNameOptionForIifeExport(): RollupLog {
 	return {
 		code: MISSING_NAME_OPTION_FOR_IIFE_EXPORT,
@@ -721,7 +810,6 @@ export function logMissingNodeBuiltins(externalBuiltins: string[]): RollupLog {
 	};
 }
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
 export function logMissingFileOrDirOption(): RollupLog {
 	return {
 		code: MISSING_OPTION,
@@ -809,8 +897,22 @@ export function logOptimizeChunkStatus(
 	};
 }
 
-export function logParseError(message: string, pos: number): RollupLog {
+export function logParseError(message: string, pos?: number): RollupLog {
 	return { code: PARSE_ERROR, message, pos };
+}
+
+export function logRedeclarationError(name: string): RollupLog {
+	return {
+		code: REDECLARATION_ERROR,
+		message: `Identifier "${name}" has already been declared`
+	};
+}
+
+export function logReservedNamespace(namespace: string): RollupLog {
+	return {
+		code: RESERVED_NAMESPACE,
+		message: `You have overided reserved namespace "${namespace}"`
+	};
 }
 
 export function logModuleParseError(error: Error, moduleId: string): RollupLog {
@@ -820,12 +922,16 @@ export function logModuleParseError(error: Error, moduleId: string): RollupLog {
 	} else if (!moduleId.endsWith('.js')) {
 		message += ' (Note that you need plugins to import files that are not JavaScript)';
 	}
-	return {
-		cause: error,
-		code: PARSE_ERROR,
-		id: moduleId,
-		message
-	};
+	return tweakStackMessage(
+		{
+			cause: error,
+			code: PARSE_ERROR,
+			id: moduleId,
+			message,
+			stack: error.stack
+		},
+		error.message
+	);
 }
 
 export function logPluginError(
@@ -837,7 +943,7 @@ export function logPluginError(
 	if (
 		!error.pluginCode &&
 		code != null &&
-		(typeof code !== 'string' || (typeof code === 'string' && !code.startsWith('PLUGIN_')))
+		(typeof code !== 'string' || !code.startsWith('PLUGIN_'))
 	) {
 		error.pluginCode = code;
 	}

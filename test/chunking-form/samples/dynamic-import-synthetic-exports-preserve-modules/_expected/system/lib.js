@@ -19,13 +19,13 @@ System.register([], (function (exports) {
 			}
 
 			const __moduleExports = { foo: 'bar' };
-			var lib = exports('default', 'baz');
+			var lib = exports("default", 'baz');
 
 			var lib$1 = /*#__PURE__*/_mergeNamespaces({
 				__proto__: null,
 				default: lib
 			}, [__moduleExports]);
-			exports('l', lib$1);
+			exports("l", lib$1);
 
 		})
 	};

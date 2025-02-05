@@ -20,11 +20,16 @@ import {
 	UNKNOWN_RETURN_EXPRESSION,
 	UnknownValue
 } from './shared/Expression';
-import { type GenericEsTreeNode, NodeBase } from './shared/Node';
+import { type GenericEsTreeNode, NodeBase, onlyIncludeSelf } from './shared/Node';
 
 export type LiteralValue = string | boolean | null | number | RegExp | undefined;
+export type LiteralValueOrBigInt = LiteralValue | bigint;
 
-export default class Literal<T extends LiteralValue = LiteralValue> extends NodeBase {
+export default class Literal<
+	T extends LiteralValueOrBigInt = LiteralValueOrBigInt
+> extends NodeBase {
+	declare bigint?: string;
+	declare raw?: string;
 	declare regex?: {
 		flags: string;
 		pattern: string;
@@ -32,7 +37,7 @@ export default class Literal<T extends LiteralValue = LiteralValue> extends Node
 	declare type: NodeType.tLiteral;
 	declare value: T;
 
-	private declare members: { [key: string]: MemberDescription };
+	declare private members: Record<string, MemberDescription>;
 
 	deoptimizeArgumentsOnInteractionAtPath(): void {}
 
@@ -40,10 +45,10 @@ export default class Literal<T extends LiteralValue = LiteralValue> extends Node
 		if (
 			path.length > 0 ||
 			// unknown literals can also be null but do not start with an "n"
-			(this.value === null && this.context.code.charCodeAt(this.start) !== 110) ||
+			(this.value === null && this.scope.context.code.charCodeAt(this.start) !== 110) ||
 			typeof this.value === 'bigint' ||
 			// to support shims for regular expressions
-			this.context.code.charCodeAt(this.start) === 47
+			this.scope.context.code.charCodeAt(this.start) === 47
 		) {
 			return UnknownValue;
 		}
@@ -86,13 +91,14 @@ export default class Literal<T extends LiteralValue = LiteralValue> extends Node
 	}
 
 	initialise(): void {
+		super.initialise();
 		this.members = getLiteralMembersForValue(this.value);
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode): void {
+	parseNode(esTreeNode: GenericEsTreeNode): this {
 		this.value = esTreeNode.value;
 		this.regex = esTreeNode.regex;
-		super.parseNode(esTreeNode);
+		return super.parseNode(esTreeNode);
 	}
 
 	render(code: MagicString): void {
@@ -101,3 +107,5 @@ export default class Literal<T extends LiteralValue = LiteralValue> extends Node
 		}
 	}
 }
+
+Literal.prototype.includeNode = onlyIncludeSelf;

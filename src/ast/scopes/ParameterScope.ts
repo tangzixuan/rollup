@@ -1,39 +1,43 @@
-import type { AstContext } from '../../Module';
+import { logDuplicateArgumentNameError } from '../../utils/logs';
 import type { InclusionContext } from '../ExecutionContext';
+import type { NodeInteractionCalled } from '../NodeInteractions';
 import type Identifier from '../nodes/Identifier';
 import SpreadElement from '../nodes/SpreadElement';
-import type { ExpressionEntity } from '../nodes/shared/Expression';
-import type LocalVariable from '../variables/LocalVariable';
+import type { ObjectPath } from '../utils/PathTracker';
+import { UNKNOWN_PATH } from '../utils/PathTracker';
 import ParameterVariable from '../variables/ParameterVariable';
+import CatchBodyScope from './CatchBodyScope';
 import ChildScope from './ChildScope';
-import type Scope from './Scope';
+import FunctionBodyScope from './FunctionBodyScope';
 
 export default class ParameterScope extends ChildScope {
-	readonly hoistedBodyVarScope: ChildScope;
-	parameters: readonly ParameterVariable[][] = [];
+	readonly bodyScope: ChildScope;
 
-	private readonly context: AstContext;
-	private hasRest = false;
+	protected hasRest = false;
+	protected parameters: readonly ParameterVariable[][] = [];
 
-	constructor(parent: Scope, context: AstContext) {
-		super(parent);
-		this.context = context;
-		this.hoistedBodyVarScope = new ChildScope(this);
+	constructor(parent: ChildScope, isCatchScope: boolean) {
+		super(parent, parent.context);
+		this.bodyScope = isCatchScope ? new CatchBodyScope(this) : new FunctionBodyScope(this);
 	}
 
 	/**
 	 * Adds a parameter to this scope. Parameters must be added in the correct
 	 * order, i.e. from left to right.
 	 */
-	addParameterDeclaration(identifier: Identifier): ParameterVariable {
-		const { name } = identifier;
-		const variable = new ParameterVariable(name, identifier, this.context);
-		const localVariable = this.hoistedBodyVarScope.variables.get(name) as LocalVariable;
-		if (localVariable) {
-			this.hoistedBodyVarScope.variables.set(name, variable);
-			variable.mergeDeclarations(localVariable);
+	addParameterDeclaration(identifier: Identifier, argumentPath: ObjectPath): ParameterVariable {
+		const { name, start } = identifier;
+		const existingParameter = this.variables.get(name);
+		if (existingParameter) {
+			return this.context.error(logDuplicateArgumentNameError(name), start);
 		}
+		const variable = new ParameterVariable(name, identifier, argumentPath, this.context);
 		this.variables.set(name, variable);
+		// We also add it to the body scope to detect name conflicts with local
+		// variables. We still need the intermediate scope, though, as parameter
+		// defaults are NOT taken from the body scope but from the parameters or
+		// outside scope.
+		this.bodyScope.addHoistedVariable(name, variable);
 		return variable;
 	}
 
@@ -47,44 +51,54 @@ export default class ParameterScope extends ChildScope {
 		this.hasRest = hasRest;
 	}
 
-	includeCallArguments(
-		context: InclusionContext,
-		parameters: readonly (ExpressionEntity | SpreadElement)[]
-	): void {
+	includeCallArguments(context: InclusionContext, interaction: NodeInteractionCalled): void {
 		let calledFromTryStatement = false;
 		let argumentIncluded = false;
 		const restParameter = this.hasRest && this.parameters[this.parameters.length - 1];
-		for (const checkedArgument of parameters) {
-			if (checkedArgument instanceof SpreadElement) {
-				for (const argument of parameters) {
-					argument.include(context, false);
-				}
-				break;
+		const { args } = interaction;
+		let lastExplicitlyIncludedIndex = args.length - 1;
+		// If there is a SpreadElement, we need to include all arguments after it
+		// because we no longer know which argument corresponds to which parameter.
+		for (let argumentIndex = 1; argumentIndex < args.length; argumentIndex++) {
+			const argument = args[argumentIndex];
+			if (argument instanceof SpreadElement && !argumentIncluded) {
+				argumentIncluded = true;
+				lastExplicitlyIncludedIndex = argumentIndex - 1;
+			}
+			if (argumentIncluded) {
+				argument!.includePath(UNKNOWN_PATH, context);
+				argument!.include(context, false);
 			}
 		}
-		for (let index = parameters.length - 1; index >= 0; index--) {
-			const parameterVariables = this.parameters[index] || restParameter;
-			const argument = parameters[index];
+		// Now we go backwards either starting from the last argument or before the
+		// first SpreadElement to ensure all arguments before are included as needed
+		for (let index = lastExplicitlyIncludedIndex; index >= 1; index--) {
+			const parameterVariables = this.parameters[index - 1] || restParameter;
+			const argument = args[index]!;
 			if (parameterVariables) {
 				calledFromTryStatement = false;
 				if (parameterVariables.length === 0) {
-					// handle empty destructuring
+					// handle empty destructuring to avoid destructuring undefined
 					argumentIncluded = true;
 				} else {
-					for (const variable of parameterVariables) {
-						if (variable.included) {
-							argumentIncluded = true;
-						}
-						if (variable.calledFromTryStatement) {
+					for (const parameterVariable of parameterVariables) {
+						if (parameterVariable.calledFromTryStatement) {
 							calledFromTryStatement = true;
+						}
+						if (parameterVariable.included) {
+							argumentIncluded = true;
+							if (calledFromTryStatement) {
+								argument.include(context, true);
+							} else {
+								parameterVariable.includeArgumentPaths(argument, context);
+								argument.include(context, false);
+							}
 						}
 					}
 				}
 			}
-			if (!argumentIncluded && argument.shouldBeIncluded(context)) {
+			if (argumentIncluded || argument.shouldBeIncluded(context)) {
 				argumentIncluded = true;
-			}
-			if (argumentIncluded) {
 				argument.include(context, calledFromTryStatement);
 			}
 		}

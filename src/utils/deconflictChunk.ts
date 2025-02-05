@@ -7,6 +7,7 @@ import ExportDefaultVariable from '../ast/variables/ExportDefaultVariable';
 import type SyntheticNamedExportVariable from '../ast/variables/SyntheticNamedExportVariable';
 import type Variable from '../ast/variables/Variable';
 import type { GetInterop, InternalModuleFormat } from '../rollup/types';
+import { makeLegal } from './identifierHelpers';
 import {
 	canDefaultBeTakenFromNamespace,
 	defaultInteropHelpersByInteropType,
@@ -21,8 +22,9 @@ export interface DependenciesToBeDeconflicted {
 	dependencies: ReadonlySet<Chunk | ExternalChunk>;
 }
 
-const DECONFLICT_IMPORTED_VARIABLES_BY_FORMAT: {
-	[format in InternalModuleFormat]: (
+const DECONFLICT_IMPORTED_VARIABLES_BY_FORMAT: Record<
+	InternalModuleFormat,
+	(
 		usedNames: Set<string>,
 		imports: ReadonlySet<Variable>,
 		dependenciesToBeDeconflicted: DependenciesToBeDeconflicted,
@@ -32,8 +34,8 @@ const DECONFLICT_IMPORTED_VARIABLES_BY_FORMAT: {
 		chunkByModule: ReadonlyMap<Module, Chunk>,
 		externalChunkByModule: ReadonlyMap<ExternalModule, ExternalChunk>,
 		syntheticExports: ReadonlySet<SyntheticNamedExportVariable>
-	) => void;
-} = {
+	) => void
+> = {
 	amd: deconflictImportsOther,
 	cjs: deconflictImportsOther,
 	es: deconflictImportsEsmOrSystem,
@@ -127,7 +129,10 @@ function deconflictImportsEsmOrSystem(
 				)
 			);
 		} else {
-			variable.setRenderNames(null, getSafeName(name, usedNames, variable.forbiddenNames));
+			variable.setRenderNames(
+				null,
+				getSafeName(makeLegal(name), usedNames, variable.forbiddenNames)
+			);
 		}
 	}
 	for (const variable of syntheticExports) {

@@ -19,15 +19,13 @@ export default class ClassDeclaration extends ClassNode {
 		}
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode): void {
+	parseNode(esTreeNode: GenericEsTreeNode): this {
 		if (esTreeNode.id !== null) {
-			this.id = new Identifier(
-				esTreeNode.id,
-				this,
-				this.scope.parent as ChildScope
+			this.id = new Identifier(this, this.scope.parent as ChildScope).parseNode(
+				esTreeNode.id
 			) as IdentifierWithVariable;
 		}
-		super.parseNode(esTreeNode);
+		return super.parseNode(esTreeNode);
 	}
 
 	render(code: MagicString, options: RenderOptions): void {
@@ -43,6 +41,7 @@ export default class ClassDeclaration extends ClassNode {
 			}
 			const renderedVariable = variable.getName(getPropertyAccess);
 			if (renderedVariable !== name) {
+				this.decorators.map(decorator => decorator.render(code, options));
 				this.superClass?.render(code, options);
 				this.body.render(code, {
 					...options,
@@ -56,7 +55,7 @@ export default class ClassDeclaration extends ClassNode {
 		super.render(code, options);
 	}
 
-	protected applyDeoptimizations(): void {
+	applyDeoptimizations() {
 		super.applyDeoptimizations();
 		const { id, scope } = this;
 		if (id) {

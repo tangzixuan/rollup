@@ -1,8 +1,8 @@
 import type { DeoptimizableEntity } from '../../DeoptimizableEntity';
-import type { HasEffectsContext } from '../../ExecutionContext';
+import type { HasEffectsContext, InclusionContext } from '../../ExecutionContext';
 import type { NodeInteraction, NodeInteractionCalled } from '../../NodeInteractions';
 import { INTERACTION_ACCESSED, INTERACTION_CALLED } from '../../NodeInteractions';
-import type { ObjectPath, ObjectPathKey, PathTracker } from '../../utils/PathTracker';
+import type { EntityPathTracker, ObjectPath, ObjectPathKey } from '../../utils/PathTracker';
 import {
 	UNKNOWN_INTEGER_PATH,
 	UNKNOWN_PATH,
@@ -10,15 +10,16 @@ import {
 	UnknownKey,
 	UnknownNonAccessorKey
 } from '../../utils/PathTracker';
+import { Flag, isFlagSet, setFlag } from './BitFlags';
 import type { LiteralValueOrUnknown } from './Expression';
 import {
 	deoptimizeInteraction,
 	ExpressionEntity,
 	UNKNOWN_EXPRESSION,
 	UNKNOWN_RETURN_EXPRESSION,
-	UnknownTruthyValue,
 	UnknownValue
 } from './Expression';
+import type { IncludeChildren } from './Node';
 
 export interface ObjectProperty {
 	key: ObjectPathKey;
@@ -26,27 +27,45 @@ export interface ObjectProperty {
 	property: ExpressionEntity;
 }
 
-export interface PropertyMap {
-	[key: string]: ExpressionEntity[];
-}
+export type PropertyMap = Record<string, ExpressionEntity[]>;
 const INTEGER_REG_EXP = /^\d+$/;
 
 export class ObjectEntity extends ExpressionEntity {
+	private get hasLostTrack(): boolean {
+		return isFlagSet(this.flags, Flag.hasLostTrack);
+	}
+	private set hasLostTrack(value: boolean) {
+		this.flags = setFlag(this.flags, Flag.hasLostTrack, value);
+	}
+
+	private get hasUnknownDeoptimizedInteger(): boolean {
+		return isFlagSet(this.flags, Flag.hasUnknownDeoptimizedInteger);
+	}
+	private set hasUnknownDeoptimizedInteger(value: boolean) {
+		this.flags = setFlag(this.flags, Flag.hasUnknownDeoptimizedInteger, value);
+	}
+
+	private get hasUnknownDeoptimizedProperty(): boolean {
+		return isFlagSet(this.flags, Flag.hasUnknownDeoptimizedProperty);
+	}
+	private set hasUnknownDeoptimizedProperty(value: boolean) {
+		this.flags = setFlag(this.flags, Flag.hasUnknownDeoptimizedProperty, value);
+	}
+
 	private readonly additionalExpressionsToBeDeoptimized = new Set<ExpressionEntity>();
 	private readonly allProperties: ExpressionEntity[] = [];
 	private readonly deoptimizedPaths: Record<string, boolean> = Object.create(null);
 	private readonly expressionsToBeDeoptimizedByKey: Record<string, DeoptimizableEntity[]> =
 		Object.create(null);
 	private readonly gettersByKey: PropertyMap = Object.create(null);
-	private hasLostTrack = false;
-	private hasUnknownDeoptimizedInteger = false;
-	private hasUnknownDeoptimizedProperty = false;
+
 	private readonly propertiesAndGettersByKey: PropertyMap = Object.create(null);
 	private readonly propertiesAndSettersByKey: PropertyMap = Object.create(null);
 	private readonly settersByKey: PropertyMap = Object.create(null);
 	private readonly unknownIntegerProps: ExpressionEntity[] = [];
 	private readonly unmatchableGetters: ExpressionEntity[] = [];
 	private readonly unmatchablePropertiesAndGetters: ExpressionEntity[] = [];
+	private readonly unmatchablePropertiesAndSetters: ExpressionEntity[] = [];
 	private readonly unmatchableSetters: ExpressionEntity[] = [];
 
 	// If a PropertyMap is used, this will be taken as propertiesAndGettersByKey
@@ -93,7 +112,7 @@ export class ObjectEntity extends ExpressionEntity {
 	deoptimizeArgumentsOnInteractionAtPath(
 		interaction: NodeInteraction,
 		path: ObjectPath,
-		recursionTracker: PathTracker
+		recursionTracker: EntityPathTracker
 	): void {
 		const [key, ...subPath] = path;
 		const { args, type } = interaction;
@@ -115,10 +134,10 @@ export class ObjectEntity extends ExpressionEntity {
 						this.propertiesAndGettersByKey,
 						this.propertiesAndGettersByKey,
 						this.unmatchablePropertiesAndGetters
-				  ]
+					]
 				: type === INTERACTION_ACCESSED
-				? [this.propertiesAndGettersByKey, this.gettersByKey, this.unmatchableGetters]
-				: [this.propertiesAndSettersByKey, this.settersByKey, this.unmatchableSetters];
+					? [this.propertiesAndGettersByKey, this.gettersByKey, this.unmatchableGetters]
+					: [this.propertiesAndSettersByKey, this.settersByKey, this.unmatchableSetters];
 
 		if (typeof key === 'string') {
 			if (propertiesForExactMatchByKey[key]) {
@@ -198,10 +217,9 @@ export class ObjectEntity extends ExpressionEntity {
 		}
 		const key = path[0];
 		if (path.length === 1) {
-			if (typeof key !== 'string') {
-				if (key === UnknownInteger) {
-					return this.deoptimizeIntegerProperties();
-				}
+			if (key === UnknownInteger) {
+				return this.deoptimizeIntegerProperties();
+			} else if (typeof key !== 'string') {
 				return this.deoptimizeAllProperties(key === UnknownNonAccessorKey);
 			}
 			if (!this.deoptimizedPaths[key]) {
@@ -223,20 +241,25 @@ export class ObjectEntity extends ExpressionEntity {
 			? [
 					...(this.propertiesAndGettersByKey[key] || this.unmatchablePropertiesAndGetters),
 					...(this.settersByKey[key] || this.unmatchableSetters)
-			  ]
+				]
 			: this.allProperties) {
 			property.deoptimizePath(subPath);
 		}
-		this.prototypeExpression?.deoptimizePath(path.length === 1 ? [...path, UnknownKey] : path);
+		this.prototypeExpression?.deoptimizePath(path.length === 1 ? [path[0], UnknownKey] : path);
 	}
 
 	getLiteralValueAtPath(
 		path: ObjectPath,
-		recursionTracker: PathTracker,
+		recursionTracker: EntityPathTracker,
 		origin: DeoptimizableEntity
 	): LiteralValueOrUnknown {
 		if (path.length === 0) {
-			return UnknownTruthyValue;
+			// This should actually be "UnknownTruthyValue". However, this currently
+			// causes an issue with TypeScript enums in files with moduleSideEffects:
+			// false because we cannot properly track whether a "var" has been
+			// initialized. This should be reverted once we can properly track this.
+			// return UnknownTruthyValue;
+			return UnknownValue;
 		}
 		const key = path[0];
 		const expressionAtPath = this.getMemberExpressionAndTrackDeopt(key, origin);
@@ -255,7 +278,7 @@ export class ObjectEntity extends ExpressionEntity {
 	getReturnExpressionWhenCalledAtPath(
 		path: ObjectPath,
 		interaction: NodeInteractionCalled,
-		recursionTracker: PathTracker,
+		recursionTracker: EntityPathTracker,
 		origin: DeoptimizableEntity
 	): [expression: ExpressionEntity, isPure: boolean] {
 		if (path.length === 0) {
@@ -332,6 +355,36 @@ export class ObjectEntity extends ExpressionEntity {
 		return false;
 	}
 
+	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren) {
+		this.included = true;
+		for (const property of this.allProperties) {
+			if (includeChildrenRecursively || property.shouldBeIncluded(context)) {
+				property.include(context, includeChildrenRecursively);
+			}
+		}
+		this.prototypeExpression?.include(context, includeChildrenRecursively);
+	}
+
+	includePath(path: ObjectPath, context: InclusionContext) {
+		this.included = true;
+		if (path.length === 0) return;
+		const [key, ...subPath] = path;
+		const [includedMembers, includedPath] =
+			typeof key === 'string'
+				? [
+						new Set([
+							...(this.propertiesAndGettersByKey[key] || this.unmatchablePropertiesAndGetters),
+							...(this.propertiesAndSettersByKey[key] || this.unmatchablePropertiesAndSetters)
+						]),
+						subPath
+					]
+				: [this.allProperties, UNKNOWN_PATH];
+		for (const property of includedMembers) {
+			property.includePath(includedPath, context);
+		}
+		this.prototypeExpression?.includePath(path, context);
+	}
+
 	private buildPropertyMaps(properties: readonly ObjectProperty[]): void {
 		const {
 			allProperties,
@@ -341,10 +394,10 @@ export class ObjectEntity extends ExpressionEntity {
 			gettersByKey,
 			unknownIntegerProps,
 			unmatchablePropertiesAndGetters,
+			unmatchablePropertiesAndSetters,
 			unmatchableGetters,
 			unmatchableSetters
 		} = this;
-		const unmatchablePropertiesAndSetters: ExpressionEntity[] = [];
 		for (let index = properties.length - 1; index >= 0; index--) {
 			const { key, kind, property } = properties[index];
 			allProperties.push(property);
