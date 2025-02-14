@@ -44,7 +44,9 @@ module.exports = defineTest({
 							symbols: false
 						},
 						globals: {},
+						hashCharacters: 'base64',
 						hoistTransitiveImports: true,
+						importAttributesKey: 'assert',
 						indent: true,
 						inlineDynamicImports: false,
 						manualChunks: {},
@@ -53,11 +55,14 @@ module.exports = defineTest({
 						paths: {},
 						plugins: [],
 						preserveModules: false,
+						reexportProtoFromExternal: true,
 						sourcemap: false,
+						sourcemapDebugIds: false,
 						sourcemapExcludeSources: false,
 						strict: true,
 						systemNullSetters: true,
-						validate: false
+						validate: false,
+						virtualDirname: '_virtual'
 					});
 					assert.strictEqual(options.banner(), 'exports.bar = 43;');
 					assert.ok(/^\d+\.\d+\.\d+/.test(this.meta.rollupVersion));

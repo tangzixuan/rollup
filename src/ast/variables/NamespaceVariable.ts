@@ -1,15 +1,16 @@
 import type { AstContext, default as Module } from '../../Module';
+import { stringifyObjectKeyIfNeeded } from '../../utils/identifierHelpers';
 import { getToStringTagValue, MERGE_NAMESPACES_VARIABLE } from '../../utils/interopHelpers';
 import type { RenderOptions } from '../../utils/renderHelpers';
 import { getSystemExportStatement } from '../../utils/systemJsRendering';
-import type { HasEffectsContext } from '../ExecutionContext';
+import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import type { NodeInteraction } from '../NodeInteractions';
 import { INTERACTION_ASSIGNED, INTERACTION_CALLED } from '../NodeInteractions';
-import type Identifier from '../nodes/Identifier';
 import type { LiteralValueOrUnknown } from '../nodes/shared/Expression';
 import { deoptimizeInteraction, UnknownValue } from '../nodes/shared/Expression';
+import type IdentifierBase from '../nodes/shared/IdentifierBase';
 import type ChildScope from '../scopes/ChildScope';
-import type { ObjectPath, PathTracker } from '../utils/PathTracker';
+import type { EntityPathTracker, ObjectPath } from '../utils/PathTracker';
 import { SymbolToStringTag } from '../utils/PathTracker';
 import Variable from './Variable';
 
@@ -18,10 +19,10 @@ export default class NamespaceVariable extends Variable {
 	declare isNamespace: true;
 	readonly module: Module;
 
-	private memberVariables: { [name: string]: Variable } | null = null;
+	private memberVariables: Record<string, Variable> | null = null;
 	private mergedNamespaces: readonly Variable[] = [];
 	private referencedEarly = false;
-	private references: Identifier[] = [];
+	private references: IdentifierBase[] = [];
 
 	constructor(context: AstContext) {
 		super(context.getModuleName());
@@ -29,7 +30,7 @@ export default class NamespaceVariable extends Variable {
 		this.module = context.module;
 	}
 
-	addReference(identifier: Identifier): void {
+	addReference(identifier: IdentifierBase): void {
 		this.references.push(identifier);
 		this.name = identifier.name;
 	}
@@ -37,7 +38,7 @@ export default class NamespaceVariable extends Variable {
 	deoptimizeArgumentsOnInteractionAtPath(
 		interaction: NodeInteraction,
 		path: ObjectPath,
-		recursionTracker: PathTracker
+		recursionTracker: EntityPathTracker
 	) {
 		if (path.length > 1 || (path.length === 1 && interaction.type === INTERACTION_CALLED)) {
 			const key = path[0];
@@ -69,12 +70,12 @@ export default class NamespaceVariable extends Variable {
 		return UnknownValue;
 	}
 
-	getMemberVariables(): { [name: string]: Variable } {
+	getMemberVariables(): Record<string, Variable> {
 		if (this.memberVariables) {
 			return this.memberVariables;
 		}
 
-		const memberVariables: { [name: string]: Variable } = Object.create(null);
+		const memberVariables: Record<string, Variable> = Object.create(null);
 		const sortedExports = [...this.context.getExports(), ...this.context.getReexports()].sort();
 
 		for (const name of sortedExports) {
@@ -112,8 +113,8 @@ export default class NamespaceVariable extends Variable {
 		);
 	}
 
-	include(): void {
-		this.included = true;
+	includePath(path: ObjectPath, context: InclusionContext): void {
+		super.includePath(path, context);
 		this.context.includeAllExports();
 	}
 
@@ -139,7 +140,9 @@ export default class NamespaceVariable extends Variable {
 				if (this.referencedEarly || variable.isReassigned || variable === this) {
 					return [
 						null,
-						`get ${name}${_}()${_}{${_}return ${variable.getName(getPropertyAccess)}${s}${_}}`
+						`get ${stringifyObjectKeyIfNeeded(name)}${_}()${_}{${_}return ${variable.getName(
+							getPropertyAccess
+						)}${s}${_}}`
 					];
 				}
 
@@ -185,7 +188,8 @@ export default class NamespaceVariable extends Variable {
 		this.mergedNamespaces = mergedNamespaces;
 		const moduleExecIndex = this.context.getModuleExecIndex();
 		for (const identifier of this.references) {
-			if (identifier.context.getModuleExecIndex() <= moduleExecIndex) {
+			const { context } = identifier.scope;
+			if (context.getModuleExecIndex() <= moduleExecIndex) {
 				this.referencedEarly = true;
 				break;
 			}

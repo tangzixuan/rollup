@@ -1,4 +1,4 @@
-import { blue, cyan } from 'colorette';
+import pc from 'picocolors';
 import type { RollupLog } from '../../src/rollup/types';
 import { bold, gray, yellow } from '../../src/utils/colors';
 import { ensureArray } from '../../src/utils/ensureArray';
@@ -32,9 +32,9 @@ export default function batchWarnings(command: Record<string, any>): BatchWarnin
 		warningOccurred = true;
 
 		if (silent) return;
-		if (warning.code! in deferredHandlers) {
-			getOrCreate(deferredWarnings, warning.code!, getNewArray).push(warning);
-		} else if (warning.code! in immediateHandlers) {
+		if ((warning.code as string) in deferredHandlers) {
+			getOrCreate(deferredWarnings, warning.code, getNewArray).push(warning);
+		} else if ((warning.code as string) in immediateHandlers) {
 			immediateHandlers[warning.code!](warning);
 		} else {
 			title(warning.message);
@@ -72,14 +72,14 @@ export default function batchWarnings(command: Record<string, any>): BatchWarnin
 				}
 				case LOGLEVEL_DEBUG: {
 					if (!silent) {
-						stderr(bold(blue(log.message)));
+						stderr(bold(pc.blue(log.message)));
 						defaultBody(log);
 					}
 					return;
 				}
 				default: {
 					if (!silent) {
-						stderr(bold(cyan(log.message)));
+						stderr(bold(pc.cyan(log.message)));
 						defaultBody(log);
 					}
 				}
@@ -92,9 +92,7 @@ export default function batchWarnings(command: Record<string, any>): BatchWarnin
 	};
 }
 
-const immediateHandlers: {
-	[code: string]: (warning: RollupLog) => void;
-} = {
+const immediateHandlers: Record<string, (warning: RollupLog) => void> = {
 	MISSING_NODE_BUILTINS(warning) {
 		title(`Missing shims for Node.js built-ins`);
 
@@ -111,9 +109,7 @@ const immediateHandlers: {
 	}
 };
 
-const deferredHandlers: {
-	[code: string]: (warnings: RollupLog[]) => void;
-} = {
+const deferredHandlers: Record<string, (warnings: RollupLog[]) => void> = {
 	CIRCULAR_DEPENDENCY(warnings) {
 		title(`Circular dependenc${warnings.length > 1 ? 'ies' : 'y'}`);
 		const displayed = warnings.length > 5 ? warnings.slice(0, 3) : warnings;
@@ -195,22 +191,18 @@ const deferredHandlers: {
 	PLUGIN_WARNING(warnings) {
 		const nestedByPlugin = nest(warnings, 'plugin');
 
-		for (const { key: plugin, items } of nestedByPlugin) {
+		for (const { items } of nestedByPlugin) {
 			const nestedByMessage = nest(items, 'message');
 
 			let lastUrl = '';
 
 			for (const { key: message, items } of nestedByMessage) {
-				title(`Plugin ${plugin}: ${message}`);
+				title(message);
 				for (const warning of items) {
 					if (warning.url && warning.url !== lastUrl) info((lastUrl = warning.url));
 
-					const id = warning.id || warning.loc?.file;
-					if (id) {
-						let loc = relativeId(id);
-						if (warning.loc) {
-							loc += `: (${warning.loc.line}:${warning.loc.column})`;
-						}
+					const loc = formatLocation(warning);
+					if (loc) {
 						stderr(bold(loc));
 					}
 					if (warning.frame) info(warning.frame);
@@ -270,14 +262,12 @@ const deferredHandlers: {
 
 function defaultBody(log: RollupLog): void {
 	if (log.url) {
-		info(getRollupUrl(log.url));
+		info(log.url);
 	}
 
-	const id = log.loc?.file || log.id;
-	if (id) {
-		const loc = log.loc ? `${relativeId(id)} (${log.loc.line}:${log.loc.column})` : relativeId(id);
-
-		stderr(bold(relativeId(loc)));
+	const loc = formatLocation(log);
+	if (loc) {
+		stderr(bold(loc));
 	}
 
 	if (log.frame) info(log.frame);
@@ -339,4 +329,10 @@ function generateLogFilter(command: Record<string, any>) {
 		filters.push(...process.env.ROLLUP_FILTER_LOGS.split(','));
 	}
 	return getLogFilter(filters);
+}
+
+function formatLocation(log: RollupLog): string | null {
+	const id = log.loc?.file || log.id;
+	if (!id) return null;
+	return log.loc ? `${id}:${log.loc.line}:${log.loc.column}` : id;
 }

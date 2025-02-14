@@ -1,3 +1,4 @@
+import type { AstContext } from '../../Module';
 import type { InternalModuleFormat } from '../../rollup/types';
 import { getSafeName } from '../../utils/safeName';
 import type ImportExpression from '../nodes/ImportExpression';
@@ -7,12 +8,13 @@ import Scope from './Scope';
 
 export default class ChildScope extends Scope {
 	readonly accessedOutsideVariables = new Map<string, Variable>();
-	parent: Scope;
-	private declare accessedDynamicImports?: Set<ImportExpression>;
+	declare private accessedDynamicImports?: Set<ImportExpression>;
 
-	constructor(parent: Scope) {
+	constructor(
+		readonly parent: Scope,
+		readonly context: AstContext
+	) {
 		super();
-		this.parent = parent;
 		parent.children.push(this);
 	}
 
@@ -45,7 +47,9 @@ export default class ChildScope extends Scope {
 	}
 
 	addReturnExpression(expression: ExpressionEntity): void {
-		this.parent instanceof ChildScope && this.parent.addReturnExpression(expression);
+		if (this.parent instanceof ChildScope) {
+			this.parent.addReturnExpression(expression);
+		}
 	}
 
 	addUsedOutsideNames(
@@ -100,6 +104,12 @@ export default class ChildScope extends Scope {
 
 	findLexicalBoundary(): ChildScope {
 		return (this.parent as ChildScope).findLexicalBoundary();
+	}
+
+	findGlobal(name: string): Variable {
+		const variable = this.parent.findVariable(name);
+		this.accessedOutsideVariables.set(name, variable);
+		return variable;
 	}
 
 	findVariable(name: string): Variable {

@@ -1,10 +1,10 @@
 import type MagicString from 'magic-string';
 import type { InternalModuleFormat } from '../../rollup/types';
-import type { PluginDriver } from '../../utils/PluginDriver';
 import { escapeId } from '../../utils/escapeId';
 import type { GenerateCodeSnippets } from '../../utils/generateCodeSnippets';
 import { DOCUMENT_CURRENT_SCRIPT } from '../../utils/interopHelpers';
 import { dirname, normalize, relative } from '../../utils/path';
+import type { PluginDriver } from '../../utils/PluginDriver';
 import type { RenderOptions } from '../../utils/renderHelpers';
 import type { NodeInteraction } from '../NodeInteractions';
 import { INTERACTION_ACCESSED } from '../NodeInteractions';
@@ -47,18 +47,20 @@ export default class MetaProperty extends NodeBase {
 	}
 
 	include(): void {
-		if (!this.included) {
-			this.included = true;
-			if (this.meta.name === IMPORT) {
-				this.context.addImportMeta(this);
-				const parent = this.parent;
-				const metaProperty = (this.metaProperty =
-					parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
-						? parent.propertyKey
-						: null);
-				if (metaProperty?.startsWith(FILE_PREFIX)) {
-					this.referenceId = metaProperty.slice(FILE_PREFIX.length);
-				}
+		if (!this.included) this.includeNode();
+	}
+
+	includeNode() {
+		this.included = true;
+		if (this.meta.name === IMPORT) {
+			this.scope.context.addImportMeta(this);
+			const parent = this.parent;
+			const metaProperty = (this.metaProperty =
+				parent instanceof MemberExpression && typeof parent.propertyKey === 'string'
+					? parent.propertyKey
+					: null);
+			if (metaProperty?.startsWith(FILE_PREFIX)) {
+				this.referenceId = metaProperty.slice(FILE_PREFIX.length);
 			}
 		}
 	}
@@ -66,7 +68,9 @@ export default class MetaProperty extends NodeBase {
 	render(code: MagicString, renderOptions: RenderOptions): void {
 		const { format, pluginDriver, snippets } = renderOptions;
 		const {
-			context: { module },
+			scope: {
+				context: { module }
+			},
 			meta: { name },
 			metaProperty,
 			parent,
@@ -156,7 +160,7 @@ const getRelativeUrlFromDocument = (relativePath: string, umd = false) =>
 	getResolveUrl(
 		`'${escapeId(relativePath)}', ${
 			umd ? `typeof document === 'undefined' ? location.href : ` : ''
-		}document.currentScript && document.currentScript.src || document.baseURI`
+		}document.currentScript && document.currentScript.tagName.toUpperCase() === 'SCRIPT' && document.currentScript.src || document.baseURI`
 	);
 
 const getGenericImportMetaMechanism =
@@ -166,34 +170,34 @@ const getGenericImportMetaMechanism =
 		return property === null
 			? `({ url: ${urlMechanism} })`
 			: property === 'url'
-			? urlMechanism
-			: 'undefined';
+				? urlMechanism
+				: 'undefined';
 	};
 
 const getFileUrlFromFullPath = (path: string) => `require('u' + 'rl').pathToFileURL(${path}).href`;
 
 const getFileUrlFromRelativePath = (path: string) =>
-	getFileUrlFromFullPath(`__dirname + '/${path}'`);
+	getFileUrlFromFullPath(`__dirname + '/${escapeId(path)}'`);
 
 const getUrlFromDocument = (chunkId: string, umd = false) =>
 	`${
 		umd ? `typeof document === 'undefined' ? location.href : ` : ''
-	}(${DOCUMENT_CURRENT_SCRIPT} && ${DOCUMENT_CURRENT_SCRIPT}.src || new URL('${escapeId(
+	}(${DOCUMENT_CURRENT_SCRIPT} && ${DOCUMENT_CURRENT_SCRIPT}.tagName.toUpperCase() === 'SCRIPT' && ${DOCUMENT_CURRENT_SCRIPT}.src || new URL('${escapeId(
 		chunkId
 	)}', document.baseURI).href)`;
 
 const relativeUrlMechanisms: Record<InternalModuleFormat, (relativePath: string) => string> = {
 	amd: relativePath => {
 		if (relativePath[0] !== '.') relativePath = './' + relativePath;
-		return getResolveUrl(`require.toUrl('${relativePath}'), document.baseURI`);
+		return getResolveUrl(`require.toUrl('${escapeId(relativePath)}'), document.baseURI`);
 	},
 	cjs: relativePath =>
 		`(typeof document === 'undefined' ? ${getFileUrlFromRelativePath(
 			relativePath
 		)} : ${getRelativeUrlFromDocument(relativePath)})`,
-	es: relativePath => getResolveUrl(`'${relativePath}', import.meta.url`),
+	es: relativePath => getResolveUrl(`'${escapeId(relativePath)}', import.meta.url`),
 	iife: relativePath => getRelativeUrlFromDocument(relativePath),
-	system: relativePath => getResolveUrl(`'${relativePath}', module.meta.url`),
+	system: relativePath => getResolveUrl(`'${escapeId(relativePath)}', module.meta.url`),
 	umd: relativePath =>
 		`(typeof document === 'undefined' && typeof location === 'undefined' ? ${getFileUrlFromRelativePath(
 			relativePath

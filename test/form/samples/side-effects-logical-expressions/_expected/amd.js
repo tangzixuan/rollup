@@ -9,9 +9,7 @@ define((function () { 'use strict';
 	const foo = {
 		get effect () {
 			console.log( 'effect' );
-		},
-		get noEffect () {}
-	};
+		}};
 
 	// effect
 	(foo).effect;
@@ -22,14 +20,14 @@ define((function () { 'use strict';
 	(null).foo = 1;
 
 	// effect
-	(true )();
-	(false )();
+	(true)();
+	(false)();
 	((() => console.log( 'effect' )))();
 	((() => console.log( 'effect' )))();
 
 	// effect
-	(true )()();
-	(false )()();
+	(true)()();
+	(false)()();
 	((() => () => console.log( 'effect' )))()();
 	((() => () => console.log( 'effect' )))()();
 

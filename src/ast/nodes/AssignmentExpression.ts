@@ -1,5 +1,6 @@
 import type MagicString from 'magic-string';
 import { BLANK } from '../../utils/blank';
+import { logConstVariableReassignError } from '../../utils/logs';
 import {
 	findFirstOccurrenceOutsideComment,
 	findNonWhiteSpace,
@@ -27,7 +28,7 @@ import { type ExpressionNode, type IncludeChildren, NodeBase } from './shared/No
 import type { PatternNode } from './shared/Pattern';
 
 export default class AssignmentExpression extends NodeBase {
-	declare left: ExpressionNode | PatternNode;
+	declare left: PatternNode;
 	declare operator:
 		| '='
 		| '+='
@@ -41,7 +42,10 @@ export default class AssignmentExpression extends NodeBase {
 		| '|='
 		| '^='
 		| '&='
-		| '**=';
+		| '**='
+		| '&&='
+		| '||='
+		| '??=';
 	declare right: ExpressionNode;
 	declare type: NodeType.tAssignmentExpression;
 
@@ -51,7 +55,9 @@ export default class AssignmentExpression extends NodeBase {
 		// MemberExpressions do not access the property before assignments if the
 		// operator is '='.
 		return (
-			right.hasEffects(context) || left.hasEffectsAsAssignmentTarget(context, operator !== '=')
+			right.hasEffects(context) ||
+			left.hasEffectsAsAssignmentTarget(context, operator !== '=') ||
+			this.left.hasEffectsWhenDestructuring?.(context, EMPTY_PATH, right)
 		);
 	}
 
@@ -66,19 +72,34 @@ export default class AssignmentExpression extends NodeBase {
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		const { deoptimized, left, right, operator } = this;
 		if (!deoptimized) this.applyDeoptimizations();
-		this.included = true;
+		if (!this.included) this.includeNode(context);
+		const hasEffectsContext = createHasEffectsContext();
 		if (
 			includeChildrenRecursively ||
 			operator !== '=' ||
 			left.included ||
-			left.hasEffectsAsAssignmentTarget(createHasEffectsContext(), false)
+			left.hasEffectsAsAssignmentTarget(hasEffectsContext, false) ||
+			left.hasEffectsWhenDestructuring?.(hasEffectsContext, EMPTY_PATH, right)
 		) {
 			left.includeAsAssignmentTarget(context, includeChildrenRecursively, operator !== '=');
 		}
 		right.include(context, includeChildrenRecursively);
 	}
 
+	includeNode(context: InclusionContext) {
+		this.included = true;
+		if (!this.deoptimized) this.applyDeoptimizations();
+		this.right.includePath(UNKNOWN_PATH, context);
+	}
+
 	initialise(): void {
+		super.initialise();
+		if (this.left instanceof Identifier) {
+			const variable = this.scope.variables.get(this.left.name);
+			if (variable?.kind === 'const') {
+				this.scope.context.error(logConstVariableReassignError(), this.left.start);
+			}
+		}
 		this.left.setAssignedValue(this.right);
 	}
 
@@ -151,10 +172,9 @@ export default class AssignmentExpression extends NodeBase {
 		}
 	}
 
-	protected applyDeoptimizations(): void {
+	applyDeoptimizations() {
 		this.deoptimized = true;
-		this.left.deoptimizePath(EMPTY_PATH);
-		this.right.deoptimizePath(UNKNOWN_PATH);
-		this.context.requestTreeshakingPass();
+		this.left.deoptimizeAssignment(EMPTY_PATH, this.right);
+		this.scope.context.requestTreeshakingPass();
 	}
 }

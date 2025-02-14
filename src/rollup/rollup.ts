@@ -38,6 +38,9 @@ import type {
 	RollupWatcher
 } from './types';
 
+// @ts-expect-error TS2540: the polyfill of `asyncDispose`.
+Symbol.asyncDispose ??= Symbol('Symbol.asyncDispose');
+
 export default function rollup(rawInputOptions: RollupOptions): Promise<RollupBuild> {
 	return rollupInternal(rawInputOptions, null);
 }
@@ -95,12 +98,17 @@ export async function rollupInternal(
 			await graph.pluginDriver.hookParallel('closeBundle', []);
 		},
 		closed: false,
+		async [Symbol.asyncDispose]() {
+			await this.close();
+		},
 		async generate(rawOutputOptions: OutputOptions) {
 			if (result.closed) return error(logAlreadyClosed());
 
 			return handleGenerateWrite(false, inputOptions, unsetInputOptions, rawOutputOptions, graph);
 		},
-		watchFiles: Object.keys(graph.watchFiles),
+		get watchFiles() {
+			return Object.keys(graph.watchFiles);
+		},
 		async write(rawOutputOptions: OutputOptions) {
 			if (result.closed) return error(logAlreadyClosed());
 

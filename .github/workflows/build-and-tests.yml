@@ -17,6 +17,10 @@ on:
       - reopened
   merge_group:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -29,121 +33,181 @@ jobs:
       - name: Checkout Commit
         uses: actions/checkout@v4
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Cache Node Modules
+          node-version: 22
+      - name: Restore Node dependencies cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            ~/.npm
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install dependencies
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Install Node dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts
       - name: Lint
         run: npm run ci:lint
       - name: Vulnerabilities
-        run: npm audit
+        run: npm run check-audit
       - name: Optional Dependencies
         run: npm run test:package
       - name: CLI Docs
         run: npm run test:options
+      - name: Generated Code
+        run: |
+          npm run build:ast-converters
+          git diff HEAD --exit-code --ignore-space-at-eol
 
   build:
     strategy:
       fail-fast: false
       matrix:
         settings:
-          - host: windows-latest
-            target: x86_64-pc-windows-msvc
+          # WASM
+          - host: ubuntu-latest
+            target: wasm32-unknown-unknown
             name: wasm
             is-wasm-build: true
-            build: npm run build:wasm
+            build: >-
+              set -e &&
+              rustup target add wasm32-unknown-unknown &&
+              npm run build:wasm
             path: |
               wasm/
               .empty
-          - host: windows-latest
-            target: x86_64-pc-windows-msvc
+          - host: ubuntu-latest
+            target: wasm32-unknown-unknown
             name: wasm-node
             is-wasm-build: true
-            build: npm run build:wasm:node
+            build: >-
+              set -e &&
+              rustup target add wasm32-unknown-unknown &&
+              npm run build:wasm:node
             path: |
               wasm-node/
               .empty
-          - host: macos-latest
-            target: x86_64-apple-darwin
-            build: |
-              npm run build:napi -- --release
-              strip -x *.node
+
+          # Windows
           - host: windows-latest
-            build: npm run build:napi -- --release
+            build: RUSTFLAGS="-C target-feature=+crt-static" npm run build:napi -- --release
             target: x86_64-pc-windows-msvc
           - host: windows-latest
-            build: |
+            build: >-
+              set -e &&
+              rustup target add i686-pc-windows-msvc &&
               npm run build:napi -- --release --target i686-pc-windows-msvc
             target: i686-pc-windows-msvc
+          - host: windows-latest
+            target: aarch64-pc-windows-msvc
+            build: npm run build:napi -- --release --target aarch64-pc-windows-msvc
+
+          # MacOS
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            build: >-
+              set -e &&
+              npm run build:napi -- --release --target x86_64-apple-darwin
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            build: >-
+              set -e &&
+              rustup target add aarch64-apple-darwin &&
+              npm run build:napi -- --release --target aarch64-apple-darwin
+
+          # Linux
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian
-            build: |-
+            build: >-
               set -e &&
-              rustup default nightly &&
-              npm run build:napi -- --release --target x86_64-unknown-linux-gnu &&
-              strip *.node
+              rustup target add x86_64-unknown-linux-gnu &&
+              npm run build:napi -- --release --target x86_64-unknown-linux-gnu
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-            build: |-
+            build: >-
               set -e &&
-              rustup default nightly &&
-              npm run build:napi -- --release && strip *.node
-          - host: macos-latest
-            target: aarch64-apple-darwin
-            build: |
-              npm run build:napi -- --release --target aarch64-apple-darwin
-              strip -x *.node
-          - host: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
-            build: |-
-              set -e &&
-              rustup default nightly &&
-              rustup target add aarch64-unknown-linux-gnu &&
-              npm run build:napi -- --release --target aarch64-unknown-linux-gnu &&
-              aarch64-unknown-linux-gnu-strip *.node
+              npm run build:napi -- --release
           - host: ubuntu-latest
             target: armv7-unknown-linux-gnueabihf
             zig: true
             setup: |
               sudo apt-get update
               sudo apt-get install gcc-arm-linux-gnueabihf -y
-            build: |
+            build: >-
+              set -e &&
               npm run build:napi -- --release --target armv7-unknown-linux-gnueabihf
-              arm-linux-gnueabihf-strip *.node
           - host: ubuntu-latest
-            target: aarch64-linux-android
-            build: |
-              npm run build:napi -- --release --target aarch64-linux-android
-              ${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip *.node
+            target: armv7-unknown-linux-musleabihf
+            zig: true
+            build: >-
+              set -e &&
+              npm run build:napi -- --release --target armv7-unknown-linux-musleabihf
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64
+            build: >-
+              set -e &&
+              export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
+              rustup default stable &&
+              rustup target add aarch64-unknown-linux-gnu &&
+              npm run build:napi -- --release --target aarch64-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
+            build: >-
+              set -e &&
+              export JEMALLOC_SYS_WITH_LG_PAGE=16 &&
+              rustup default stable &&
+              rustup target add aarch64-unknown-linux-musl &&
+              RUSTFLAGS='-C target-feature=-crt-static -C linker=aarch64-linux-musl-gcc' npm run build:napi -- --release --target aarch64-unknown-linux-musl
           - host: ubuntu-latest
             target: armv7-linux-androideabi
-            build: |
+            build: >-
+              set -e &&
               npm run build:napi -- --release --target armv7-linux-androideabi
-              ${ANDROID_NDK_LATEST_HOME}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip *.node
-          # TODO SWC this does not work yet, also add back in package.json
-          #          - host: ubuntu-latest
-          #            target: aarch64-unknown-linux-musl
-          #            docker: ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-alpine
-          #            build: |-
-          #              set -e &&
-          #              rustup default nightly &&
-          #              rustup target add aarch64-unknown-linux-musl &&
-          #              npm run build:napi -- --release --target aarch64-unknown-linux-musl &&
-          #              /aarch64-linux-musl-cross/bin/aarch64-linux-musl-strip *.node
-          - host: windows-latest
-            target: aarch64-pc-windows-msvc
-            build: npm run build:napi -- --release --target aarch64-pc-windows-msvc
+          - host: ubuntu-latest
+            target: aarch64-linux-android
+            build: >-
+              set -e &&
+              npm run build:napi -- --release --target aarch64-linux-android
+          - host: ubuntu-latest
+            target: riscv64gc-unknown-linux-gnu
+            setup: |
+              sudo apt-get update
+              sudo apt-get install gcc-riscv64-linux-gnu -y
+            build: >-
+              set -e &&
+              rustup target add riscv64gc-unknown-linux-gnu &&
+              npm run build:napi -- --release --target riscv64gc-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: powerpc64le-unknown-linux-gnu
+            setup: |
+              sudo apt-get update
+              sudo apt-get install gcc-powerpc64le-linux-gnu -y
+            build: >-
+              set -e &&
+              export CARGO_TARGET_POWERPC64LE_UNKNOWN_LINUX_GNU_LINKER=powerpc64le-linux-gnu-gcc && rustup target add powerpc64le-unknown-linux-gnu &&
+              npm run build:napi -- --release --target powerpc64le-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: s390x-unknown-linux-gnu
+            setup: |
+              sudo apt-get update
+              sudo apt-get install gcc-s390x-linux-gnu -y
+            build: >-
+              set -e &&
+              export CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER=s390x-linux-gnu-gcc &&
+              rustup target add s390x-unknown-linux-gnu &&
+              npm run build:napi -- --release --target s390x-unknown-linux-gnu
+          - host: ubuntu-latest
+            target: loongarch64-unknown-linux-gnu
+            docker: ghcr.io/darkyzhou/napi-rs-nodejs-rust:trixie-loongarch64
+            build: >-
+              set -e &&
+              npm run build:napi -- --release --target loongarch64-unknown-linux-gnu
     name: Build ${{ matrix.settings.name || matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
     timeout-minutes: 30
@@ -151,18 +215,18 @@ jobs:
       - name: Checkout Commit
         uses: actions/checkout@v4
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
         with:
-          node-version: 20
+          node-version: 22
       - name: Install Toolchain
         uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
         with:
-          toolchain: nightly
+          toolchain: stable
           targets: ${{ matrix.settings.target }}
-      - name: Cache cargo
-        uses: actions/cache@v3
+      - name: Restore Cargo cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.cargo/registry/index/
@@ -180,15 +244,26 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
-      - name: Cache Node Modules
+      - name: Restore Node dependencies cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
-          path: node_modules
+          path:  |
+            node_modules
+            ~/.npm
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install dependencies
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Install Node dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+        run: npm ${{ github.ref == 'refs/heads/master' && 'ci' || 'install' }} --ignore-scripts
+      - name: Save Node dependencies cache
+        if: steps.cache-node-modules.outputs.cache-hit != 'true' && github.ref == 'refs/heads/master'
+        uses: actions/cache/save@v4
+        with:
+          path:  |
+            node_modules
+            ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Build in docker
         uses: addnab/docker-run-action@v3
         if: ${{ matrix.settings.docker }}
@@ -200,20 +275,197 @@ jobs:
         run: ${{ matrix.settings.build }}
         if: ${{ !matrix.settings.docker }}
         shell: bash
+      - name: Save Cargo cache
+        if: github.ref == 'refs/heads/master'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            rust/target/
+          key: ${{ matrix.settings.name || matrix.settings.target }}-cargo-${{ matrix.settings.host }}-${{ hashFiles('rust/Cargo.lock') }}
       - name: Upload wasm artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.name }}
           path: ${{ matrix.settings.path }}
           if-no-files-found: error
         if: ${{ matrix.settings.is-wasm-build }}
       - name: Upload napi artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
           path: ${{ env.APP_NAME }}.*.node
           if-no-files-found: error
         if: ${{ !matrix.settings.is-wasm-build }}
+
+  build-freebsd:
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - name: freebsd
+            architecture: x86-64
+            version: '13.3'
+            target: x86_64-unknown-freebsd
+          - name: freebsd
+            architecture: arm64
+            version: '13.3'
+            target: aarch64-unknown-freebsd
+    name: Build ${{ matrix.settings.name }} ${{ matrix.settings.architecture }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Commit
+        uses: actions/checkout@v4
+      - name: Restore Cargo cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            rust/target/
+          key: ${{ matrix.settings.target }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: ${{ matrix.settings.target }}-cargo
+      - name: Restore Node dependencies cache
+        id: cache-node-modules
+        uses: actions/cache/restore@v4
+        with:
+          path:  |
+            node_modules
+            ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Build
+        uses: cross-platform-actions/action@v0.27.0
+        with:
+          operating_system: ${{ matrix.settings.name }}
+          architecture: ${{ matrix.settings.architecture }}
+          version: ${{ matrix.settings.version }}
+          memory: 8G
+          run: |
+            sudo pkg install -y node npm rust
+            ${{ steps.cache-node-modules.outputs.cache-hit != 'true' && 'npm install --ignore-scripts' || 'echo Cache hit' }}
+            npm run build:napi -- --release --target ${{ matrix.settings.target }}
+      - name: Save Cargo cache
+        if: github.ref == 'refs/heads/master'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            rust/target/
+          key: ${{ matrix.settings.target }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
+      - name: Upload napi artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+
+  # smoke test for some architectures that do not receive the full test suite
+  smoke-test:
+    permissions:
+      packages: write # for caching container images
+    name: Smoke Test ${{ matrix.settings.target }}
+    needs:
+      - build
+    strategy:
+      fail-fast: false
+      matrix:
+        settings:
+          - arch: aarch64
+            distro: ubuntu_latest
+            target: aarch64-unknown-linux-gnu
+          - arch: aarch64
+            distro: alpine_latest
+            target: aarch64-unknown-linux-musl
+          - arch: armv7
+            distro: ubuntu_latest
+            target: armv7-unknown-linux-gnueabihf
+# There is a bug that hangs the build when running npm
+#          - arch: armv7
+#            distro: alpine_latest
+#            target: armv7-unknown-linux-musleabihf
+# This one has become very flaky as of late
+#          - arch: ppc64le
+#            distro: ubuntu_latest
+#            target: powerpc64le-unknown-linux-gnu
+#            use-nvm: true
+          - arch: s390x
+            distro: ubuntu_latest
+            target: s390x-unknown-linux-gnu
+            use-nvm: true
+# I could not find a way to install Node without compiling from source
+#          - arch: riscv64
+#            distro: ubuntu_latest
+#            target: riscv64gc-unknown-linux-gnu
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout Commit
+        uses: actions/checkout@v4
+      - name: Restore Node dependencies cache
+        id: cache-node-modules
+        uses: actions/cache/restore@v4
+        with:
+          path:  |
+            node_modules
+            ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Install Node dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm install --ignore-scripts
+      - name: Build JS
+        run: npm run build:cjs
+      - name: Download napi artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bindings-${{ matrix.settings.target }}
+          path: dist/
+      - name: Run Smoke Test
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.settings.arch }}
+          distro: ${{ matrix.settings.distro }}
+          githubToken: ${{ github.token }}
+          install: |
+            case "${{ matrix.settings.distro }}" in
+              ubuntu*)
+                apt-get update -y
+                apt-get install -y curl git
+                if [[ -z "${{ matrix.settings.use-nvm }}" ]]; then
+                  curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+                  apt-get install -y nodejs
+                fi
+                ;;
+              alpine*)
+                apk add nodejs npm git
+                ;;
+            esac
+          run: |
+            set -e
+            if [[ -n "${{ matrix.settings.use-nvm }}" ]]; then
+              curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+              source ~/.nvm/nvm.sh
+              nvm install --lts
+            fi
+            echo "Node: $(node -v)"
+            echo "npm: $(npm -v)"
+            git config --global --add safe.directory /home/runner/work/rollup/rollup
+            chmod +x dist/bin/rollup
+            dist/bin/rollup --version | grep -E 'rollup v[0-9]+\.[0-9]+\.[0-9]+'
+            mv dist dist-build
+            node dist-build/bin/rollup --config rollup.config.ts --configPlugin typescript --configTest --forceExit
+            cp dist-build/rollup.*.node dist/
+            dist/bin/rollup --version | grep -E 'rollup v[0-9]+\.[0-9]+\.[0-9]+'
 
   test:
     name: Test${{ matrix.additionalName || '' }} Node ${{ matrix.node }} (${{ matrix.settings.target }})
@@ -228,22 +480,23 @@ jobs:
           - host: windows-latest
             target: x86_64-pc-windows-msvc
           - host: macos-latest
-            target: x86_64-apple-darwin
+            target: aarch64-apple-darwin
         node:
-          - '18.0.0'
-          - '20'
+          - '18.20.0'
+          # There is a bug in 22.12.0 that sometimes makes the loadConfigFile tests fail
+          - '22.11.0'
         include:
           - settings:
               host: ubuntu-latest
               target: x86_64-unknown-linux-gnu
-            node: '20'
+            node: '22.11.0'
             command: 'ci:coverage'
             additionalName: ' with Coverage'
             coverage: true
           - settings:
               host: ubuntu-latest
               target: x86_64-unknown-linux-gnu
-            node: '18.0.0'
+            node: '18.20.0'
             command: 'ci:test:all'
             additionalName: ' with Additional Tests'
     runs-on: ${{ matrix.settings.host }}
@@ -252,26 +505,29 @@ jobs:
       - name: Checkout Commit
         uses: actions/checkout@v4
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-      - name: Cache Node Modules
+      - name: Restore Node dependencies cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
-          path: node_modules
+          path:  |
+            node_modules
+            ~/.npm
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install dependencies
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Install Node dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts
       - name: Download napi artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: bindings-${{ matrix.settings.target }}
           path: .
       - name: Download wasm artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: bindings-wasm
       - name: Build and test Rollup
@@ -279,11 +535,10 @@ jobs:
         env:
           CI: true
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         if: matrix.coverage
         with:
-#          It appears adding the token may result in the coverage comment not being added
-#          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.CODECOV_TOKEN }}
           commit_parent: ${{ github.event.pull_request.head.sha }}
 
   publish:
@@ -295,9 +550,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs:
-      - test
       - lint
-    # TODO SWC once v4 is live, this should be changed
+      - build-freebsd
+      - test
+      - smoke-test
+    # This needs to be adapted for Rollup 5
     if: startsWith(github.ref_name, 'v4')
     steps:
       - name: Checkout Commit
@@ -306,21 +563,24 @@ jobs:
           # Necessary to find the commits included in the release
           fetch-depth: 0
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
           check-latest: true
-      - name: Cache Node Modules
+      - name: Restore Node dependencies cache
         id: cache-node-modules
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v4
         with:
-          path: node_modules
+          path:  |
+            node_modules
+            ~/.npm
           key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-      - name: Install dependencies
+          restore-keys: node-modules-${{ runner.os }}
+      - name: Install Node dependencies
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+        run: npm install --ignore-scripts
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Copy wasm files

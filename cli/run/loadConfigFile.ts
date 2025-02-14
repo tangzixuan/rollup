@@ -1,9 +1,9 @@
 import { unlink, writeFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join } from 'node:path';
+import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import * as rollup from '../../src/node-entry';
-import type { MergedRollupOptions } from '../../src/rollup/types';
+import type { ImportAttributesKey, MergedRollupOptions } from '../../src/rollup/types';
 import { bold } from '../../src/utils/colors';
 import {
 	error,
@@ -90,15 +90,19 @@ function getDefaultFromCjs(namespace: GenericConfigObject): unknown {
 	return namespace.default || namespace;
 }
 
+function getConfigImportAttributesKey(input: unknown): ImportAttributesKey | undefined {
+	if (input === 'assert' || input === 'with') return input;
+	return;
+}
+
 async function loadTranspiledConfigFile(
 	fileName: string,
 	commandOptions: Record<string, unknown>
 ): Promise<unknown> {
-	const { bundleConfigAsCjs, configPlugin, silent } = commandOptions;
+	const { bundleConfigAsCjs, configPlugin, configImportAttributesKey, silent } = commandOptions;
 	const warnings = batchWarnings(commandOptions);
 	const inputOptions = {
-		external: (id: string) =>
-			(id[0] !== '.' && !isAbsolute(id)) || id.slice(-5, id.length) === '.json',
+		external: (id: string) => (id[0] !== '.' && !path.isAbsolute(id)) || id.slice(-5) === '.json',
 		input: fileName,
 		onwarn: warnings.add,
 		plugins: [],
@@ -111,6 +115,7 @@ async function loadTranspiledConfigFile(
 	} = await bundle.generate({
 		exports: 'named',
 		format: bundleConfigAsCjs ? 'cjs' : 'es',
+		importAttributesKey: getConfigImportAttributesKey(configImportAttributesKey),
 		plugins: [
 			{
 				name: 'transpile-import-meta',
@@ -118,8 +123,14 @@ async function loadTranspiledConfigFile(
 					if (property === 'url') {
 						return `'${pathToFileURL(moduleId).href}'`;
 					}
+					if (property == 'filename') {
+						return `'${moduleId}'`;
+					}
+					if (property == 'dirname') {
+						return `'${path.dirname(moduleId)}'`;
+					}
 					if (property == null) {
-						return `{url:'${pathToFileURL(moduleId).href}'}`;
+						return `{url:'${pathToFileURL(moduleId).href}', filename: '${moduleId}', dirname: '${path.dirname(moduleId)}'}`;
 					}
 				}
 			}
@@ -130,7 +141,10 @@ async function loadTranspiledConfigFile(
 		warnings.flush();
 	}
 	return loadConfigFromWrittenFile(
-		join(dirname(fileName), `rollup.config-${Date.now()}.${bundleConfigAsCjs ? 'cjs' : 'mjs'}`),
+		path.join(
+			path.dirname(fileName),
+			`rollup.config-${Date.now()}.${bundleConfigAsCjs ? 'cjs' : 'mjs'}`
+		),
 		code
 	);
 }
@@ -143,8 +157,7 @@ async function loadConfigFromWrittenFile(
 	try {
 		return (await import(pathToFileURL(bundledFileName).href)).default;
 	} finally {
-		// Not awaiting here saves some ms while potentially hiding a non-critical error
-		unlink(bundledFileName);
+		unlink(bundledFileName).catch(error => console.warn(error?.message || error));
 	}
 }
 

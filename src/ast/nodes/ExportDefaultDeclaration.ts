@@ -9,12 +9,20 @@ import { getSystemExportStatement } from '../../utils/systemJsRendering';
 import { treeshakeNode } from '../../utils/treeshakeNode';
 import type { InclusionContext } from '../ExecutionContext';
 import type ModuleScope from '../scopes/ModuleScope';
+import type { ObjectPath } from '../utils/PathTracker';
+import { UNKNOWN_PATH } from '../utils/PathTracker';
 import type ExportDefaultVariable from '../variables/ExportDefaultVariable';
 import ClassDeclaration from './ClassDeclaration';
 import FunctionDeclaration from './FunctionDeclaration';
 import type Identifier from './Identifier';
 import * as NodeType from './NodeType';
-import { type ExpressionNode, type IncludeChildren, NodeBase } from './shared/Node';
+import {
+	doNotDeoptimize,
+	type ExpressionNode,
+	type IncludeChildren,
+	NodeBase,
+	onlyIncludeSelfNoDeoptimize
+} from './shared/Node';
 
 // The header ends at the first non-white-space after "default"
 function getDeclarationStart(code: string, start: number): number {
@@ -39,25 +47,32 @@ export default class ExportDefaultDeclaration extends NodeBase {
 	declare type: NodeType.tExportDefaultDeclaration;
 	declare variable: ExportDefaultVariable;
 
-	private declare declarationName: string | undefined;
+	declare private declarationName: string | undefined;
 
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
-		super.include(context, includeChildrenRecursively);
+		this.included = true;
+		this.declaration.include(context, includeChildrenRecursively);
 		if (includeChildrenRecursively) {
-			this.context.includeVariableInModule(this.variable);
+			this.scope.context.includeVariableInModule(this.variable, UNKNOWN_PATH, context);
 		}
 	}
 
+	includePath(path: ObjectPath, context: InclusionContext): void {
+		this.included = true;
+		this.declaration.includePath(path, context);
+	}
+
 	initialise(): void {
+		super.initialise();
 		const declaration = this.declaration as FunctionDeclaration | ClassDeclaration;
 		this.declarationName =
 			(declaration.id && declaration.id.name) || (this.declaration as Identifier).name;
 		this.variable = this.scope.addExportDefaultDeclaration(
-			this.declarationName || this.context.getModuleName(),
+			this.declarationName || this.scope.context.getModuleName(),
 			this,
-			this.context
+			this.scope.context
 		);
-		this.context.addExport(this);
+		this.scope.context.addExport(this);
 	}
 
 	removeAnnotations(code: MagicString) {
@@ -105,8 +120,6 @@ export default class ExportDefaultDeclaration extends NodeBase {
 		this.declaration.render(code, options);
 	}
 
-	protected applyDeoptimizations() {}
-
 	private renderNamedDeclaration(
 		code: MagicString,
 		declarationStart: number,
@@ -146,7 +159,9 @@ export default class ExportDefaultDeclaration extends NodeBase {
 			code.overwrite(
 				this.start,
 				declarationStart,
-				`${cnst} ${this.variable.getName(getPropertyAccess)} = exports('${systemExportNames[0]}', `
+				`${cnst} ${this.variable.getName(getPropertyAccess)} = exports(${JSON.stringify(
+					systemExportNames[0]
+				)}, `
 			);
 			code.appendRight(
 				hasTrailingSemicolon ? this.end - 1 : this.end,
@@ -166,3 +181,5 @@ export default class ExportDefaultDeclaration extends NodeBase {
 }
 
 ExportDefaultDeclaration.prototype.needsBoundaries = true;
+ExportDefaultDeclaration.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+ExportDefaultDeclaration.prototype.applyDeoptimizations = doNotDeoptimize;

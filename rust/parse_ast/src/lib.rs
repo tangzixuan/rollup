@@ -1,69 +1,69 @@
-#![feature(ptr_internals)]
-use std::sync::Arc;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 
-use convert_ast::converter::AstConverter;
-use swc::config::IsModule::Unknown;
-use swc::{config::ParseOptions, Compiler};
 use swc_common::sync::Lrc;
 use swc_common::{FileName, FilePathMapping, Globals, SourceMap, GLOBALS};
+use swc_compiler_base::parse_js;
+use swc_compiler_base::IsModule;
 use swc_ecma_ast::EsVersion;
-use swc_ecma_parser::{EsConfig, Syntax};
+use swc_ecma_parser::{EsSyntax, Syntax};
 
-use crate::convert_ast::annotations::SequentialComments;
-
-mod convert_ast;
-
+use convert_ast::converter::AstConverter;
 use error_emit::try_with_handler;
 
+use crate::ast_nodes::panic_error::get_panic_error_buffer;
+use crate::convert_ast::annotations::SequentialComments;
+
+mod ast_nodes;
+mod convert_ast;
 mod error_emit;
 
-fn get_compiler() -> Arc<Compiler> {
-  let cm = Arc::new(SourceMap::new(FilePathMapping::empty()));
-  Arc::new(Compiler::new(cm))
-}
+pub fn parse_ast(code: String, allow_return_outside_function: bool, jsx: bool) -> Vec<u8> {
+  let cm = Lrc::new(SourceMap::new(FilePathMapping::empty()));
+  let target = EsVersion::EsNext;
+  let syntax = Syntax::Es(EsSyntax {
+    allow_return_outside_function,
+    import_attributes: true,
+    explicit_resource_management: true,
+    decorators: true,
+    jsx,
+    ..Default::default()
+  });
 
-pub fn parse_ast(code: String, allow_return_outside_function: bool) -> Vec<u8> {
-  let compiler = get_compiler();
-  let compiler_options = ParseOptions {
-    syntax: Syntax::Es(EsConfig {
-      allow_return_outside_function,
-      import_attributes: true,
-      ..Default::default()
-    }),
-    target: EsVersion::EsNext,
-    is_module: Unknown,
-    comments: false,
-  };
   let filename = FileName::Anon;
-  let file = compiler.cm.new_source_file(filename, code);
+  let file = cm.new_source_file(filename.into(), code);
   let code_reference = Lrc::clone(&file.src);
   let comments = SequentialComments::default();
   GLOBALS.set(&Globals::default(), || {
-    compiler.run(|| {
-      let result = try_with_handler(
-        &code_reference,
-        &compiler.cm,
-        compiler_options.target,
-        |handler| {
-          compiler.parse_js(
-            file,
-            handler,
-            compiler_options.target,
-            compiler_options.syntax,
-            compiler_options.is_module,
-            Some(&comments),
-          )
-        },
-      );
+    let result = catch_unwind(AssertUnwindSafe(|| {
+      let result = try_with_handler(&code_reference, |handler| {
+        parse_js(
+          cm,
+          file,
+          handler,
+          target,
+          syntax,
+          IsModule::Unknown,
+          Some(&comments),
+        )
+      });
       match result {
         Err(buffer) => buffer,
         Ok(program) => {
           let annotations = comments.take_annotations();
           let converter = AstConverter::new(&code_reference, &annotations);
-          let buffer = converter.convert_ast_to_buffer(&program);
-          buffer
+          converter.convert_ast_to_buffer(&program)
         }
       }
+    }));
+    result.unwrap_or_else(|err| {
+      let msg = if let Some(msg) = err.downcast_ref::<&str>() {
+        msg
+      } else if let Some(msg) = err.downcast_ref::<String>() {
+        msg
+      } else {
+        "Unknown rust panic message"
+      };
+      get_panic_error_buffer(msg)
     })
   })
 }

@@ -7,22 +7,21 @@ import {
 } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
 import type ChildScope from '../scopes/ChildScope';
-import type Scope from '../scopes/Scope';
 import type * as NodeType from './NodeType';
-import type SwitchCase from './SwitchCase';
 import type { ExpressionNode, GenericEsTreeNode, IncludeChildren } from './shared/Node';
-import { StatementBase } from './shared/Node';
+import { doNotDeoptimize, onlyIncludeSelfNoDeoptimize, StatementBase } from './shared/Node';
+import type SwitchCase from './SwitchCase';
 
 export default class SwitchStatement extends StatementBase {
 	declare cases: readonly SwitchCase[];
 	declare discriminant: ExpressionNode;
 	declare type: NodeType.tSwitchStatement;
 
-	private declare defaultCase: number | null;
-	private declare parentScope: ChildScope;
+	declare parentScope: ChildScope;
+	declare private defaultCase: number | null;
 
-	createScope(parentScope: Scope): void {
-		this.parentScope = parentScope as ChildScope;
+	createScope(parentScope: ChildScope): void {
+		this.parentScope = parentScope;
 		this.scope = new BlockScope(parentScope);
 	}
 
@@ -35,7 +34,6 @@ export default class SwitchStatement extends StatementBase {
 		let onlyHasBrokenFlow = true;
 		for (const switchCase of this.cases) {
 			if (switchCase.hasEffects(context)) return true;
-			// eslint-disable-next-line unicorn/consistent-destructuring
 			onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
 			context.hasBreak = false;
 			context.brokenFlow = brokenFlow;
@@ -69,7 +67,6 @@ export default class SwitchStatement extends StatementBase {
 			}
 			if (isCaseIncluded) {
 				switchCase.include(context, includeChildrenRecursively);
-				// eslint-disable-next-line unicorn/consistent-destructuring
 				onlyHasBrokenFlow &&= context.brokenFlow && !context.hasBreak;
 				context.hasBreak = false;
 				context.brokenFlow = brokenFlow;
@@ -84,6 +81,7 @@ export default class SwitchStatement extends StatementBase {
 	}
 
 	initialise(): void {
+		super.initialise();
 		for (let caseIndex = 0; caseIndex < this.cases.length; caseIndex++) {
 			if (this.cases[caseIndex].test === null) {
 				this.defaultCase = caseIndex;
@@ -93,13 +91,12 @@ export default class SwitchStatement extends StatementBase {
 		this.defaultCase = null;
 	}
 
-	parseNode(esTreeNode: GenericEsTreeNode) {
-		this.discriminant = new (this.context.getNodeConstructor(esTreeNode.discriminant.type))(
-			esTreeNode.discriminant,
+	parseNode(esTreeNode: GenericEsTreeNode): this {
+		this.discriminant = new (this.scope.context.getNodeConstructor(esTreeNode.discriminant.type))(
 			this,
 			this.parentScope
-		);
-		super.parseNode(esTreeNode);
+		).parseNode(esTreeNode.discriminant);
+		return super.parseNode(esTreeNode);
 	}
 
 	render(code: MagicString, options: RenderOptions): void {
@@ -109,3 +106,6 @@ export default class SwitchStatement extends StatementBase {
 		}
 	}
 }
+
+SwitchStatement.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+SwitchStatement.prototype.applyDeoptimizations = doNotDeoptimize;

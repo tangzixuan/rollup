@@ -8,9 +8,11 @@ import {
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import type * as NodeType from './NodeType';
 import {
+	doNotDeoptimize,
 	type ExpressionNode,
 	type IncludeChildren,
 	NodeBase,
+	onlyIncludeSelfNoDeoptimize,
 	type StatementNode
 } from './shared/Node';
 
@@ -39,17 +41,22 @@ export default class SwitchCase extends NodeBase {
 	}
 
 	render(code: MagicString, options: RenderOptions, nodeRenderOptions?: NodeRenderOptions): void {
+		if (this.test) {
+			this.test.render(code, options);
+			if (this.test.start === this.start + 4) {
+				code.prependLeft(this.test.start, ' ');
+			}
+		}
 		if (this.consequent.length > 0) {
-			this.test && this.test.render(code, options);
 			const testEnd = this.test
 				? this.test.end
 				: findFirstOccurrenceOutsideComment(code.original, 'default', this.start) + 7;
 			const consequentStart = findFirstOccurrenceOutsideComment(code.original, ':', testEnd) + 1;
 			renderStatementList(this.consequent, code, consequentStart, nodeRenderOptions!.end!, options);
-		} else {
-			super.render(code, options);
 		}
 	}
 }
 
 SwitchCase.prototype.needsBoundaries = true;
+SwitchCase.prototype.includeNode = onlyIncludeSelfNoDeoptimize;
+SwitchCase.prototype.applyDeoptimizations = doNotDeoptimize;

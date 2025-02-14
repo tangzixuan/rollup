@@ -2,12 +2,12 @@ import type MagicString from 'magic-string';
 import { NO_SEMICOLON, type RenderOptions } from '../../utils/renderHelpers';
 import type { InclusionContext } from '../ExecutionContext';
 import BlockScope from '../scopes/BlockScope';
-import type Scope from '../scopes/Scope';
+import type ChildScope from '../scopes/ChildScope';
 import { EMPTY_PATH, UNKNOWN_PATH } from '../utils/PathTracker';
-import type MemberExpression from './MemberExpression';
 import type * as NodeType from './NodeType';
-import type VariableDeclaration from './VariableDeclaration';
+import { Flag, isFlagSet, setFlag } from './shared/BitFlags';
 import { UNKNOWN_EXPRESSION } from './shared/Expression';
+import { includeLoopBody } from './shared/loops';
 import {
 	type ExpressionNode,
 	type IncludeChildren,
@@ -15,16 +15,22 @@ import {
 	type StatementNode
 } from './shared/Node';
 import type { PatternNode } from './shared/Pattern';
-import { includeLoopBody } from './shared/loops';
+import type VariableDeclaration from './VariableDeclaration';
 
 export default class ForOfStatement extends StatementBase {
-	declare await: boolean;
 	declare body: StatementNode;
-	declare left: VariableDeclaration | PatternNode | MemberExpression;
+	declare left: VariableDeclaration | PatternNode;
 	declare right: ExpressionNode;
 	declare type: NodeType.tForOfStatement;
 
-	createScope(parentScope: Scope): void {
+	get await(): boolean {
+		return isFlagSet(this.flags, Flag.await);
+	}
+	set await(value: boolean) {
+		this.flags = setFlag(this.flags, Flag.await, value);
+	}
+
+	createScope(parentScope: ChildScope): void {
 		this.scope = new BlockScope(parentScope);
 	}
 
@@ -37,13 +43,20 @@ export default class ForOfStatement extends StatementBase {
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		const { body, deoptimized, left, right } = this;
 		if (!deoptimized) this.applyDeoptimizations();
-		this.included = true;
+		if (!this.included) this.includeNode(context);
 		left.includeAsAssignmentTarget(context, includeChildrenRecursively || true, false);
 		right.include(context, includeChildrenRecursively);
 		includeLoopBody(context, body, includeChildrenRecursively);
 	}
 
+	includeNode(context: InclusionContext) {
+		this.included = true;
+		if (!this.deoptimized) this.applyDeoptimizations();
+		this.right.includePath(UNKNOWN_PATH, context);
+	}
+
 	initialise() {
+		super.initialise();
 		this.left.setAssignedValue(UNKNOWN_EXPRESSION);
 	}
 
@@ -57,10 +70,10 @@ export default class ForOfStatement extends StatementBase {
 		this.body.render(code, options);
 	}
 
-	protected applyDeoptimizations(): void {
+	applyDeoptimizations() {
 		this.deoptimized = true;
 		this.left.deoptimizePath(EMPTY_PATH);
 		this.right.deoptimizePath(UNKNOWN_PATH);
-		this.context.requestTreeshakingPass();
+		this.scope.context.requestTreeshakingPass();
 	}
 }

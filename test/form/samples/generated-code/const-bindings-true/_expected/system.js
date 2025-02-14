@@ -1,6 +1,7 @@
 System.register('bundle', ['external'], (function (exports) {
 	'use strict';
 	const _starExcludes = {
+		__proto__: null,
 		default: 1,
 		syntheticMissing: 1
 	};
@@ -9,7 +10,7 @@ System.register('bundle', ['external'], (function (exports) {
 		setters: [module => {
 			foo__default = module.default;
 			foo$1 = module;
-			const setter = {};
+			const setter = { __proto__: null };
 			for (const name in module) {
 				if (!_starExcludes[name]) setter[name] = module[name];
 			}
@@ -30,9 +31,9 @@ System.register('bundle', ['external'], (function (exports) {
 			const synthetic = { bar: 'baz' };
 
 			console.log(foo__default, foo$1, other, bar, _missingExportShim);
-			const main = exports('default', 42);
+			const main = exports("default", 42);
 
-			exports('syntheticMissing', synthetic.syntheticMissing);
+			exports("syntheticMissing", synthetic.syntheticMissing);
 
 		})
 	};

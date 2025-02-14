@@ -7,13 +7,13 @@ import {
 	logIllegalIdentifierAsName,
 	logMissingNameOptionForIifeExport
 } from '../utils/logs';
+import type { FinaliserOptions } from './index';
 import { getExportBlock, getNamespaceMarkers } from './shared/getExportBlock';
 import getInteropBlock from './shared/getInteropBlock';
 import { keypath } from './shared/sanitize';
 import setupNamespace from './shared/setupNamespace';
 import trimEmptyImports from './shared/trimEmptyImports';
 import warnOnBuiltins from './shared/warnOnBuiltins';
-import type { FinaliserOptions } from './index';
 
 export default function iife(
 	magicString: MagicStringBundle,
@@ -36,6 +36,7 @@ export default function iife(
 		extend,
 		freeze,
 		externalLiveBindings,
+		reexportProtoFromExternal,
 		globals,
 		interop,
 		name,
@@ -100,7 +101,7 @@ export default function iife(
 				`${_}=${_}${wrapperIntro}`;
 		}
 		if (isNamespaced) {
-			wrapperIntro = setupNamespace(name!, 'this', globals, snippets, compact) + wrapperIntro;
+			wrapperIntro = setupNamespace(name!, 'this', globals, snippets, compact, log) + wrapperIntro;
 		}
 	}
 
@@ -116,7 +117,8 @@ export default function iife(
 		interop,
 		snippets,
 		t,
-		externalLiveBindings
+		externalLiveBindings,
+		reexportProtoFromExternal
 	);
 	let namespaceMarkers = getNamespaceMarkers(
 		namedExportsMode && hasExports,

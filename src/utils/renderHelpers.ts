@@ -1,9 +1,9 @@
 import type MagicString from 'magic-string';
 import type { Node, StatementNode } from '../ast/nodes/shared/Node';
 import type Variable from '../ast/variables/Variable';
-import type { InternalModuleFormat } from '../rollup/types';
-import type { PluginDriver } from './PluginDriver';
+import type { ImportAttributesKey, InternalModuleFormat } from '../rollup/types';
 import type { GenerateCodeSnippets } from './generateCodeSnippets';
+import type { PluginDriver } from './PluginDriver';
 import { treeshakeNode } from './treeshakeNode';
 
 export interface RenderOptions {
@@ -12,6 +12,7 @@ export interface RenderOptions {
 	format: InternalModuleFormat;
 	freeze: boolean;
 	indent: string;
+	importAttributesKey: ImportAttributesKey;
 	pluginDriver: PluginDriver;
 	snippets: GenerateCodeSnippets;
 	symbols: boolean;
@@ -23,6 +24,7 @@ export interface NodeRenderOptions {
 	isCalleeOfRenderedParent?: boolean;
 	isNoStatement?: boolean;
 	isShorthandProperty?: boolean;
+	jsxMode?: 'preserve' | 'classic' | 'automatic';
 	preventASI?: boolean;
 	/* Indicates if the direct parent of an element changed.
 	Necessary for determining the "this" context of callees. */
@@ -68,6 +70,21 @@ export function findNonWhiteSpace(code: string, index: number): number {
 	return result.index;
 }
 
+const WHITESPACE = /\s/;
+
+export function findLastWhiteSpaceReverse(code: string, start: number, end: number): number {
+	while (true) {
+		if (start >= end) {
+			return end;
+		}
+		if (WHITESPACE.test(code[end - 1])) {
+			end--;
+		} else {
+			return end;
+		}
+	}
+}
+
 // This assumes "code" only contains white-space and comments
 // Returns position of line-comment if applicable
 export function findFirstLineBreakOutsideComment(code: string): [number, number] {
@@ -82,7 +99,7 @@ export function findFirstLineBreakOutsideComment(code: string): [number, number]
 		// With our assumption, '/' always starts a comment. Determine comment type:
 		charCodeAfterSlash = code.charCodeAt(start + 1);
 		if (charCodeAfterSlash === 47 /*"/"*/) return [start, lineBreakPos + 1];
-		start = code.indexOf('*/', start + 3) + 2;
+		start = code.indexOf('*/', start + 2) + 2;
 		if (start > lineBreakPos) {
 			lineBreakPos = code.indexOf('\n', start);
 		}
@@ -118,12 +135,14 @@ export function renderStatementList(
 					code.original.slice(currentNode.end, nextNode === undefined ? end : nextNode.start)
 				)[1];
 			if (currentNode.included) {
-				currentNodeNeedsBoundaries
-					? currentNode.render(code, options, {
-							end: nextNodeStart,
-							start: currentNodeStart
-					  })
-					: currentNode.render(code, options);
+				if (currentNodeNeedsBoundaries) {
+					currentNode.render(code, options, {
+						end: nextNodeStart,
+						start: currentNodeStart
+					});
+				} else {
+					currentNode.render(code, options);
+				}
 			} else {
 				treeshakeNode(currentNode, code, currentNodeStart!, nextNodeStart);
 			}

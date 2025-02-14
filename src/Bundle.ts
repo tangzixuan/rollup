@@ -10,7 +10,6 @@ import type {
 	NormalizedOutputOptions,
 	OutputBundle
 } from './rollup/types';
-import type { PluginDriver } from './utils/PluginDriver';
 import { getChunkAssignments } from './utils/chunkAssignment';
 import commondir from './utils/commondir';
 import { sortByExecutionOrder } from './utils/executionOrder';
@@ -28,6 +27,7 @@ import type { OutputBundleWithPlaceholders } from './utils/outputBundle';
 import { getOutputBundle, removeUnreferencedAssets } from './utils/outputBundle';
 import { parseAst } from './utils/parseAst';
 import { isAbsolute } from './utils/path';
+import type { PluginDriver } from './utils/PluginDriver';
 import { renderChunks } from './utils/renderChunks';
 import { timeEnd, timeStart } from './utils/timers';
 import {
@@ -122,7 +122,6 @@ export default class Bundle {
 	}
 
 	private assignManualChunks(getManualChunk: GetManualChunk): Map<Module, string> {
-		// eslint-disable-next-line unicorn/prefer-module
 		const manualChunkAliasesWithEntry: [alias: string, module: Module][] = [];
 		const manualChunksApi = {
 			getModuleIds: () => this.graph.modulesById.keys(),
@@ -151,7 +150,7 @@ export default class Bundle {
 			for (const file of Object.values(bundle)) {
 				if ('code' in file) {
 					try {
-						parseAst(file.code);
+						parseAst(file.code, { jsx: this.inputOptions.jsx !== false });
 					} catch (error_: any) {
 						this.inputOptions.onLog(LOGLEVEL_WARN, logChunkInvalid(file, error_));
 					}
@@ -179,18 +178,20 @@ export default class Bundle {
 			this.outputOptions,
 			inputBase
 		);
-		const chunks: Chunk[] = [];
-		const chunkByModule = new Map<Module, Chunk>();
-		for (const { alias, modules } of inlineDynamicImports
+		const executableModule = inlineDynamicImports
 			? [{ alias: null, modules: includedModules }]
 			: preserveModules
-			? includedModules.map(module => ({ alias: null, modules: [module] }))
-			: getChunkAssignments(
-					this.graph.entryModules,
-					manualChunkAliasByEntry,
-					experimentalMinChunkSize,
-					this.inputOptions.onLog
-			  )) {
+				? includedModules.map(module => ({ alias: null, modules: [module] }))
+				: getChunkAssignments(
+						this.graph.entryModules,
+						manualChunkAliasByEntry,
+						experimentalMinChunkSize,
+						this.inputOptions.onLog
+					);
+		const chunks: Chunk[] = new Array(executableModule.length);
+		const chunkByModule = new Map<Module, Chunk>();
+		let index = 0;
+		for (const { alias, modules } of executableModule) {
 			sortByExecutionOrder(modules);
 			const chunk = new Chunk(
 				modules,
@@ -209,7 +210,7 @@ export default class Bundle {
 				inputBase,
 				snippets
 			);
-			chunks.push(chunk);
+			chunks[index++] = chunk;
 		}
 		for (const chunk of chunks) {
 			chunk.link();

@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import alias from '@rollup/plugin-alias';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
@@ -6,6 +5,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
 import typescript from '@rollup/plugin-typescript';
+import { fileURLToPath } from 'node:url';
 import type { Plugin, RollupOptions, WarningHandlerWithDefault } from 'rollup';
 import { string } from 'rollup-plugin-string';
 import addCliEntry from './build-plugins/add-cli-entry';
@@ -23,12 +23,11 @@ import getBanner from './build-plugins/get-banner';
 import replaceBrowserModules from './build-plugins/replace-browser-modules';
 
 const onwarn: WarningHandlerWithDefault = warning => {
-	// eslint-disable-next-line no-console
 	console.error(
 		'Building Rollup produced warnings that need to be resolved. ' +
 			'Please keep in mind that the browser build may never have external dependencies!'
 	);
-	// eslint-disable-next-line unicorn/error-message
+
 	throw Object.assign(new Error(), warning);
 };
 
@@ -41,7 +40,7 @@ const treeshake = {
 const nodePlugins: readonly Plugin[] = [
 	replace(fsEventsReplacement),
 	alias(moduleAliases),
-	nodeResolve(),
+	nodeResolve({ preferBuiltins: true }),
 	json(),
 	string({ include: '**/*.md' }),
 	commonjs({
@@ -53,7 +52,7 @@ const nodePlugins: readonly Plugin[] = [
 	externalNativeImport()
 ];
 
-export default async function (
+export default async function getConfig(
 	command: Record<string, unknown>
 ): Promise<RollupOptions | RollupOptions[]> {
 	const { collectLicenses, writeLicense } = getLicenseHandler(
@@ -89,7 +88,7 @@ export default async function (
 			addCliEntry(),
 			esmDynamicImport(),
 			!command.configTest && collectLicenses(),
-			!command.configTest && copyNodeTypes()
+			copyNodeTypes()
 		],
 		strictDeprecations: true,
 		treeshake
@@ -98,16 +97,6 @@ export default async function (
 	if (command.configTest) {
 		return commonJSBuild;
 	}
-
-	const exitOnCloseBundle: Plugin = {
-		closeBundle() {
-			// On CI, macOS runs sometimes do not close properly. This is a hack
-			// to fix this until the problem is understood.
-			console.log('Force quit.');
-			setTimeout(() => process.exit(0));
-		},
-		name: 'force-close'
-	};
 
 	const esmBuild: RollupOptions = {
 		...commonJSBuild,
@@ -127,7 +116,6 @@ export default async function (
 	};
 
 	if (command.configIsBuildNode) {
-		(esmBuild.plugins as Plugin[]).push(exitOnCloseBundle);
 		return [commonJSBuild, esmBuild];
 	}
 
@@ -164,8 +152,7 @@ export default async function (
 			collectLicensesBrowser(),
 			writeLicenseBrowser(),
 			cleanBeforeWrite('browser/dist'),
-			emitWasmFile(),
-			exitOnCloseBundle
+			emitWasmFile()
 		],
 		strictDeprecations: true,
 		treeshake

@@ -3,7 +3,7 @@ System.register('bundle', [], (function (exports) {
 	return {
 		execute: (function () {
 
-			exports('a', a);
+			exports("a", a);
 
 			function foo () {
 				console.log( 'foo' );
@@ -21,23 +21,23 @@ System.register('bundle', [], (function (exports) {
 
 			a.foo = foo;
 
-			const c = exports('c', function () {
+			const c = exports("c", function () {
 				console.log( 'c' );
 			});
 			c.bar = bar;
 
-			const e = exports('e', () => console.log( 'e' ));
+			const e = exports("e", () => console.log( 'e' ));
 			e.baz = baz;
 
 			class g {
 				constructor () {
 					console.log( 'g' );
 				}
-			} exports('g', g);
+			} exports("g", g);
 
 			g.foo = foo;
 
-			const i = exports('i', class {
+			const i = exports("i", class {
 				constructor () {
 					console.log( 'i' );
 				}

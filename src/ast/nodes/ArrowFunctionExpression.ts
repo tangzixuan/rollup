@@ -1,33 +1,40 @@
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
 import type { NodeInteraction } from '../NodeInteractions';
 import { INTERACTION_CALLED } from '../NodeInteractions';
+import type ChildScope from '../scopes/ChildScope';
 import ReturnValueScope from '../scopes/ReturnValueScope';
-import type Scope from '../scopes/Scope';
-import { type ObjectPath } from '../utils/PathTracker';
+import { type ObjectPath, UNKNOWN_PATH } from '../utils/PathTracker';
 import type BlockStatement from './BlockStatement';
+import type CallExpression from './CallExpression';
 import Identifier from './Identifier';
-import type * as NodeType from './NodeType';
+import * as NodeType from './NodeType';
+import { Flag, isFlagSet, setFlag } from './shared/BitFlags';
 import FunctionBase from './shared/FunctionBase';
 import type { ExpressionNode, IncludeChildren } from './shared/Node';
 import { ObjectEntity } from './shared/ObjectEntity';
 import { OBJECT_PROTOTYPE } from './shared/ObjectPrototype';
-import type { PatternNode } from './shared/Pattern';
+import type { DeclarationPatternNode } from './shared/Pattern';
 
 export default class ArrowFunctionExpression extends FunctionBase {
-	declare async: boolean;
 	declare body: BlockStatement | ExpressionNode;
-	declare params: readonly PatternNode[];
+	declare params: DeclarationPatternNode[];
 	declare preventChildBlockScope: true;
 	declare scope: ReturnValueScope;
 	declare type: NodeType.tArrowFunctionExpression;
 	protected objectEntity: ObjectEntity | null = null;
 
-	createScope(parentScope: Scope): void {
-		this.scope = new ReturnValueScope(parentScope, this.context);
+	get expression(): boolean {
+		return isFlagSet(this.flags, Flag.expression);
+	}
+	set expression(value: boolean) {
+		this.flags = setFlag(this.flags, Flag.expression, value);
+	}
+
+	createScope(parentScope: ChildScope): void {
+		this.scope = new ReturnValueScope(parentScope, false);
 	}
 
 	hasEffects(): boolean {
-		if (!this.deoptimized) this.applyDeoptimizations();
 		return false;
 	}
 
@@ -36,12 +43,15 @@ export default class ArrowFunctionExpression extends FunctionBase {
 		interaction: NodeInteraction,
 		context: HasEffectsContext
 	): boolean {
+		if (
+			this.annotationNoSideEffects &&
+			path.length === 0 &&
+			interaction.type === INTERACTION_CALLED
+		) {
+			return false;
+		}
 		if (super.hasEffectsOnInteractionAtPath(path, interaction, context)) {
 			return true;
-		}
-
-		if (this.annotationNoSideEffects) {
-			return false;
 		}
 
 		if (interaction.type === INTERACTION_CALLED) {
@@ -60,11 +70,28 @@ export default class ArrowFunctionExpression extends FunctionBase {
 		return false;
 	}
 
+	protected onlyFunctionCallUsed(): boolean {
+		const isIIFE =
+			this.parent.type === NodeType.CallExpression &&
+			(this.parent as CallExpression).callee === this;
+		return isIIFE || super.onlyFunctionCallUsed();
+	}
+
 	include(context: InclusionContext, includeChildrenRecursively: IncludeChildren): void {
 		super.include(context, includeChildrenRecursively);
 		for (const parameter of this.params) {
 			if (!(parameter instanceof Identifier)) {
 				parameter.include(context, includeChildrenRecursively);
+			}
+		}
+	}
+
+	includeNode(context: InclusionContext) {
+		this.included = true;
+		this.body.includePath(UNKNOWN_PATH, context);
+		for (const parameter of this.params) {
+			if (!(parameter instanceof Identifier)) {
+				parameter.includePath(UNKNOWN_PATH, context);
 			}
 		}
 	}

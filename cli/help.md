@@ -40,6 +40,7 @@ Basic options:
 --failAfterWarnings         Exit with an error if the build produced warnings
 --filterLogs <filter>       Filter log messages
 --footer <text>             Code to insert at end of bundle (outside wrapper)
+--forceExit                 Force exit the process when done
 --no-freeze                 Do not freeze namespace objects
 --generatedCode <preset>    Which code features to use (es5/es2015)
 --generatedCode.arrowFunctions Use arrow functions in generated code
@@ -47,7 +48,9 @@ Basic options:
 --generatedCode.objectShorthand Use shorthand properties in generated code
 --no-generatedCode.reservedNamesAsProps Always quote reserved names as props
 --generatedCode.symbols     Use symbols in generated code
+--hashCharacters <name>     Use the specified character set for file hashes
 --no-hoistTransitiveImports Do not hoist transitive imports into entry chunks
+--importAttributesKey <name> Use the specified keyword for import attributes
 --no-indent                 Don't indent result
 --inlineDynamicImports      Create single bundle when using dynamic imports
 --no-interop                Do not include interop block
@@ -63,10 +66,12 @@ Basic options:
 --preserveModules           Preserve module structure
 --preserveModulesRoot       Put preserved modules under this path at root level
 --preserveSymlinks          Do not follow symlinks when resolving files
+--no-reexportProtoFromExternal Ignore `__proto__` in star re-exports
 --no-sanitizeFileName       Do not replace invalid characters in file names
 --shimMissingExports        Create shim variables for missing exports
 --silent                    Don't print warnings
 --sourcemapBaseUrl <url>    Emit absolute sourcemap URLs with given base
+--sourcemapDebugIds         Emit unique debug ids in source and sourcemaps
 --sourcemapExcludeSources   Do not include source code in source maps
 --sourcemapFile <file>      Specify bundle position for source maps
 --sourcemapFileNames <pattern> Name pattern for emitted sourcemaps

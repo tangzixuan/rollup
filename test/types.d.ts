@@ -1,6 +1,5 @@
 import type { SourceMap } from 'magic-string';
-import type { RollupLog } from 'rollup';
-import type { RollupBuild, RollupError, RollupOptions } from '../src/rollup/types';
+import type { RollupBuild, RollupError, RollupLog, RollupOptions } from '../src/rollup/types';
 
 export interface TestConfigBase {
 	/**
@@ -99,7 +98,15 @@ export interface TestConfigCli extends TestConfigBase {
 	 * Called before the test is run.
 	 */
 	before?: () => void | Promise<void>;
+	/**
+	 * Run command in a shell.
+	 * Will be overridden by "spawnArgs" if that is used.
+	 */
 	command?: string;
+	/**
+	 * Run rollup as a child process with the given arguments.
+	 */
+	spawnArgs?: string[];
 	cwd?: string;
 	/**
 	 * Environment variables to set for the test.
@@ -109,7 +116,7 @@ export interface TestConfigCli extends TestConfigBase {
 	 * Test the expected error. Assertions about the test output will only
 	 * be performed afterward if you return "true" or do not supply this option.
 	 */
-	error?: (error: RollupError) => boolean | void;
+	error?: (error: Error) => boolean | void;
 	/**
 	 * Execute the bundled code.
 	 */
@@ -169,6 +176,11 @@ export interface TestConfigForm extends TestConfigBase {
 	 * Rollup options for bundling.
 	 */
 	options?: RollupOptions;
+	/**
+	 * Verify that the AST returned by SWC is the same as the one returned by
+	 * Acorn. The default behavior is to verify.
+	 */
+	verifyAst?: boolean;
 }
 
 export interface TestConfigFunction extends TestConfigBase {
@@ -189,7 +201,8 @@ export interface TestConfigFunction extends TestConfigBase {
 	 */
 	code?: (code: string | Record<string, string>) => void;
 	/**
-	 * The global context executed the bundled code.
+	 * Injected global variables and functions. You can also use this to mock
+	 * "require" calls.
 	 */
 	context?: Record<string, any>;
 	/**
@@ -224,6 +237,11 @@ export interface TestConfigFunction extends TestConfigBase {
 	 * Make assertions on the expected warnings.
 	 */
 	warnings?: RollupError[] | ((warnings: RollupError[]) => boolean | void);
+	/**
+	 * Verify that the AST returned by SWC is the same as the one returned by
+	 * Acorn. The default behavior is to verify.
+	 */
+	verifyAst?: boolean;
 }
 
 export interface TestConfigSourcemap extends TestConfigBase {

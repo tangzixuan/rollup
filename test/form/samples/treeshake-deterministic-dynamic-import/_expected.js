@@ -18,15 +18,15 @@ function _mergeNamespaces(n, m) {
 async function entry() {
   // simple
   const { foo1: foo } = await Promise.resolve().then(function () { return sub1; });
-  await Promise.resolve().then(function () { return sub1; });
+  const { doesNotExists } = await Promise.resolve().then(function () { return sub1; });
 (await Promise.resolve().then(function () { return sub2; })).bar2();
-  await Promise.resolve().then(function () { return sub2; });
-  await Promise.resolve().then(function () { return sub2; });
+  const { foo2 } = await Promise.resolve().then(function () { return sub2; });
+  const { foo3 } = await Promise.resolve().then(function () { return sub2; });
   Promise.resolve().then(function () { return sub2; }).then(({ baz2 }) => baz2);
   Promise.resolve().then(function () { return sub2; }).then(function({ reexported }) { });
 
   // external with unknown namespace
-  await Promise.resolve().then(function () { return sub4; });
+  const { foo4, x } = await Promise.resolve().then(function () { return sub4; });
 
   // side-effect only
   Promise.resolve().then(function () { return effect1; });
@@ -37,10 +37,10 @@ async function entry() {
   Promise.resolve().then(function () { return effect6; }).finally(() => {});
 
   // bail out
-  await Promise.resolve().then(function () { return bail1$1; });
+  const { named1 } = await Promise.resolve().then(function () { return bail1$1; });
   Promise.resolve().then(function () { return bail1$1; }); // this make it bail out
 
-  await Promise.resolve().then(function () { return bail2$1; })
+  const { ...named2 } = await Promise.resolve().then(function () { return bail2$1; })
 
   (await Promise.resolve().then(function () { return bail3$1; }))[foo];
 
@@ -55,9 +55,13 @@ async function entry() {
     Promise.resolve().then(function () { return bail8$1; }),
   ];
 
-  await Promise.resolve().then(function () { return bail9$1; });
+  const { [foo]: bar } = await Promise.resolve().then(function () { return bail9$1; });
 
   Promise.resolve().then(function () { return bail10$1; }).then(({ [foo]: bar }) => {});
+
+  {
+    const [name11] = await Promise.resolve().then(function () { return bail11$1; });
+  }
 }
 
 function foo1() {
@@ -155,15 +159,6 @@ var bail1$1 = /*#__PURE__*/Object.freeze({
   named1: named1
 });
 
-var bail3 = '@included-bail-3';
-const named3 = 'bail3';
-
-var bail3$1 = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  default: bail3,
-  named3: named3
-});
-
 var bail2 = '@included-bail-2';
 const named2 = 'bail2';
 
@@ -171,6 +166,15 @@ var bail2$1 = /*#__PURE__*/Object.freeze({
   __proto__: null,
   default: bail2,
   named2: named2
+});
+
+var bail3 = '@included-bail-3';
+const named3 = 'bail3';
+
+var bail3$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: bail3,
+  named3: named3
 });
 
 var bail4 = '@included-bail-4';
@@ -234,6 +238,15 @@ var bail10$1 = /*#__PURE__*/Object.freeze({
   __proto__: null,
   default: bail10,
   named10: named10
+});
+
+var bail11 = '@included-bail-11';
+const named11 = 'bail11';
+
+var bail11$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: bail11,
+  named11: named11
 });
 
 export { entry };

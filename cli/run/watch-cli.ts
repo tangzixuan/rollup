@@ -1,8 +1,8 @@
-import type { FSWatcher } from 'node:fs';
-import { readFile } from 'node:fs/promises';
-import process from 'node:process';
+import type { FSWatcher } from 'chokidar';
 import chokidar from 'chokidar';
 import dateTime from 'date-time';
+import { readFile } from 'node:fs/promises';
+import process from 'node:process';
 import ms from 'pretty-ms';
 import { onExit } from 'signal-exit';
 import * as rollup from '../../src/node-entry';
@@ -28,12 +28,8 @@ export async function watch(command: Record<string, any>): Promise<void> {
 	const configFile = command.config ? await getConfigPath(command.config) : null;
 	const runWatchHook = createWatchHooks(command);
 
-	onExit(close as any);
+	onExit(close);
 	process.on('uncaughtException', closeWithError);
-	if (!process.stdin.isTTY) {
-		process.stdin.on('end', close);
-		process.stdin.resume();
-	}
 
 	async function loadConfigFromFileAndTrack(configFile: string): Promise<void> {
 		let configFileData: string | null = null;
@@ -134,7 +130,7 @@ export async function watch(command: Record<string, any>): Promise<void> {
 
 				case 'END': {
 					runWatchHook('onEnd');
-					if (!silent && isTTY) {
+					if (!silent) {
 						stderr(`\n[${dateTime()}] waiting for changes...`);
 					}
 				}
@@ -146,14 +142,16 @@ export async function watch(command: Record<string, any>): Promise<void> {
 		});
 	}
 
-	async function close(code: number | null | undefined): Promise<void> {
+	function close(code: number | null | undefined): true {
 		process.removeListener('uncaughtException', closeWithError);
 		// removing a non-existent listener is a no-op
 		process.stdin.removeListener('end', close);
-
-		if (watcher) await watcher.close();
 		if (configWatcher) configWatcher.close();
-		if (code) process.exit(code);
+		Promise.resolve(watcher?.close()).finally(() => {
+			process.exit(typeof code === 'number' ? code : 0);
+		});
+		// Tell signal-exit that we are handling this gracefully
+		return true;
 	}
 
 	// return a promise that never resolves to keep the process running

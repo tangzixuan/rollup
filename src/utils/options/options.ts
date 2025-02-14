@@ -5,6 +5,7 @@ import type {
 	LogLevelOption,
 	NormalizedGeneratedCodeOptions,
 	NormalizedInputOptions,
+	NormalizedJsxOptions,
 	NormalizedOutputOptions,
 	NormalizedTreeshakingOptions,
 	OutputOptions,
@@ -19,11 +20,8 @@ import { EMPTY_ARRAY } from '../blank';
 import { LOGLEVEL_DEBUG, LOGLEVEL_ERROR, LOGLEVEL_WARN, logLevelPriority } from '../logging';
 import { error, logInvalidOption, logUnknownOption } from '../logs';
 import { printQuotedStringList } from '../printStringList';
-import relativeId from '../relativeId';
 
-export interface GenericConfigObject {
-	[key: string]: unknown;
-}
+export type GenericConfigObject = Record<string, unknown>;
 
 export const getOnLog = (
 	config: InputOptions,
@@ -55,12 +53,12 @@ const getDefaultOnLog = (printLog: LogHandler, onwarn?: WarningHandlerWithDefaul
 				} else {
 					printLog(level, log);
 				}
-		  }
+			}
 		: printLog;
 
 const addLogToString = (log: RollupLog): RollupLog => {
 	Object.defineProperty(log, 'toString', {
-		value: () => getExtendedLogMessage(log),
+		value: () => log.message,
 		writable: true
 	});
 	return log;
@@ -70,24 +68,10 @@ export const normalizeLog = (log: RollupLog | string | (() => RollupLog | string
 	typeof log === 'string'
 		? { message: log }
 		: typeof log === 'function'
-		? normalizeLog(log())
-		: log;
+			? normalizeLog(log())
+			: log;
 
-const getExtendedLogMessage = (log: RollupLog): string => {
-	let prefix = '';
-
-	if (log.plugin) {
-		prefix += `(${log.plugin} plugin) `;
-	}
-	if (log.loc) {
-		prefix += `${relativeId(log.loc.file!)} (${log.loc.line}:${log.loc.column}) `;
-	}
-
-	return prefix + log.message;
-};
-
-const defaultPrintLog: LogHandler = (level, log) => {
-	const message = getExtendedLogMessage(log);
+const defaultPrintLog: LogHandler = (level, { message }) => {
 	switch (level) {
 		case LOGLEVEL_WARN: {
 			return console.warn(message);
@@ -119,11 +103,10 @@ export function warnUnknownOptions(
 
 type ObjectValue<Base> = Base extends Record<string, any> ? Base : never;
 
-export const treeshakePresets: {
-	[key in NonNullable<
-		ObjectValue<InputOptions['treeshake']>['preset']
-	>]: NormalizedTreeshakingOptions;
-} = {
+export const treeshakePresets: Record<
+	NonNullable<ObjectValue<InputOptions['treeshake']>['preset']>,
+	NormalizedTreeshakingOptions
+> = {
 	recommended: {
 		annotations: true,
 		correctVarValueBeforeDeclaration: false,
@@ -153,11 +136,40 @@ export const treeshakePresets: {
 	}
 };
 
-export const generatedCodePresets: {
-	[key in NonNullable<
-		ObjectValue<OutputOptions['generatedCode']>['preset']
-	>]: NormalizedOutputOptions['generatedCode'];
-} = {
+export const jsxPresets: Record<
+	NonNullable<ObjectValue<InputOptions['jsx']>['preset']>,
+	NormalizedJsxOptions
+> = {
+	preserve: {
+		factory: null,
+		fragment: null,
+		importSource: null,
+		mode: 'preserve'
+	},
+	'preserve-react': {
+		factory: 'React.createElement',
+		fragment: 'React.Fragment',
+		importSource: 'react',
+		mode: 'preserve'
+	},
+	react: {
+		factory: 'React.createElement',
+		fragment: 'React.Fragment',
+		importSource: 'react',
+		mode: 'classic'
+	},
+	'react-jsx': {
+		factory: 'React.createElement',
+		importSource: 'react',
+		jsxImportSource: 'react/jsx-runtime',
+		mode: 'automatic'
+	}
+};
+
+export const generatedCodePresets: Record<
+	NonNullable<ObjectValue<OutputOptions['generatedCode']>['preset']>,
+	NormalizedOutputOptions['generatedCode']
+> = {
 	es2015: {
 		arrowFunctions: true,
 		constBindings: true,
@@ -176,7 +188,8 @@ export const generatedCodePresets: {
 
 type ObjectOptionWithPresets =
 	| Partial<NormalizedTreeshakingOptions>
-	| Partial<NormalizedGeneratedCodeOptions>;
+	| Partial<NormalizedGeneratedCodeOptions>
+	| Partial<NormalizedJsxOptions>;
 
 export const objectifyOption = (value: unknown): Record<string, unknown> =>
 	value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
@@ -214,7 +227,7 @@ export const getOptionWithPreset = <T extends ObjectOptionWithPresets>(
 	optionName: string,
 	urlSnippet: string,
 	additionalValues: string
-): Record<string, unknown> => {
+): T => {
 	const presetName: string | undefined = (value as any)?.preset;
 	if (presetName) {
 		const preset = presets[presetName];
@@ -231,7 +244,7 @@ export const getOptionWithPreset = <T extends ObjectOptionWithPresets>(
 			);
 		}
 	}
-	return objectifyOptionWithPresets(presets, optionName, urlSnippet, additionalValues)(value);
+	return objectifyOptionWithPresets(presets, optionName, urlSnippet, additionalValues)(value) as T;
 };
 
 export const normalizePluginOption: {

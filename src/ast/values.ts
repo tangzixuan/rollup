@@ -5,11 +5,13 @@ import {
 	INTERACTION_CALLED,
 	NODE_INTERACTION_UNKNOWN_CALL
 } from './NodeInteractions';
-import type { LiteralValue } from './nodes/Literal';
+import type { LiteralValueOrBigInt } from './nodes/Literal';
+import type { LiteralValueOrUnknown } from './nodes/shared/Expression';
 import {
 	ExpressionEntity,
 	UNKNOWN_EXPRESSION,
-	UNKNOWN_RETURN_EXPRESSION
+	UNKNOWN_RETURN_EXPRESSION,
+	UnknownValue
 } from './nodes/shared/Expression';
 import {
 	EMPTY_PATH,
@@ -25,16 +27,14 @@ export interface MemberDescription {
 	returns: ExpressionEntity;
 }
 
-export interface MemberDescriptions {
-	[key: string]: MemberDescription;
-}
+export type MemberDescriptions = Record<string, MemberDescription>;
 
 interface RawMemberDescription {
 	value: MemberDescription;
 }
 
 function assembleMemberDescriptions(
-	memberDescriptions: { [key: string]: RawMemberDescription },
+	memberDescriptions: Record<string, RawMemberDescription>,
 	inheritedDescriptions: MemberDescriptions | null = null
 ): MemberDescriptions {
 	return Object.create(inheritedDescriptions, memberDescriptions);
@@ -42,8 +42,8 @@ function assembleMemberDescriptions(
 
 export const UNDEFINED_EXPRESSION: ExpressionEntity =
 	new (class UndefinedExpression extends ExpressionEntity {
-		getLiteralValueAtPath() {
-			return undefined;
+		getLiteralValueAtPath(path: ObjectPath): LiteralValueOrUnknown {
+			return path.length > 0 ? UnknownValue : undefined;
 		}
 	})();
 
@@ -268,7 +268,7 @@ export const literalStringMembers: MemberDescriptions = assembleMemberDescriptio
 	objectMembers
 );
 
-export function getLiteralMembersForValue<T extends LiteralValue = LiteralValue>(
+export function getLiteralMembersForValue<T extends LiteralValueOrBigInt = LiteralValueOrBigInt>(
 	value: T
 ): MemberDescriptions {
 	if (value instanceof RegExp) {

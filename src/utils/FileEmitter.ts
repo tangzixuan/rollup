@@ -11,9 +11,10 @@ import type {
 	OutputChunk
 } from '../rollup/types';
 import { BuildPhase } from './buildPhase';
-import { getXxhash } from './crypto';
+import type { GetHash } from './crypto';
+import { getHash64, hasherByType } from './crypto';
 import { getOrCreate } from './getOrCreate';
-import { defaultHashSize } from './hashPlaceholders';
+import { DEFAULT_HASH_SIZE } from './hashPlaceholders';
 import { LOGLEVEL_WARN } from './logging';
 import {
 	error,
@@ -25,32 +26,63 @@ import {
 	logFileNameConflict,
 	logFileReferenceIdNotFoundForFilename,
 	logInvalidRollupPhaseForChunkEmission,
-	logNoAssetSourceSet
+	logNoAssetSourceSet,
+	warnDeprecation
 } from './logs';
 import type { OutputBundleWithPlaceholders } from './outputBundle';
 import { FILE_PLACEHOLDER, lowercaseBundleKeys } from './outputBundle';
 import { extname } from './path';
 import { isPathFragment } from './relativeId';
 import { makeUnique, renderNamePattern } from './renderNamePattern';
+import { URL_GENERATEBUNDLE } from './urls';
 
 function generateAssetFileName(
 	name: string | undefined,
+	names: string[],
 	source: string | Uint8Array,
+	originalFileName: string | null,
+	originalFileNames: string[],
 	sourceHash: string,
 	outputOptions: NormalizedOutputOptions,
-	bundle: OutputBundleWithPlaceholders
+	bundle: OutputBundleWithPlaceholders,
+	inputOptions: NormalizedInputOptions
 ): string {
 	const emittedName = outputOptions.sanitizeFileName(name || 'asset');
 	return makeUnique(
 		renderNamePattern(
 			typeof outputOptions.assetFileNames === 'function'
-				? outputOptions.assetFileNames({ name, source, type: 'asset' })
+				? outputOptions.assetFileNames({
+						// Additionally, this should be non-enumerable in the next major
+						get name() {
+							warnDeprecation(
+								'Accessing the "name" property of emitted assets when generating the file name is deprecated. Use the "names" property instead.',
+								URL_GENERATEBUNDLE,
+								false,
+								inputOptions
+							);
+							return name;
+						},
+						names,
+						// Additionally, this should be non-enumerable in the next major
+						get originalFileName() {
+							warnDeprecation(
+								'Accessing the "originalFileName" property of emitted assets when generating the file name is deprecated. Use the "originalFileNames" property instead.',
+								URL_GENERATEBUNDLE,
+								false,
+								inputOptions
+							);
+							return originalFileName;
+						},
+						originalFileNames,
+						source,
+						type: 'asset'
+					})
 				: outputOptions.assetFileNames,
 			'output.assetFileNames',
 			{
 				ext: () => extname(emittedName).slice(1),
 				extname: () => extname(emittedName),
-				hash: size => sourceHash.slice(0, Math.max(0, size || defaultHashSize)),
+				hash: size => sourceHash.slice(0, Math.max(0, size || DEFAULT_HASH_SIZE)),
 				name: () =>
 					emittedName.slice(0, Math.max(0, emittedName.length - extname(emittedName).length))
 			}
@@ -79,6 +111,7 @@ type ConsumedPrebuiltChunk = EmittedPrebuiltChunk & {
 
 type ConsumedAsset = EmittedAsset & {
 	needsCodeReference: boolean;
+	originalFileName: string | null;
 	referenceId: string;
 };
 
@@ -90,10 +123,11 @@ interface EmittedFile {
 	[key: string]: unknown;
 	fileName?: string;
 	name?: string;
+	originalFileName?: string | null;
 	type: EmittedFileType;
 }
 
-const emittedFileTypes: Set<EmittedFileType> = new Set(['chunk', 'asset', 'prebuilt-chunk']);
+const emittedFileTypes = new Set<EmittedFileType>(['chunk', 'asset', 'prebuilt-chunk']);
 
 function hasValidType(emittedFile: unknown): emittedFile is {
 	[key: string]: unknown;
@@ -153,8 +187,9 @@ function getChunkFileName(
 
 interface FileEmitterOutput {
 	bundle: OutputBundleWithPlaceholders;
-	fileNamesBySource: Map<string, string>;
+	fileNamesBySourceHash: Map<string, string>;
 	outputOptions: NormalizedOutputOptions;
+	getHash: GetHash;
 }
 
 export class FileEmitter {
@@ -254,9 +289,11 @@ export class FileEmitter {
 		bundle: OutputBundleWithPlaceholders,
 		outputOptions: NormalizedOutputOptions
 	): void => {
+		const getHash = hasherByType[outputOptions.hashCharacters];
 		const output = (this.output = {
 			bundle,
-			fileNamesBySource: new Map<string, string>(),
+			fileNamesBySourceHash: new Map<string, string>(),
+			getHash,
 			outputOptions
 		});
 		for (const emittedFile of this.filesByReferenceId.values()) {
@@ -270,7 +307,7 @@ export class FileEmitter {
 				if (consumedFile.fileName) {
 					this.finalizeAdditionalAsset(consumedFile, consumedFile.source, output);
 				} else {
-					const sourceHash = getXxhash(consumedFile.source);
+					const sourceHash = getHash(consumedFile.source);
 					getOrCreate(consumedAssetsByHash, sourceHash, () => []).push(consumedFile);
 				}
 			} else if (consumedFile.type === 'prebuilt-chunk') {
@@ -290,7 +327,7 @@ export class FileEmitter {
 		let referenceId = idBase;
 
 		do {
-			referenceId = getXxhash(referenceId).slice(0, 8).replaceAll('-', '$');
+			referenceId = getHash64(referenceId).slice(0, 8).replaceAll('-', '$');
 		} while (
 			this.filesByReferenceId.has(referenceId) ||
 			this.outputFileEmitters.some(({ filesByReferenceId }) => filesByReferenceId.has(referenceId))
@@ -332,10 +369,15 @@ export class FileEmitter {
 			emittedAsset.source === undefined
 				? undefined
 				: getValidSource(emittedAsset.source, emittedAsset, null);
+		const originalFileName = emittedAsset.originalFileName || null;
+		if (typeof originalFileName === 'string') {
+			this.graph.watchFiles[originalFileName] = true;
+		}
 		const consumedAsset: ConsumedAsset = {
 			fileName: emittedAsset.fileName,
 			name: emittedAsset.name,
 			needsCodeReference: !!emittedAsset.needsCodeReference,
+			originalFileName,
 			referenceId: '',
 			source,
 			type: 'asset'
@@ -439,23 +481,27 @@ export class FileEmitter {
 	private finalizeAdditionalAsset(
 		consumedFile: Readonly<ConsumedAsset>,
 		source: string | Uint8Array,
-		{ bundle, fileNamesBySource, outputOptions }: FileEmitterOutput
+		{ bundle, fileNamesBySourceHash, getHash, outputOptions }: FileEmitterOutput
 	): void {
-		let { fileName, needsCodeReference, referenceId } = consumedFile;
+		let { fileName, name, needsCodeReference, originalFileName, referenceId } = consumedFile;
 
 		// Deduplicate assets if an explicit fileName is not provided
 		if (!fileName) {
-			const sourceHash = getXxhash(source);
-			fileName = fileNamesBySource.get(sourceHash);
+			const sourceHash = getHash(source);
+			fileName = fileNamesBySourceHash.get(sourceHash);
 			if (!fileName) {
 				fileName = generateAssetFileName(
-					consumedFile.name,
+					name,
+					name ? [name] : [],
 					source,
+					originalFileName,
+					originalFileName ? [originalFileName] : [],
 					sourceHash,
 					outputOptions,
-					bundle
+					bundle,
+					this.options
 				);
-				fileNamesBySource.set(sourceHash, fileName);
+				fileNamesBySourceHash.set(sourceHash, fileName);
 			}
 		}
 
@@ -466,11 +512,39 @@ export class FileEmitter {
 		const existingAsset = bundle[fileName];
 		if (existingAsset?.type === 'asset') {
 			existingAsset.needsCodeReference &&= needsCodeReference;
+			if (name) {
+				existingAsset.names.push(name);
+			}
+			if (originalFileName) {
+				existingAsset.originalFileNames.push(originalFileName);
+			}
 		} else {
+			const { options } = this;
 			bundle[fileName] = {
 				fileName,
-				name: consumedFile.name,
+				get name() {
+					// Additionally, this should be non-enumerable in the next major
+					warnDeprecation(
+						'Accessing the "name" property of emitted assets in the bundle is deprecated. Use the "names" property instead.',
+						URL_GENERATEBUNDLE,
+						false,
+						options
+					);
+					return name;
+				},
+				names: name ? [name] : [],
 				needsCodeReference,
+				get originalFileName() {
+					// Additionally, this should be non-enumerable in the next major
+					warnDeprecation(
+						'Accessing the "originalFileName" property of emitted assets in the bundle is deprecated. Use the "originalFileNames" property instead.',
+						URL_GENERATEBUNDLE,
+						false,
+						options
+					);
+					return originalFileName;
+				},
+				originalFileNames: originalFileName ? [originalFileName] : [],
 				source,
 				type: 'asset'
 			};
@@ -478,10 +552,11 @@ export class FileEmitter {
 	}
 
 	private finalizeAssetsWithSameSource(
-		consumedFiles: ReadonlyArray<ConsumedAsset>,
+		consumedFiles: readonly ConsumedAsset[],
 		sourceHash: string,
-		{ bundle, fileNamesBySource, outputOptions }: FileEmitterOutput
+		{ bundle, fileNamesBySourceHash, outputOptions }: FileEmitterOutput
 	): void {
+		const { names, originalFileNames } = getNamesFromAssets(consumedFiles);
 		let fileName = '';
 		let usedConsumedFile: ConsumedAsset;
 		let needsCodeReference = true;
@@ -489,10 +564,14 @@ export class FileEmitter {
 			needsCodeReference &&= consumedFile.needsCodeReference;
 			const assetFileName = generateAssetFileName(
 				consumedFile.name,
+				names,
 				consumedFile.source!,
+				consumedFile.originalFileName,
+				originalFileNames,
 				sourceHash,
 				outputOptions,
-				bundle
+				bundle,
+				this.options
 			);
 			if (
 				!fileName ||
@@ -503,7 +582,7 @@ export class FileEmitter {
 				usedConsumedFile = consumedFile;
 			}
 		}
-		fileNamesBySource.set(sourceHash, fileName);
+		fileNamesBySourceHash.set(sourceHash, fileName);
 
 		for (const consumedFile of consumedFiles) {
 			// We must not modify the original assets to avoid interaction between outputs
@@ -511,12 +590,55 @@ export class FileEmitter {
 			this.filesByReferenceId.set(consumedFile.referenceId, assetWithFileName);
 		}
 
+		const { options } = this;
 		bundle[fileName] = {
 			fileName,
-			name: usedConsumedFile!.name,
+			get name() {
+				// Additionally, this should be non-enumerable in the next major
+				warnDeprecation(
+					'Accessing the "name" property of emitted assets in the bundle is deprecated. Use the "names" property instead.',
+					URL_GENERATEBUNDLE,
+					false,
+					options
+				);
+				return usedConsumedFile!.name;
+			},
+			names,
 			needsCodeReference,
+			get originalFileName() {
+				// Additionally, this should be non-enumerable in the next major
+				warnDeprecation(
+					'Accessing the "originalFileName" property of emitted assets in the bundle is deprecated. Use the "originalFileNames" property instead.',
+					URL_GENERATEBUNDLE,
+					false,
+					options
+				);
+				return usedConsumedFile!.originalFileName;
+			},
+			originalFileNames,
 			source: usedConsumedFile!.source!,
 			type: 'asset'
 		};
 	}
+}
+
+function getNamesFromAssets(consumedFiles: readonly ConsumedAsset[]): {
+	names: string[];
+	originalFileNames: string[];
+} {
+	const names: string[] = [];
+	const originalFileNames: string[] = [];
+	for (const { name, originalFileName } of consumedFiles) {
+		if (typeof name === 'string') {
+			names.push(name);
+		}
+		if (originalFileName) {
+			originalFileNames.push(originalFileName);
+		}
+	}
+	originalFileNames.sort();
+	// Sort by length first and then alphabetically so that the order is stable
+	// and the shortest names come first
+	names.sort((a, b) => a.length - b.length || (a > b ? 1 : a === b ? 0 : -1));
+	return { names, originalFileNames };
 }

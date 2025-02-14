@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import process from 'node:process';
 import help from 'help.md';
+import process from 'node:process';
 import { version } from 'package.json';
 import argParser from 'yargs-parser';
 import { commandAliases } from '../src/utils/options/mergeOptions';
@@ -17,11 +17,14 @@ if (command.help || (process.argv.length <= 2 && process.stdin.isTTY)) {
 	console.log(`rollup v${version}`);
 } else {
 	try {
-		// eslint-disable-next-line unicorn/prefer-module
+		// eslint-disable-next-line @typescript-eslint/no-require-imports
 		require('source-map-support').install();
 	} catch {
 		// do nothing
 	}
 
-	run(command);
+	const promise = run(command);
+	if (command.forceExit) {
+		promise.then(() => process.exit());
+	}
 }
